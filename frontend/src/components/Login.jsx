@@ -182,9 +182,8 @@ export default function Login() {
           </div>
         </div>
 
-        {/* VPS info */}
         <p className="text-center text-xs text-[#4B5563] mt-4">
-          VPS 161.132.48.127 · Cabanillas · Palca · Paratia
+          tuxtell.net
         </p>
       </div>
     </div>
