@@ -65,6 +65,7 @@ class ZonaBase(BaseModel):
     router_mikrotik: Optional[str] = None
     ip_router: Optional[str] = None
     descripcion: Optional[str] = None
+    tiendas_pago: Optional[str] = None
 
 class ZonaCreate(ZonaBase):
     pass

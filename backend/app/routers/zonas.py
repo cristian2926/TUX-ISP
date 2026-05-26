@@ -177,6 +177,7 @@ def _zona_to_dict(zona, db: Session) -> dict:
         "router_mikrotik": zona.router_mikrotik,
         "ip_router": zona.ip_router,
         "descripcion": zona.descripcion,
+        "tiendas_pago": zona.tiendas_pago,
         "activo": zona.activo,
         "total_clientes": total,
         "clientes_activos": activos,

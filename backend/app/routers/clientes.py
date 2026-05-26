@@ -6,6 +6,8 @@ from datetime import date
 import logging
 
 import paramiko
+import httpx
+from datetime import date
 
 from ..database import get_db
 from .. import models, schemas
@@ -52,6 +54,17 @@ def _mikrotik_exec(host: str, commands: list[str]) -> dict:
     except Exception as e:
         logger.warning("MikroTik SSH %s falló: %s", host, e)
         return {"ok": False, "error": str(e), "results": []}
+
+
+MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio",
+         "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+def _wa_send(phone: str, message: str):
+    try:
+        with httpx.Client(timeout=8) as c:
+            c.post(f"{settings.WHATSAPP_API_URL}/send", json={"phone": phone, "message": message})
+    except Exception as e:
+        logger.warning("WhatsApp send falló: %s", e)
 
 
 def _get_wg_ip(db: Session, zona_id: int) -> Optional[str]:
@@ -284,6 +297,28 @@ def cortar_servicio(
         )
         mt_result = _mikrotik_exec(wg_ip, cmds)
 
+    # WhatsApp automático
+    phone = cliente.telefono_whatsapp or cliente.telefono
+    if phone:
+        plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
+        zona = db.query(models.Zona).filter(models.Zona.id == cliente.zona_id).first()
+        nombre = cliente.nombre.split()[0]
+        hoy = date.today()
+        mes_label = f"{MESES[hoy.month]} {hoy.year}"
+        tiendas = f"🏪 *Tiendas autorizadas:*\n{zona.tiendas_pago}\n" if zona and zona.tiendas_pago else ""
+        msg = (
+            f"🔴 *TUXTELL* — Servicio Suspendido\n\n"
+            f"Estimado *{nombre}*, su servicio de internet ha sido *suspendido* por falta de pago.\n\n"
+            f"📅 Mes pendiente: *{mes_label}*\n"
+            f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
+            f"Para reactivar su servicio:\n"
+            f"📱 *Yape:* 936511008\n"
+            f"{tiendas}"
+            f"📞 *Llamadas:* 936511008\n\n"
+            f"_Tuxtell — Conectando tu mundo_ 🌐"
+        )
+        _wa_send(phone, msg)
+
     return {"ok": True, "estado": "suspendido", "mikrotik_ok": mt_result["ok"]}
 
 
@@ -320,6 +355,21 @@ def reactivar_servicio(
         mt_result = _mikrotik_exec(wg_ip, [cmd])
     elif wg_ip:
         mt_result = {"ok": True}  # Sin IP estática no hay nada que remover
+
+    # WhatsApp automático
+    phone = cliente.telefono_whatsapp or cliente.telefono
+    if phone:
+        plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
+        nombre = cliente.nombre.split()[0]
+        msg = (
+            f"✅ *TUXTELL* — Servicio Reactivado\n\n"
+            f"Hola *{nombre}* 🎉, su servicio de internet ha sido *reactivado* exitosamente.\n\n"
+            f"📶 Plan: *{plan.nombre if plan else 'Internet'}*\n"
+            f"🌐 Ya puede navegar con normalidad.\n\n"
+            f"¡Gracias por su pago! 🙏\n"
+            f"_Tuxtell — Conectando tu mundo_ 🌐"
+        )
+        _wa_send(phone, msg)
 
     return {"ok": True, "estado": "activo", "mikrotik_ok": mt_result["ok"]}
 

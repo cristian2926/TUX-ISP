@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Optional
 import httpx
+from datetime import date
 
 from ..database import get_db
 from .. import models
@@ -11,6 +12,40 @@ from ..config import settings
 router = APIRouter()
 
 WA_API = settings.WHATSAPP_API_URL
+
+MESES = ["", "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+         "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
+
+
+def _mes_pendiente(cliente_id: int, db: Session) -> str:
+    hoy = date.today()
+    mes_str = f"{hoy.year}-{hoy.month:02d}"
+    pago = db.query(models.Pago).filter(
+        models.Pago.cliente_id == cliente_id,
+        models.Pago.mes_pagado == mes_str,
+        models.Pago.estado == "pagado",
+    ).first()
+    if not pago:
+        return f"{MESES[hoy.month]} {hoy.year}"
+    # Buscar el mes anterior sin pagar
+    if hoy.month == 1:
+        mes_ant = f"{hoy.year-1}-12"
+        return f"{MESES[12]} {hoy.year-1}"
+    mes_ant = f"{hoy.year}-{(hoy.month-1):02d}"
+    pago_ant = db.query(models.Pago).filter(
+        models.Pago.cliente_id == cliente_id,
+        models.Pago.mes_pagado == mes_ant,
+        models.Pago.estado == "pagado",
+    ).first()
+    if not pago_ant:
+        return f"{MESES[hoy.month-1]} {hoy.year}"
+    return f"{MESES[hoy.month]} {hoy.year}"
+
+
+def _tiendas_text(zona) -> str:
+    if zona and zona.tiendas_pago:
+        return f"🏪 *Tiendas autorizadas:*\n{zona.tiendas_pago}\n"
+    return ""
 
 
 async def wa_request(method: str, path: str, json: dict = None):
@@ -69,14 +104,21 @@ async def aviso_cobro(
         raise HTTPException(status_code=400, detail="Cliente sin número WhatsApp")
 
     plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
+    zona = db.query(models.Zona).filter(models.Zona.id == cliente.zona_id).first()
     nombre = cliente.nombre.split()[0]
+    mes = _mes_pendiente(cliente_id, db)
+    tiendas = _tiendas_text(zona)
+
     mensaje = (
         f"📶 *TUXTELL* — Aviso de Pago\n\n"
-        f"Hola *{nombre}* 👋, le recordamos que su pago mensual está pendiente:\n\n"
+        f"Hola *{nombre}* 👋, le recordamos que tiene pendiente el pago de:\n\n"
+        f"📅 Mes: *{mes}*\n"
         f"📦 Plan: {plan.nombre if plan else 'Internet'}\n"
         f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
-        f"💳 Puede pagar por *Yape* al:\n"
-        f"📱 *936511008*\n\n"
+        f"💳 *Formas de pago:*\n"
+        f"📱 *Yape:* 936511008\n"
+        f"{tiendas}"
+        f"📞 Consultas: 936511008\n\n"
         f"Gracias por confiar en *Tuxtell* 🙏"
     )
 
@@ -101,12 +143,20 @@ async def aviso_corte(
     if not phone:
         raise HTTPException(status_code=400, detail="Cliente sin número WhatsApp")
 
+    zona = db.query(models.Zona).filter(models.Zona.id == cliente.zona_id).first()
+    plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
     nombre = cliente.nombre.split()[0]
+    mes = _mes_pendiente(cliente_id, db)
+    tiendas = _tiendas_text(zona)
+
     mensaje = (
         f"⚠️ *TUXTELL* — Aviso de Corte\n\n"
         f"Estimado *{nombre}*, le informamos que su servicio de internet será *suspendido* por falta de pago.\n\n"
-        f"Para evitar el corte, realice su pago a la brevedad:\n\n"
-        f"💳 *Yape:* 936511008\n"
+        f"📅 Mes pendiente: *{mes}*\n"
+        f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
+        f"Para evitar el corte pague a la brevedad:\n"
+        f"📱 *Yape:* 936511008\n"
+        f"{tiendas}"
         f"📞 *Llamadas:* 936511008\n\n"
         f"_Tuxtell — Conectando tu mundo_ 🌐"
     )
@@ -129,6 +179,9 @@ async def broadcast_cobros(
         hoy = date.today()
         mes = f"{hoy.year}-{hoy.month:02d}"
 
+    mes_parts = mes.split("-")
+    mes_label = f"{MESES[int(mes_parts[1])]} {mes_parts[0]}"
+
     pagaron = db.query(models.Pago.cliente_id).filter(
         models.Pago.mes_pagado == mes
     ).subquery()
@@ -145,13 +198,19 @@ async def broadcast_cobros(
     for cliente in sin_pago:
         phone = cliente.telefono_whatsapp or cliente.telefono
         plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
+        zona = db.query(models.Zona).filter(models.Zona.id == cliente.zona_id).first()
         nombre = cliente.nombre.split()[0]
+        tiendas = _tiendas_text(zona)
         mensaje = (
             f"📶 *TUXTELL* — Recordatorio de Pago\n\n"
-            f"Hola *{nombre}* 👋, tiene pendiente el pago del mes *{mes}*:\n\n"
+            f"Hola *{nombre}* 👋, tiene pendiente el pago de:\n\n"
+            f"📅 Mes: *{mes_label}*\n"
             f"📦 Plan: {plan.nombre if plan else 'Internet'}\n"
             f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
-            f"💳 Pague por *Yape* al *936511008*\n\n"
+            f"💳 *Formas de pago:*\n"
+            f"📱 *Yape:* 936511008\n"
+            f"{tiendas}"
+            f"📞 Consultas: 936511008\n\n"
             f"¡Gracias por su pago! 🙏 — *Tuxtell*"
         )
         try:

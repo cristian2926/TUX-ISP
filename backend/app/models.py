@@ -76,6 +76,7 @@ class Zona(Base):
     wg_public_key = Column(String(255))
     ip_router = Column(String(20))
     descripcion = Column(Text)
+    tiendas_pago = Column(Text)
     activo = Column(Boolean, default=True)
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
 
