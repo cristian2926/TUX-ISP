@@ -1,0 +1,50 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
+
+from .database import engine, Base
+from . import models
+from .routers import clientes, zonas, pagos, gastos, auth, whatsapp, dashboard
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    Base.metadata.create_all(bind=engine)
+    from .seed import seed_initial_data
+    from .database import SessionLocal
+    db = SessionLocal()
+    try:
+        seed_initial_data(db)
+    finally:
+        db.close()
+    yield
+
+
+app = FastAPI(
+    title="TUX-ISP API",
+    description="Sistema de gestión para ISP Tuxtell",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
+app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
+app.include_router(clientes.router, prefix="/api/clientes", tags=["Clientes"])
+app.include_router(zonas.router, prefix="/api/zonas", tags=["Zonas"])
+app.include_router(pagos.router, prefix="/api/pagos", tags=["Pagos"])
+app.include_router(gastos.router, prefix="/api/gastos", tags=["Gastos"])
+app.include_router(whatsapp.router, prefix="/api/whatsapp", tags=["WhatsApp"])
+
+
+@app.get("/api/health")
+def health_check():
+    return {"status": "ok", "app": "TUX-ISP", "version": "1.0.0"}
