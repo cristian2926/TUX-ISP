@@ -142,7 +142,6 @@ def resumen_mensual(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user),
 ):
-    from datetime import date
     if not anio:
         anio = date.today().year
 
@@ -174,7 +173,6 @@ def clientes_sin_pago(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user),
 ):
-    from datetime import date
     if not mes:
         hoy = date.today()
         mes = f"{hoy.year}-{hoy.month:02d}"

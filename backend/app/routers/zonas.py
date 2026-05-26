@@ -315,6 +315,8 @@ def wireguard_status(
         "rx_bytes": wg_peer["rx_bytes"] if wg_peer else 0,
         "tx_bytes": wg_peer["tx_bytes"] if wg_peer else 0,
         "status": "conectado" if ping_ok else "desconectado",
+        "vps_pubkey": settings.VPS_WG_PUBKEY,
+        "vps_endpoint": f"{settings.VPS_IP}:51820",
     }
 
 

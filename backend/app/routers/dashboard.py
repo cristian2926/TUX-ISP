@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract
 from datetime import date
 
@@ -24,8 +24,8 @@ def get_stats(
         mes_ant = f"{hoy.year}-{hoy.month - 1:02d}"
 
     total = db.query(models.Cliente).count()
-    activos = db.query(models.Cliente).filter(models.Cliente.estado == "activo").count()
-    suspendidos = db.query(models.Cliente).filter(models.Cliente.estado == "suspendido").count()
+    activos = db.query(models.Cliente).filter(models.Cliente.estado == models.EstadoCliente.activo).count()
+    suspendidos = db.query(models.Cliente).filter(models.Cliente.estado == models.EstadoCliente.suspendido).count()
 
     ingresos_actual = db.query(func.sum(models.Pago.monto)).filter(
         models.Pago.mes_pagado == mes_actual,
@@ -49,7 +49,7 @@ def get_stats(
         models.Pago.mes_pagado == mes_actual
     ).subquery()
     pendientes = db.query(models.Cliente).filter(
-        models.Cliente.estado == "activo",
+        models.Cliente.estado == models.EstadoCliente.activo,
         ~models.Cliente.id.in_(pagaron),
     ).count()
 
@@ -104,18 +104,19 @@ def ultimas_activaciones(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user),
 ):
-    activaciones = db.query(models.Historial).filter(
+    activaciones = db.query(models.Historial).options(
+        joinedload(models.Historial.cliente)
+    ).filter(
         models.Historial.tipo.in_(["activacion", "corte", "pago"])
     ).order_by(models.Historial.creado_en.desc()).limit(limit).all()
 
-    result = []
-    for h in activaciones:
-        cliente = db.query(models.Cliente).filter(models.Cliente.id == h.cliente_id).first()
-        result.append({
+    return [
+        {
             "id": h.id,
             "tipo": h.tipo,
             "descripcion": h.descripcion,
-            "cliente_nombre": cliente.nombre if cliente else "—",
+            "cliente_nombre": h.cliente.nombre if h.cliente else "—",
             "creado_en": h.creado_en,
-        })
-    return result
+        }
+        for h in activaciones
+    ]

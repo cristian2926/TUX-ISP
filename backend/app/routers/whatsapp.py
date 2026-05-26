@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 import httpx
 from datetime import date
@@ -23,22 +23,21 @@ def _mes_pendiente(cliente_id: int, db: Session) -> str:
     pago = db.query(models.Pago).filter(
         models.Pago.cliente_id == cliente_id,
         models.Pago.mes_pagado == mes_str,
-        models.Pago.estado == "pagado",
+        models.Pago.estado == models.EstadoPago.pagado,
     ).first()
     if not pago:
         return f"{MESES[hoy.month]} {hoy.year}"
-    # Buscar el mes anterior sin pagar
+    # Mes actual pagado: verificar si el anterior está pendiente
     if hoy.month == 1:
-        mes_ant = f"{hoy.year-1}-12"
-        return f"{MESES[12]} {hoy.year-1}"
-    mes_ant = f"{hoy.year}-{(hoy.month-1):02d}"
+        return f"{MESES[12]} {hoy.year - 1}"
+    mes_ant = f"{hoy.year}-{(hoy.month - 1):02d}"
     pago_ant = db.query(models.Pago).filter(
         models.Pago.cliente_id == cliente_id,
         models.Pago.mes_pagado == mes_ant,
-        models.Pago.estado == "pagado",
+        models.Pago.estado == models.EstadoPago.pagado,
     ).first()
     if not pago_ant:
-        return f"{MESES[hoy.month-1]} {hoy.year}"
+        return f"{MESES[hoy.month - 1]} {hoy.year}"
     return f"{MESES[hoy.month]} {hoy.year}"
 
 
@@ -116,9 +115,9 @@ async def aviso_cobro(
         f"📦 Plan: {plan.nombre if plan else 'Internet'}\n"
         f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
         f"💳 *Formas de pago:*\n"
-        f"📱 *Yape / Plin:* 936511008\n"
+        f"📱 *Yape / Plin:* {settings.PHONE_CONTACTO}\n"
         f"{tiendas}"
-        f"📞 Consultas: 936511008\n\n"
+        f"📞 Consultas: {settings.PHONE_CONTACTO}\n\n"
         f"Gracias por confiar en *Tuxtell* 🙏"
     )
 
@@ -155,9 +154,9 @@ async def aviso_corte(
         f"📅 Mes pendiente: *{mes}*\n"
         f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
         f"Para evitar el corte pague a la brevedad:\n"
-        f"📱 *Yape / Plin:* 936511008\n"
+        f"📱 *Yape / Plin:* {settings.PHONE_CONTACTO}\n"
         f"{tiendas}"
-        f"📞 *Llamadas:* 936511008\n\n"
+        f"📞 *Llamadas:* {settings.PHONE_CONTACTO}\n\n"
         f"_Tuxtell — Conectando tu mundo_ 🌐"
     )
 
@@ -174,7 +173,6 @@ async def broadcast_cobros(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user),
 ):
-    from datetime import date
     if not mes:
         hoy = date.today()
         mes = f"{hoy.year}-{hoy.month:02d}"
@@ -186,8 +184,11 @@ async def broadcast_cobros(
         models.Pago.mes_pagado == mes
     ).subquery()
 
-    sin_pago = db.query(models.Cliente).filter(
-        models.Cliente.estado == "activo",
+    sin_pago = db.query(models.Cliente).options(
+        joinedload(models.Cliente.plan),
+        joinedload(models.Cliente.zona),
+    ).filter(
+        models.Cliente.estado == models.EstadoCliente.activo,
         (models.Cliente.telefono_whatsapp.isnot(None)) | (models.Cliente.telefono.isnot(None)),
         ~models.Cliente.id.in_(pagaron),
     ).all()
@@ -197,8 +198,8 @@ async def broadcast_cobros(
 
     for cliente in sin_pago:
         phone = cliente.telefono_whatsapp or cliente.telefono
-        plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
-        zona = db.query(models.Zona).filter(models.Zona.id == cliente.zona_id).first()
+        plan = cliente.plan
+        zona = cliente.zona
         nombre = cliente.nombre.split()[0]
         tiendas = _tiendas_text(zona)
         mensaje = (
@@ -208,9 +209,9 @@ async def broadcast_cobros(
             f"📦 Plan: {plan.nombre if plan else 'Internet'}\n"
             f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
             f"💳 *Formas de pago:*\n"
-            f"📱 *Yape / Plin:* 936511008\n"
+            f"📱 *Yape / Plin:* {settings.PHONE_CONTACTO}\n"
             f"{tiendas}"
-            f"📞 Consultas: 936511008\n\n"
+            f"📞 Consultas: {settings.PHONE_CONTACTO}\n\n"
             f"¡Gracias por su pago! 🙏 — *Tuxtell*"
         )
         try:

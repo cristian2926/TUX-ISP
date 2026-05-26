@@ -8,7 +8,6 @@ import re
 
 import paramiko
 import httpx
-from datetime import date
 
 from ..database import get_db
 from .. import models, schemas

@@ -1,9 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  Search, Plus, Wifi, WifiOff, Edit, Trash2,
-  DollarSign, ChevronLeft, ChevronRight, Filter,
-} from 'lucide-react'
+import { Search, Plus, Wifi, WifiOff, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 

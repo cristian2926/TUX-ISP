@@ -3,11 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, Legend,
 } from 'recharts'
-import {
-  Users, TrendingUp, TrendingDown, Globe,
-  AlertCircle, CheckCircle, Clock, Zap, Wifi, WifiOff,
-  Shield, Terminal, RefreshCw,
-} from 'lucide-react'
+import { Users, TrendingUp, TrendingDown, AlertCircle, RefreshCw } from 'lucide-react'
 import api from '../api/client'
 
 function StatCard({ icon: Icon, label, value, sub, color = '#FFD700' }) {
@@ -117,7 +113,7 @@ export default function Dashboard() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <div className="lg:col-span-2 bg-[#1F2937] rounded-xl p-5 border border-[#374151]">
-          <h2 className="text-sm font-semibold text-white mb-4">Ingresos vs Gastos 2025</h2>
+          <h2 className="text-sm font-semibold text-white mb-4">Ingresos vs Gastos {new Date().getFullYear()}</h2>
           <ResponsiveContainer width="100%" height={220}>
             <AreaChart data={grafica} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
               <defs>

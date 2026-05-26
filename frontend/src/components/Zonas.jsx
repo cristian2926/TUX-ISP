@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import {
   Globe, Wifi, WifiOff, Radio, Plus, Edit, Trash2, X, Save,
-  Router, Shield, Copy, Check, AlertTriangle, Activity, Terminal,
+  Router, Shield, Copy, Check, Activity, Terminal,
 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
@@ -332,7 +332,8 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
     }
   }
 
-  const VPS_PUBKEY = 'z5ErxfupttwgB5L0AA2C+AzRAFwy4N1ZCVvKGRyV5TI='
+  const VPS_PUBKEY = status?.vps_pubkey || zona.wg_public_key || ''
+  const VPS_ENDPOINT = status?.vps_endpoint || '161.132.48.127:51820'
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -383,7 +384,7 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
               </button>
             </div>
             <p className="text-xs text-[#4B5563] mt-1">
-              Endpoint VPS: <code className="text-[#9CA3AF]">161.132.48.127:51820</code> — IP asignada al peer: <code className="text-[#9CA3AF]">{zona.ip_wireguard}</code>
+              Endpoint VPS: <code className="text-[#9CA3AF]">{VPS_ENDPOINT}</code> — IP asignada al peer: <code className="text-[#9CA3AF]">{zona.ip_wireguard}</code>
             </p>
           </div>
 
@@ -440,8 +441,8 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
 /interface wireguard peers add \\
   interface=wg-tuxtell \\
   public-key="${VPS_PUBKEY}" \\
-  endpoint-address=161.132.48.127 \\
-  endpoint-port=51820 \\
+  endpoint-address=${VPS_ENDPOINT.split(':')[0]} \\
+  endpoint-port=${VPS_ENDPOINT.split(':')[1] || '51820'} \\
   allowed-address=10.10.0.0/24 \\
   persistent-keepalive=25s
 /ip address add address=${zona.ip_wireguard}/24 interface=wg-tuxtell`
@@ -847,7 +848,7 @@ export default function Zonas() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-white">Zonas</h1>
-          <p className="text-[#9CA3AF] text-sm">{zonas.length} zonas — VPS: 161.132.48.127</p>
+          <p className="text-[#9CA3AF] text-sm">{zonas.length} zonas registradas</p>
         </div>
         <button
           onClick={() => setModalNueva(true)}
