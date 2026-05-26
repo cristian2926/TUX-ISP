@@ -190,12 +190,19 @@ def update_cliente(
 
     update_data = data.model_dump(exclude_unset=True)
 
-    # Si cambia la contraseña PPPoE, actualizar en MikroTik
+    cmds = []
+    wg_ip = _get_wg_ip(db, cliente.zona_id)
+
     if "password_pppoe" in update_data:
-        wg_ip = _get_wg_ip(db, cliente.zona_id)
-        if wg_ip:
-            cmd = f'/ppp secret set [find name="{cliente.usuario_pppoe}"] password="{update_data["password_pppoe"]}"'
-            _mikrotik_exec(wg_ip, [cmd])
+        cmds.append(f'/ppp secret set [find name="{cliente.usuario_pppoe}"] password="{update_data["password_pppoe"]}"')
+
+    if "plan_id" in update_data:
+        plan = db.query(models.Plan).filter(models.Plan.id == update_data["plan_id"]).first()
+        if plan:
+            cmds.append(f'/ppp secret set [find name="{cliente.usuario_pppoe}"] profile="{plan.codigo}"')
+
+    if cmds and wg_ip:
+        _mikrotik_exec(wg_ip, cmds)
 
     for key, value in update_data.items():
         setattr(cliente, key, value)
