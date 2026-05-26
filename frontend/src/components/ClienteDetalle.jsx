@@ -33,15 +33,22 @@ function CalendarioPagos({ clienteId, planPrecio }) {
   }
   useEffect(() => { fetch() }, [clienteId, anio])
 
-  const pagados  = calendario.filter(m => m.estado === 'pagado').length
-  const vencidos = calendario.filter(m => m.estado === 'vencido').length
-  const pendientes = calendario.filter(m => m.estado === 'pendiente').length
+  const pagados        = calendario.filter(m => m.estado === 'pagado').length
+  const vencidos       = calendario.filter(m => m.estado === 'vencido').length
+  const cortes_temp    = calendario.filter(m => m.estado === 'corte_temporal').length
 
   const COLOR = {
-    pagado:   'bg-green-500/25 border-green-500 text-green-300 hover:bg-green-500/40',
-    pendiente:'bg-yellow-500/15 border-yellow-500/70 text-yellow-300 hover:bg-yellow-500/25 cursor-pointer',
-    vencido:  'bg-red-500/20 border-red-500 text-red-300 hover:bg-red-500/30 cursor-pointer',
-    futuro:   'bg-[#374151]/50 border-[#374151] text-[#4B5563]',
+    pagado:         'bg-green-500/25 border-green-500 text-green-300 hover:bg-green-500/40',
+    pendiente:      'bg-orange-500/15 border-orange-500/70 text-orange-300 hover:bg-orange-500/25 cursor-pointer',
+    vencido:        'bg-red-500/20 border-red-500 text-red-300 hover:bg-red-500/30 cursor-pointer',
+    corte_temporal: 'bg-yellow-500/20 border-yellow-400 text-yellow-300',
+    futuro:         'bg-[#374151]/50 border-[#374151] text-[#4B5563]',
+    no_aplica:      'bg-[#1F2937] border-[#1F2937] text-[#374151]',
+  }
+
+  const LABEL = {
+    pagado: 'Pagado', pendiente: 'Pendiente', vencido: 'Vencido',
+    corte_temporal: 'Corte temporal', futuro: 'Futuro', no_aplica: '—',
   }
 
   async function registrarPago() {
@@ -56,7 +63,29 @@ function CalendarioPagos({ clienteId, planPrecio }) {
         metodo_pago: metodo,
         estado: 'pagado',
       })
-      toast.success(`Pago ${modalMes} registrado`)
+      toast.success(`Pago registrado`)
+      setModalMes(null)
+      fetch()
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Error al registrar')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function registrarCorte() {
+    setSaving(true)
+    try {
+      await api.post('/pagos', {
+        cliente_id: clienteId,
+        monto: 0,
+        mes_pagado: modalMes,
+        fecha_pago: new Date().toISOString().split('T')[0],
+        metodo_pago: 'efectivo',
+        estado: 'corte_temporal',
+        notas: 'Corte temporal solicitado por el cliente',
+      })
+      toast.success(`Mes marcado como corte temporal`)
       setModalMes(null)
       fetch()
     } catch (err) {
@@ -79,14 +108,14 @@ function CalendarioPagos({ clienteId, planPrecio }) {
           <p className="text-xs text-[#9CA3AF] mt-0.5">Vencidos</p>
         </div>
         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 text-center">
-          <p className="text-xl font-bold text-yellow-400">{pendientes}</p>
-          <p className="text-xs text-[#9CA3AF] mt-0.5">Pendientes</p>
+          <p className="text-xl font-bold text-yellow-400">{cortes_temp}</p>
+          <p className="text-xs text-[#9CA3AF] mt-0.5">C. Temporal</p>
         </div>
       </div>
 
       {/* Cabecera año */}
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs text-[#9CA3AF]">Toca un mes para registrar pago</p>
+        <p className="text-xs text-[#9CA3AF]">Toca un mes para registrar</p>
         <div className="flex items-center gap-2">
           <button onClick={() => setAnio(a => a-1)} className="w-6 h-6 flex items-center justify-center rounded bg-[#374151] text-[#9CA3AF] hover:text-white text-xs">◀</button>
           <span className="text-sm font-bold text-white w-10 text-center">{anio}</span>
@@ -103,7 +132,7 @@ function CalendarioPagos({ clienteId, planPrecio }) {
               key={item.mes}
               onClick={() => clickable && setModalMes(item.mes)}
               disabled={!clickable}
-              title={`${MESES_LARGO[i]} — ${item.estado}`}
+              title={`${MESES_LARGO[i]} — ${LABEL[item.estado] || item.estado}`}
               className={`border rounded-lg py-2 text-center transition-all text-xs font-semibold ${COLOR[item.estado] || COLOR.futuro}`}
             >
               {MESES_CORTO[i]}
@@ -113,10 +142,11 @@ function CalendarioPagos({ clienteId, planPrecio }) {
       </div>
 
       {/* Leyenda */}
-      <div className="flex gap-4 mt-3 text-xs text-[#9CA3AF]">
+      <div className="flex flex-wrap gap-3 mt-3 text-xs text-[#9CA3AF]">
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500"/>Pagado</span>
-        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-500"/>Pendiente</span>
         <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-red-500"/>Vencido</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-yellow-400"/>Corte temporal</span>
+        <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-orange-500"/>Pendiente</span>
       </div>
 
       {/* Modal pago rápido */}
@@ -124,7 +154,7 @@ function CalendarioPagos({ clienteId, planPrecio }) {
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-[#1F2937] rounded-xl border border-[#374151] w-full max-w-xs p-5 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-white">Pago — {MESES_LARGO[parseInt(modalMes.split('-')[1])-1]} {modalMes.split('-')[0]}</h3>
+              <h3 className="font-bold text-white">{MESES_LARGO[parseInt(modalMes.split('-')[1])-1]} {modalMes.split('-')[0]}</h3>
               <button onClick={() => setModalMes(null)} className="text-[#9CA3AF] hover:text-white"><X size={15}/></button>
             </div>
             <div>
@@ -146,7 +176,14 @@ function CalendarioPagos({ clienteId, planPrecio }) {
               <button onClick={() => setModalMes(null)} className="flex-1 py-2 text-sm border border-[#374151] rounded-lg text-[#9CA3AF] hover:text-white">Cancelar</button>
               <button onClick={registrarPago} disabled={saving}
                 className="flex-1 py-2 text-sm bg-[#FFD700] text-[#111827] font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50">
-                {saving ? 'Guardando...' : 'Registrar'}
+                {saving ? 'Guardando...' : 'Registrar Pago'}
+              </button>
+            </div>
+            <div className="border-t border-[#374151] pt-3">
+              <p className="text-xs text-[#9CA3AF] mb-2">¿El cliente pidió corte temporal este mes?</p>
+              <button onClick={registrarCorte} disabled={saving}
+                className="w-full py-2 text-sm border border-yellow-600/50 text-yellow-400 rounded-lg hover:bg-yellow-900/20 disabled:opacity-50">
+                Marcar como Corte Temporal
               </button>
             </div>
           </div>

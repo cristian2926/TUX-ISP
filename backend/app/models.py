@@ -18,6 +18,7 @@ class EstadoPago(str, enum.Enum):
     pagado = "pagado"
     pendiente = "pendiente"
     vencido = "vencido"
+    corte_temporal = "corte_temporal"
 
 
 class TipoHistorial(str, enum.Enum):

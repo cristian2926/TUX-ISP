@@ -418,15 +418,18 @@ def get_calendario_pagos(
 
     pagos_dict = {p.mes_pagado: p.estado for p in pagos}
     calendario = []
+    instalacion = cliente.fecha_instalacion.replace(day=1) if cliente.fecha_instalacion else None
 
     for mes in range(1, 13):
         mes_str = f"{anio}-{mes:02d}"
         mes_date = date(anio, mes, 1)
 
-        if mes_date > hoy.replace(day=1):
+        if instalacion and mes_date < instalacion:
+            estado = "no_aplica"
+        elif mes_date > hoy.replace(day=1):
             estado = "futuro"
         elif mes_str in pagos_dict:
-            estado = pagos_dict[mes_str]
+            estado = str(pagos_dict[mes_str])
         else:
             estado = "vencido" if mes_date < hoy.replace(day=1) else "pendiente"
 
