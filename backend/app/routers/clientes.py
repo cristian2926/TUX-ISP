@@ -126,7 +126,11 @@ def create_cliente(
     if db.query(models.Cliente).filter(models.Cliente.usuario_pppoe == data.usuario_pppoe).first():
         raise HTTPException(status_code=400, detail="Usuario PPPoE ya existe")
 
-    cliente = models.Cliente(**data.model_dump())
+    from datetime import timedelta
+    dump = data.model_dump()
+    if not dump.get("fecha_vencimiento"):
+        dump["fecha_vencimiento"] = dump["fecha_instalacion"] + timedelta(days=30)
+    cliente = models.Cliente(**dump)
     db.add(cliente)
     db.commit()
     db.refresh(cliente)
@@ -332,11 +336,14 @@ def reactivar_servicio(
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
+    from datetime import timedelta
+    hoy = date.today()
     cliente.estado = models.EstadoCliente.activo
+    cliente.fecha_vencimiento = hoy + timedelta(days=30)
     historial = models.Historial(
         cliente_id=cliente.id,
         tipo=models.TipoHistorial.activacion,
-        descripcion="Servicio reactivado por administrador",
+        descripcion=f"Servicio reactivado — nueva fecha de vencimiento: {cliente.fecha_vencimiento.strftime('%d/%m/%Y')}",
         usuario_id=current_user.id,
     )
     db.add(historial)
