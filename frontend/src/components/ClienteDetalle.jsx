@@ -4,7 +4,7 @@ import {
   ArrowLeft, Save, Edit, X, Wifi, WifiOff,
   MessageCircle, DollarSign, Phone, MapPin,
   User, Shield, Calendar, TrendingUp, AlertCircle,
-  Package, Clock,
+  Package, Clock, RefreshCw,
 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
@@ -205,15 +205,25 @@ export default function ClienteDetalle() {
   const [fechaProroga, setFechaProroga] = useState('')
   const [savingProroga, setSavingProroga] = useState(false)
   const [planes, setPlanes] = useState([])
+  const [pppoeStatus, setPppoeStatus] = useState(null)
+  const [loadingPppoe, setLoadingPppoe] = useState(false)
 
   function fetchCliente() {
     api.get(`/clientes/${id}`).then(r => { setCliente(r.data); setForm(r.data) })
     api.get(`/clientes/${id}/historial`).then(r => setHistorial(r.data))
   }
 
+  function fetchPppoeStatus() {
+    setLoadingPppoe(true)
+    api.get(`/clientes/${id}/pppoe-status`)
+      .then(r => setPppoeStatus(r.data))
+      .catch(() => setPppoeStatus({ conectado: false, error: 'Error al consultar' }))
+      .finally(() => setLoadingPppoe(false))
+  }
+
   useEffect(() => { api.get('/planes').then(r => setPlanes(r.data)).catch(() => {}) }, [])
 
-  useEffect(() => { fetchCliente() }, [id])
+  useEffect(() => { fetchCliente(); fetchPppoeStatus() }, [id])
 
   async function guardar() {
     setSaving(true)
@@ -386,6 +396,42 @@ export default function ClienteDetalle() {
               <span className="text-xs font-semibold text-[#FFD700] uppercase tracking-wide">Conexión</span>
             </div>
             <div className="p-4 space-y-3">
+
+              {/* Estado PPPoE en tiempo real */}
+              <div className="bg-[#111827] rounded-lg px-3 py-2.5 border border-[#374151] flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  {loadingPppoe ? (
+                    <div className="w-2 h-2 rounded-full bg-[#4B5563] animate-pulse"/>
+                  ) : pppoeStatus?.conectado ? (
+                    <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_6px_rgba(74,222,128,0.8)]"/>
+                  ) : (
+                    <div className="w-2 h-2 rounded-full bg-red-500"/>
+                  )}
+                  <div>
+                    <p className="text-xs font-semibold text-white">
+                      {loadingPppoe ? 'Consultando...' : pppoeStatus?.conectado ? 'Sesión activa' : 'Sin sesión PPPoE'}
+                    </p>
+                    {pppoeStatus?.conectado && (
+                      <p className="text-xs text-[#9CA3AF] leading-tight">
+                        {pppoeStatus.ip_remota && <span className="font-mono">{pppoeStatus.ip_remota}</span>}
+                        {pppoeStatus.uptime && <span> · {pppoeStatus.uptime}</span>}
+                      </p>
+                    )}
+                    {!pppoeStatus?.conectado && pppoeStatus?.error && (
+                      <p className="text-xs text-[#4B5563]">{pppoeStatus.error}</p>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={fetchPppoeStatus}
+                  disabled={loadingPppoe}
+                  className="p-1.5 rounded-lg text-[#4B5563] hover:text-[#9CA3AF] hover:bg-[#374151] transition-colors disabled:opacity-40"
+                  title="Actualizar estado"
+                >
+                  <RefreshCw size={12} className={loadingPppoe ? 'animate-spin' : ''}/>
+                </button>
+              </div>
+
               <div>
                 <p className="text-xs text-[#9CA3AF] mb-1">Usuario PPPoE</p>
                 <p className="text-sm text-white font-mono bg-[#111827] px-2 py-1 rounded">{cliente.usuario_pppoe}</p>

@@ -4,6 +4,7 @@ from sqlalchemy import or_
 from typing import Optional, List
 from datetime import date
 import logging
+import re
 
 import paramiko
 import httpx
@@ -436,3 +437,44 @@ def get_calendario_pagos(
         calendario.append({"mes": mes_str, "estado": estado})
 
     return calendario
+
+
+# ── Estado PPPoE en tiempo real ───────────────────────────────────────────────
+
+@router.get("/{cliente_id}/pppoe-status")
+def get_pppoe_status(
+    cliente_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    cliente = db.query(models.Cliente).options(
+        joinedload(models.Cliente.zona)
+    ).filter(models.Cliente.id == cliente_id).first()
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    zona = cliente.zona
+    if not zona or not zona.ip_wireguard:
+        return {"conectado": False, "uptime": None, "ip_remota": None, "error": "Zona sin WireGuard"}
+
+    result = _mikrotik_exec(zona.ip_wireguard, [
+        f'/ppp active print detail where name="{cliente.usuario_pppoe}"'
+    ])
+
+    if not result["ok"]:
+        return {"conectado": False, "uptime": None, "ip_remota": None, "error": "Sin conexión al MikroTik"}
+
+    output = result["results"][0]["out"] if result["results"] else ""
+    conectado = bool(output.strip())
+
+    uptime = None
+    ip_remota = None
+    if conectado:
+        m = re.search(r'uptime=(\S+)', output)
+        if m:
+            uptime = m.group(1)
+        m = re.search(r'\baddress=(\S+)', output)
+        if m:
+            ip_remota = m.group(1)
+
+    return {"conectado": conectado, "uptime": uptime, "ip_remota": ip_remota, "error": None}
