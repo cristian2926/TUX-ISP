@@ -12,10 +12,10 @@ router = APIRouter()
 
 class ConfiguracionUpdate(BaseModel):
     automation_activa: bool = False
-    dia_recordatorio_1: Optional[int] = None
-    dia_recordatorio_2: Optional[int] = None
-    dia_recordatorio_3: Optional[int] = None
-    dia_corte_automatico: Optional[int] = None
+    dias_aviso_1: Optional[int] = None
+    dias_aviso_2: Optional[int] = None
+    dias_aviso_3: Optional[int] = None
+    dias_gracia: Optional[int] = 3
 
 
 def _get_or_create(db: Session) -> models.ConfiguracionSistema:
@@ -38,10 +38,10 @@ def get_configuracion(
     config = _get_or_create(db)
     return {
         "automation_activa": config.automation_activa,
-        "dia_recordatorio_1": config.dia_recordatorio_1,
-        "dia_recordatorio_2": config.dia_recordatorio_2,
-        "dia_recordatorio_3": config.dia_recordatorio_3,
-        "dia_corte_automatico": config.dia_corte_automatico,
+        "dias_aviso_1": config.dias_aviso_1,
+        "dias_aviso_2": config.dias_aviso_2,
+        "dias_aviso_3": config.dias_aviso_3,
+        "dias_gracia": config.dias_gracia,
     }
 
 
@@ -53,9 +53,9 @@ def update_configuracion(
 ):
     config = _get_or_create(db)
     config.automation_activa = data.automation_activa
-    config.dia_recordatorio_1 = data.dia_recordatorio_1
-    config.dia_recordatorio_2 = data.dia_recordatorio_2
-    config.dia_recordatorio_3 = data.dia_recordatorio_3
-    config.dia_corte_automatico = data.dia_corte_automatico
+    config.dias_aviso_1 = data.dias_aviso_1
+    config.dias_aviso_2 = data.dias_aviso_2
+    config.dias_aviso_3 = data.dias_aviso_3
+    config.dias_gracia = data.dias_gracia
     db.commit()
     return {"ok": True}

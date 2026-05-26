@@ -101,9 +101,19 @@ function PlanModal({ plan, onClose, onSaved }) {
   )
 }
 
-const DIA_OPTIONS = [
+const DIAS_ANTES_OPTIONS = [
   { value: '', label: 'Desactivado' },
-  ...Array.from({ length: 28 }, (_, i) => ({ value: String(i + 1), label: `Día ${i + 1}` })),
+  { value: '0', label: 'El día que vence' },
+  ...Array.from({ length: 14 }, (_, i) => ({ value: String(i + 1), label: `${i + 1} día${i > 0 ? 's' : ''} antes` })),
+]
+
+const DIAS_GRACIA_OPTIONS = [
+  { value: '1', label: '1 día' },
+  { value: '2', label: '2 días' },
+  { value: '3', label: '3 días' },
+  { value: '5', label: '5 días' },
+  { value: '7', label: '7 días' },
+  { value: '10', label: '10 días' },
 ]
 
 export default function Configuracion() {
@@ -113,10 +123,10 @@ export default function Configuracion() {
   const [savingPwd, setSavingPwd] = useState(false)
   const [auto, setAuto] = useState({
     automation_activa: false,
-    dia_recordatorio_1: '',
-    dia_recordatorio_2: '',
-    dia_recordatorio_3: '',
-    dia_corte_automatico: '',
+    dias_aviso_1: '4',
+    dias_aviso_2: '2',
+    dias_aviso_3: '0',
+    dias_gracia: '3',
   })
   const [savingAuto, setSavingAuto] = useState(false)
 
@@ -129,10 +139,10 @@ export default function Configuracion() {
       const d = r.data
       setAuto({
         automation_activa: d.automation_activa || false,
-        dia_recordatorio_1: d.dia_recordatorio_1 != null ? String(d.dia_recordatorio_1) : '',
-        dia_recordatorio_2: d.dia_recordatorio_2 != null ? String(d.dia_recordatorio_2) : '',
-        dia_recordatorio_3: d.dia_recordatorio_3 != null ? String(d.dia_recordatorio_3) : '',
-        dia_corte_automatico: d.dia_corte_automatico != null ? String(d.dia_corte_automatico) : '',
+        dias_aviso_1: d.dias_aviso_1 != null ? String(d.dias_aviso_1) : '',
+        dias_aviso_2: d.dias_aviso_2 != null ? String(d.dias_aviso_2) : '',
+        dias_aviso_3: d.dias_aviso_3 != null ? String(d.dias_aviso_3) : '',
+        dias_gracia: d.dias_gracia != null ? String(d.dias_gracia) : '3',
       })
     }).catch(() => {})
   }
@@ -145,10 +155,10 @@ export default function Configuracion() {
     try {
       await api.put('/configuracion', {
         automation_activa: auto.automation_activa,
-        dia_recordatorio_1: auto.dia_recordatorio_1 ? parseInt(auto.dia_recordatorio_1) : null,
-        dia_recordatorio_2: auto.dia_recordatorio_2 ? parseInt(auto.dia_recordatorio_2) : null,
-        dia_recordatorio_3: auto.dia_recordatorio_3 ? parseInt(auto.dia_recordatorio_3) : null,
-        dia_corte_automatico: auto.dia_corte_automatico ? parseInt(auto.dia_corte_automatico) : null,
+        dias_aviso_1: auto.dias_aviso_1 !== '' ? parseInt(auto.dias_aviso_1) : null,
+        dias_aviso_2: auto.dias_aviso_2 !== '' ? parseInt(auto.dias_aviso_2) : null,
+        dias_aviso_3: auto.dias_aviso_3 !== '' ? parseInt(auto.dias_aviso_3) : null,
+        dias_gracia: auto.dias_gracia !== '' ? parseInt(auto.dias_gracia) : 3,
       })
       toast.success('Automatización guardada')
     } catch {
@@ -254,12 +264,13 @@ export default function Configuracion() {
 
         <form onSubmit={guardarAutomatizacion} className="space-y-4">
           <div>
-            <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Recordatorios WhatsApp</p>
+            <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Avisos de vencimiento (WhatsApp)</p>
+            <p className="text-xs text-[#4B5563] mb-2">Se envían automáticamente a cada cliente según su propia fecha de vencimiento.</p>
             <div className="grid grid-cols-3 gap-3">
               {[
-                ['dia_recordatorio_1', '1er aviso'],
-                ['dia_recordatorio_2', '2do aviso'],
-                ['dia_recordatorio_3', '3er aviso'],
+                ['dias_aviso_1', '1er aviso'],
+                ['dias_aviso_2', '2do aviso'],
+                ['dias_aviso_3', '3er aviso'],
               ].map(([key, label]) => (
                 <div key={key}>
                   <label className="text-xs text-[#9CA3AF] mb-1 block">{label}</label>
@@ -268,7 +279,7 @@ export default function Configuracion() {
                     value={auto[key]}
                     onChange={e => setAuto(a => ({ ...a, [key]: e.target.value }))}
                   >
-                    {DIA_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                    {DIAS_ANTES_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                   </select>
                 </div>
               ))}
@@ -276,29 +287,29 @@ export default function Configuracion() {
           </div>
 
           <div>
-            <p className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">Corte Automático</p>
+            <p className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">Días de gracia antes del corte</p>
             <div className="grid grid-cols-2 gap-3 items-end">
               <div>
-                <label className="text-xs text-[#9CA3AF] mb-1 block">Día de corte</label>
+                <label className="text-xs text-[#9CA3AF] mb-1 block">Días después del vencimiento</label>
                 <select
                   className={inp}
-                  value={auto.dia_corte_automatico}
-                  onChange={e => setAuto(a => ({ ...a, dia_corte_automatico: e.target.value }))}
+                  value={auto.dias_gracia}
+                  onChange={e => setAuto(a => ({ ...a, dias_gracia: e.target.value }))}
                 >
-                  {DIA_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  {DIAS_GRACIA_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
-              <p className="text-xs text-[#4B5563] pb-2">Solo corta a clientes sin pago cuya fecha de vencimiento ya pasó o no tiene prórroga.</p>
+              <p className="text-xs text-[#4B5563] pb-2">Si vence el día 30 y hay 3 días de gracia, se corta el día 33 a medianoche.</p>
             </div>
           </div>
 
-          {auto.automation_activa && (auto.dia_recordatorio_1 || auto.dia_recordatorio_2 || auto.dia_recordatorio_3 || auto.dia_corte_automatico) && (
+          {auto.automation_activa && (
             <div className="bg-[#111827] rounded-lg px-4 py-3 text-xs text-[#9CA3AF] space-y-1">
-              <p className="font-semibold text-white mb-1">Resumen del mes:</p>
-              {auto.dia_recordatorio_1 && <p>📱 Día {auto.dia_recordatorio_1} — 1er recordatorio WhatsApp</p>}
-              {auto.dia_recordatorio_2 && <p>📱 Día {auto.dia_recordatorio_2} — 2do recordatorio WhatsApp</p>}
-              {auto.dia_recordatorio_3 && <p>📱 Día {auto.dia_recordatorio_3} — 3er recordatorio WhatsApp</p>}
-              {auto.dia_corte_automatico && <p>🔴 Día {auto.dia_corte_automatico} — Corte automático de morosos</p>}
+              <p className="font-semibold text-white mb-1">Ejemplo para un cliente que vence el día 30:</p>
+              {auto.dias_aviso_1 !== '' && <p>⏰ Día {30 - parseInt(auto.dias_aviso_1 || 0)} — {parseInt(auto.dias_aviso_1) === 0 ? 'Aviso el día del vencimiento' : `1er aviso (${auto.dias_aviso_1} días antes)`}</p>}
+              {auto.dias_aviso_2 !== '' && <p>⏰ Día {30 - parseInt(auto.dias_aviso_2 || 0)} — {parseInt(auto.dias_aviso_2) === 0 ? 'Aviso el día del vencimiento' : `2do aviso (${auto.dias_aviso_2} días antes)`}</p>}
+              {auto.dias_aviso_3 !== '' && <p>⏰ Día {30 - parseInt(auto.dias_aviso_3 || 0)} — {parseInt(auto.dias_aviso_3) === 0 ? 'Aviso el día del vencimiento' : `3er aviso (${auto.dias_aviso_3} días antes)`}</p>}
+              {auto.dias_gracia && <p>🔴 Día {30 + parseInt(auto.dias_gracia)} — Corte automático ({auto.dias_gracia} días de gracia)</p>}
             </div>
           )}
 
