@@ -203,18 +203,6 @@ class AccessPoint(Base):
     zona = relationship("Zona", back_populates="access_points")
 
 
-class ConfiguracionSistema(Base):
-    __tablename__ = "configuracion_sistema"
-
-    id = Column(Integer, primary_key=True, default=1)
-    automation_activa = Column(Boolean, default=False)
-    # Días ANTES del vencimiento para enviar aviso (ej: 4 = 4 días antes)
-    dias_aviso_1 = Column(Integer, nullable=True, default=4)
-    dias_aviso_2 = Column(Integer, nullable=True, default=2)
-    dias_aviso_3 = Column(Integer, nullable=True, default=0)
-    # Días de gracia después del vencimiento antes de cortar (ej: 3)
-    dias_gracia = Column(Integer, nullable=True, default=3)
-
 
 class Historial(Base):
     __tablename__ = "historial"

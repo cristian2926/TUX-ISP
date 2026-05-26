@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Settings, Server, Shield, Database, Plus, Edit, Trash2, X, Save, Bell, Zap } from 'lucide-react'
+import { Server, Shield, Database, Plus, Edit, Trash2, X, Save } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -101,72 +101,17 @@ function PlanModal({ plan, onClose, onSaved }) {
   )
 }
 
-const DIAS_ANTES_OPTIONS = [
-  { value: '', label: 'Desactivado' },
-  { value: '0', label: 'El día que vence' },
-  ...Array.from({ length: 14 }, (_, i) => ({ value: String(i + 1), label: `${i + 1} día${i > 0 ? 's' : ''} antes` })),
-]
-
-const DIAS_GRACIA_OPTIONS = [
-  { value: '1', label: '1 día' },
-  { value: '2', label: '2 días' },
-  { value: '3', label: '3 días' },
-  { value: '5', label: '5 días' },
-  { value: '7', label: '7 días' },
-  { value: '10', label: '10 días' },
-]
-
 export default function Configuracion() {
   const [planes, setPlanes] = useState([])
   const [modal, setModal] = useState(null)
   const [pwd, setPwd] = useState({ actual: '', nueva: '', confirmar: '' })
   const [savingPwd, setSavingPwd] = useState(false)
-  const [auto, setAuto] = useState({
-    automation_activa: false,
-    dias_aviso_1: '4',
-    dias_aviso_2: '2',
-    dias_aviso_3: '0',
-    dias_gracia: '3',
-  })
-  const [savingAuto, setSavingAuto] = useState(false)
 
   function fetchPlanes() {
     api.get('/planes').then(r => setPlanes(r.data)).catch(() => {})
   }
 
-  function fetchConfig() {
-    api.get('/configuracion').then(r => {
-      const d = r.data
-      setAuto({
-        automation_activa: d.automation_activa || false,
-        dias_aviso_1: d.dias_aviso_1 != null ? String(d.dias_aviso_1) : '',
-        dias_aviso_2: d.dias_aviso_2 != null ? String(d.dias_aviso_2) : '',
-        dias_aviso_3: d.dias_aviso_3 != null ? String(d.dias_aviso_3) : '',
-        dias_gracia: d.dias_gracia != null ? String(d.dias_gracia) : '3',
-      })
-    }).catch(() => {})
-  }
-
-  useEffect(() => { fetchPlanes(); fetchConfig() }, [])
-
-  async function guardarAutomatizacion(e) {
-    e.preventDefault()
-    setSavingAuto(true)
-    try {
-      await api.put('/configuracion', {
-        automation_activa: auto.automation_activa,
-        dias_aviso_1: auto.dias_aviso_1 !== '' ? parseInt(auto.dias_aviso_1) : null,
-        dias_aviso_2: auto.dias_aviso_2 !== '' ? parseInt(auto.dias_aviso_2) : null,
-        dias_aviso_3: auto.dias_aviso_3 !== '' ? parseInt(auto.dias_aviso_3) : null,
-        dias_gracia: auto.dias_gracia !== '' ? parseInt(auto.dias_gracia) : 3,
-      })
-      toast.success('Automatización guardada')
-    } catch {
-      toast.error('Error al guardar')
-    } finally {
-      setSavingAuto(false)
-    }
-  }
+  useEffect(() => { fetchPlanes() }, [])
 
   async function eliminarPlan(plan) {
     if (!confirm(`¿Eliminar ${plan.nombre}? Esto también lo eliminará de todos los MikroTiks.`)) return
@@ -239,85 +184,6 @@ export default function Configuracion() {
             <p className="text-[#4B5563] text-sm text-center py-4">Sin planes registrados</p>
           )}
         </div>
-      </div>
-
-      {/* Automatización */}
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Zap size={15}/> Automatización</h2>
-          <label className="flex items-center gap-2 cursor-pointer">
-            <span className="text-xs text-[#9CA3AF]">{auto.automation_activa ? 'Activa' : 'Inactiva'}</span>
-            <div
-              onClick={() => setAuto(a => ({ ...a, automation_activa: !a.automation_activa }))}
-              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${auto.automation_activa ? 'bg-[#FFD700]' : 'bg-[#374151]'}`}
-            >
-              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${auto.automation_activa ? 'left-5' : 'left-0.5'}`} />
-            </div>
-          </label>
-        </div>
-
-        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3 text-xs text-blue-300 leading-relaxed">
-          <Bell size={12} className="inline mr-1" />
-          Cada día a las <strong>8:00 AM</strong> el sistema revisa si hoy coincide con algún día configurado.
-          Si un cliente tiene <strong>fecha de vencimiento futura</strong>, el corte automático lo respeta.
-        </div>
-
-        <form onSubmit={guardarAutomatizacion} className="space-y-4">
-          <div>
-            <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Avisos de vencimiento (WhatsApp)</p>
-            <p className="text-xs text-[#4B5563] mb-2">Se envían automáticamente a cada cliente según su propia fecha de vencimiento.</p>
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                ['dias_aviso_1', '1er aviso'],
-                ['dias_aviso_2', '2do aviso'],
-                ['dias_aviso_3', '3er aviso'],
-              ].map(([key, label]) => (
-                <div key={key}>
-                  <label className="text-xs text-[#9CA3AF] mb-1 block">{label}</label>
-                  <select
-                    className={inp}
-                    value={auto[key]}
-                    onChange={e => setAuto(a => ({ ...a, [key]: e.target.value }))}
-                  >
-                    {DIAS_ANTES_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                  </select>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">Días de gracia antes del corte</p>
-            <div className="grid grid-cols-2 gap-3 items-end">
-              <div>
-                <label className="text-xs text-[#9CA3AF] mb-1 block">Días después del vencimiento</label>
-                <select
-                  className={inp}
-                  value={auto.dias_gracia}
-                  onChange={e => setAuto(a => ({ ...a, dias_gracia: e.target.value }))}
-                >
-                  {DIAS_GRACIA_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                </select>
-              </div>
-              <p className="text-xs text-[#4B5563] pb-2">Si vence el día 30 y hay 3 días de gracia, se corta el día 33 a medianoche.</p>
-            </div>
-          </div>
-
-          {auto.automation_activa && (
-            <div className="bg-[#111827] rounded-lg px-4 py-3 text-xs text-[#9CA3AF] space-y-1">
-              <p className="font-semibold text-white mb-1">Ejemplo para un cliente que vence el día 30:</p>
-              {auto.dias_aviso_1 !== '' && <p>⏰ Día {30 - parseInt(auto.dias_aviso_1 || 0)} — {parseInt(auto.dias_aviso_1) === 0 ? 'Aviso el día del vencimiento' : `1er aviso (${auto.dias_aviso_1} días antes)`}</p>}
-              {auto.dias_aviso_2 !== '' && <p>⏰ Día {30 - parseInt(auto.dias_aviso_2 || 0)} — {parseInt(auto.dias_aviso_2) === 0 ? 'Aviso el día del vencimiento' : `2do aviso (${auto.dias_aviso_2} días antes)`}</p>}
-              {auto.dias_aviso_3 !== '' && <p>⏰ Día {30 - parseInt(auto.dias_aviso_3 || 0)} — {parseInt(auto.dias_aviso_3) === 0 ? 'Aviso el día del vencimiento' : `3er aviso (${auto.dias_aviso_3} días antes)`}</p>}
-              {auto.dias_gracia && <p>🔴 Día {30 + parseInt(auto.dias_gracia)} — Corte automático ({auto.dias_gracia} días de gracia)</p>}
-            </div>
-          )}
-
-          <button type="submit" disabled={savingAuto}
-            className="bg-[#FFD700] text-[#111827] font-bold px-5 py-2 rounded-lg hover:bg-yellow-400 text-sm disabled:opacity-50 flex items-center gap-2">
-            <Save size={14}/>{savingAuto ? 'Guardando...' : 'Guardar Automatización'}
-          </button>
-        </form>
       </div>
 
       {/* Info del sistema */}
