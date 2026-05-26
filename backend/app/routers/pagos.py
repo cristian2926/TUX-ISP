@@ -36,13 +36,14 @@ def _enviar_confirmacion_pago(cliente: models.Cliente, pago: models.Pago, plan: 
     mes_label = f"{mes_nombres[mes]} {anio}"
 
     mensaje = (
-        f"✅ *TUXTELL* — Pago confirmado\n\n"
-        f"Hola {nombres}, tu pago ha sido registrado:\n\n"
-        f"📅 Mes: {mes_label}\n"
-        f"💰 Monto: S/ {monto}\n"
+        f"✅ *TUXTELL* — Pago Confirmado\n\n"
+        f"Hola *{nombres}* 🎉, tu pago fue registrado exitosamente:\n\n"
+        f"📅 Mes: *{mes_label}*\n"
+        f"💰 Monto: *S/ {monto}*\n"
         f"📶 Plan: {plan_nombre}\n"
-        f"✔️  Servicio activo hasta: {fecha_limite}\n\n"
-        f"Gracias por tu pago. — tuxtell.net"
+        f"📆 Activo hasta: *{fecha_limite}*\n\n"
+        f"¡Gracias por tu pago puntual! 🙏\n"
+        f"_Tuxtell — Conectando tu mundo_ 🌐"
     )
 
     try:

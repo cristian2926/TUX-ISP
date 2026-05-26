@@ -69,10 +69,15 @@ async def aviso_cobro(
         raise HTTPException(status_code=400, detail="Cliente sin número WhatsApp")
 
     plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
+    nombre = cliente.nombre.split()[0]
     mensaje = (
-        f"Hola {cliente.nombre}, le recordamos que su servicio de internet Tuxtell "
-        f"({plan.nombre if plan else 'Internet'}) tiene un costo mensual de S/{plan.precio if plan else '---'}. "
-        f"Para consultas o pagos comuníquese al 936511008 (Yape disponible). Gracias."
+        f"📶 *TUXTELL* — Aviso de Pago\n\n"
+        f"Hola *{nombre}* 👋, le recordamos que su pago mensual está pendiente:\n\n"
+        f"📦 Plan: {plan.nombre if plan else 'Internet'}\n"
+        f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
+        f"💳 Puede pagar por *Yape* al:\n"
+        f"📱 *936511008*\n\n"
+        f"Gracias por confiar en *Tuxtell* 🙏"
     )
 
     try:
@@ -96,10 +101,14 @@ async def aviso_corte(
     if not phone:
         raise HTTPException(status_code=400, detail="Cliente sin número WhatsApp")
 
+    nombre = cliente.nombre.split()[0]
     mensaje = (
-        f"Estimado {cliente.nombre}, le informamos que su servicio de internet Tuxtell "
-        f"será suspendido por falta de pago. Para evitar el corte comuníquese al 936511008. "
-        f"Aceptamos pago por Yape. Gracias."
+        f"⚠️ *TUXTELL* — Aviso de Corte\n\n"
+        f"Estimado *{nombre}*, le informamos que su servicio de internet será *suspendido* por falta de pago.\n\n"
+        f"Para evitar el corte, realice su pago a la brevedad:\n\n"
+        f"💳 *Yape:* 936511008\n"
+        f"📞 *Llamadas:* 936511008\n\n"
+        f"_Tuxtell — Conectando tu mundo_ 🌐"
     )
 
     try:
@@ -136,10 +145,14 @@ async def broadcast_cobros(
     for cliente in sin_pago:
         phone = cliente.telefono_whatsapp or cliente.telefono
         plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
+        nombre = cliente.nombre.split()[0]
         mensaje = (
-            f"Hola {cliente.nombre}, le recordamos que su servicio de internet Tuxtell tiene pendiente "
-            f"el pago del mes {mes} por S/{plan.precio if plan else '---'}. "
-            f"Comuníquese al 936511008 o pague por Yape. Gracias."
+            f"📶 *TUXTELL* — Recordatorio de Pago\n\n"
+            f"Hola *{nombre}* 👋, tiene pendiente el pago del mes *{mes}*:\n\n"
+            f"📦 Plan: {plan.nombre if plan else 'Internet'}\n"
+            f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
+            f"💳 Pague por *Yape* al *936511008*\n\n"
+            f"¡Gracias por su pago! 🙏 — *Tuxtell*"
         )
         try:
             await wa_request("POST", "/send", {"phone": phone, "message": mensaje})
