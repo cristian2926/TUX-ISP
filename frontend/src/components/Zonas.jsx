@@ -10,7 +10,7 @@ const inputCls = "w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py
 
 const ZONA_EMPTY = {
   nombre: '', ip_lan: '', usuario_mikrotik: '', password_mikrotik: '',
-  ip_wireguard: '', wg_public_key: '', router_mikrotik: '', ip_router: '', descripcion: '',
+  ip_wireguard: '', wg_public_key: '', router_mikrotik: '', ip_router: '', descripcion: '', tiendas_pago: '',
 }
 const AP_EMPTY = {
   nombre: '', marca: 'Ubiquiti', modelo: '', ssid: '', frecuencia: '5.8GHz',
@@ -108,6 +108,21 @@ function ZonaForm({ initial, onSave, onClose }) {
         <div className="mt-2">
           <label className="text-xs text-[#9CA3AF] mb-1 block">Clave pública WireGuard</label>
           <input className={inputCls + ' font-mono text-xs'} value={form.wg_public_key || ''} onChange={e => set('wg_public_key', e.target.value)} placeholder="AUtoKud++xog7Kp9a4xD/..." />
+        </div>
+      </div>
+
+      {/* Tiendas de pago */}
+      <div className="border-t border-[#374151] pt-3">
+        <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Pagos</p>
+        <div>
+          <label className="text-xs text-[#9CA3AF] mb-1 block">Tiendas autorizadas (aparece en mensajes WhatsApp)</label>
+          <textarea
+            className={inputCls + ' resize-none'}
+            rows={3}
+            value={form.tiendas_pago || ''}
+            onChange={e => set('tiendas_pago', e.target.value)}
+            placeholder={"Bodega El Chino — Jr. Lima 123\nFarmacia San Pedro — Av. Principal 456"}
+          />
         </div>
       </div>
 
@@ -627,6 +642,7 @@ function ZonaCard({ zona, onRefresh }) {
               router_mikrotik: zona.router_mikrotik || '',
               ip_router: zona.ip_router || '',
               descripcion: zona.descripcion || '',
+              tiendas_pago: zona.tiendas_pago || '',
             }}
             onSave={handleEdit}
             onClose={() => setModalEdit(false)}
