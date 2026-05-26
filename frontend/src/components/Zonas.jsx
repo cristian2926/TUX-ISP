@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Globe, Wifi, WifiOff, Radio, Plus, Edit, Trash2, X, Save,
-  Router, Shield, Copy, Check, AlertTriangle, Activity,
+  Router, Shield, Copy, Check, AlertTriangle, Activity, Terminal,
 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
@@ -453,12 +453,146 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
   )
 }
 
+/* ── Terminal MikroTik ───────────────────────────────────────────────── */
+const QUICK_CMDS = [
+  { label: 'Ping 8.8.8.8',      cmd: '/ping 8.8.8.8 count=4' },
+  { label: 'PPPoE activos',      cmd: '/ppp active print' },
+  { label: 'Interfaces',         cmd: '/interface print' },
+  { label: 'IP address',         cmd: '/ip address print' },
+  { label: 'Rutas',              cmd: '/ip route print' },
+  { label: 'Recursos sistema',   cmd: '/system resource print' },
+  { label: 'Logs recientes',     cmd: '/log print count=20' },
+]
+
+function TerminalModal({ zona, onClose }) {
+  const [lines, setLines]         = useState([])
+  const [input, setInput]         = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [cmdHist, setCmdHist]     = useState([])
+  const [histIdx, setHistIdx]     = useState(-1)
+  const outputRef                 = useRef(null)
+  const inputRef                  = useRef(null)
+
+  useEffect(() => {
+    if (outputRef.current)
+      outputRef.current.scrollTop = outputRef.current.scrollHeight
+  }, [lines])
+
+  async function run(cmd) {
+    const c = cmd.trim()
+    if (!c || loading) return
+    setLoading(true)
+    setCmdHist(h => [c, ...h.slice(0, 49)])
+    setHistIdx(-1)
+    setInput('')
+    const ts = new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    try {
+      const { data } = await api.post(`/zonas/${zona.id}/exec`, { cmd: c })
+      setLines(l => [...l, { cmd: c, output: data.output, ts, ok: data.ok }])
+    } catch (err) {
+      setLines(l => [...l, { cmd: c, output: err.response?.data?.detail || 'Error al ejecutar', ts, ok: false }])
+    } finally {
+      setLoading(false)
+      setTimeout(() => inputRef.current?.focus(), 50)
+    }
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter') { run(input); return }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      const next = Math.min(histIdx + 1, cmdHist.length - 1)
+      setHistIdx(next); setInput(cmdHist[next] || '')
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      const next = Math.max(histIdx - 1, -1)
+      setHistIdx(next); setInput(next === -1 ? '' : cmdHist[next])
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-3">
+      <div className="bg-[#0D1117] rounded-xl border border-[#374151] w-full max-w-2xl flex flex-col" style={{ maxHeight: '88vh' }}>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 py-3 border-b border-[#374151] shrink-0">
+          <div className="flex items-center gap-2">
+            <Terminal size={14} className="text-green-400"/>
+            <span className="font-bold text-white text-sm">Terminal MikroTik</span>
+            <span className="text-xs text-[#9CA3AF] font-mono bg-[#1F2937] px-2 py-0.5 rounded">{zona.nombre} · {zona.ip_wireguard}</span>
+          </div>
+          <button onClick={onClose} className="p-1 text-[#9CA3AF] hover:text-white"><X size={15}/></button>
+        </div>
+
+        {/* Comandos rápidos */}
+        <div className="px-4 py-2 border-b border-[#1F2937] flex gap-1.5 flex-wrap shrink-0">
+          {QUICK_CMDS.map(q => (
+            <button
+              key={q.label}
+              onClick={() => run(q.cmd)}
+              disabled={loading}
+              className="text-xs px-2.5 py-1 bg-[#1F2937] border border-[#374151] text-[#9CA3AF] hover:text-[#FFD700] hover:border-[#FFD700]/40 rounded transition-colors disabled:opacity-40"
+            >
+              {q.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Salida */}
+        <div ref={outputRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 font-mono text-xs">
+          {lines.length === 0 && (
+            <p className="text-[#374151]">Listo. Usa un botón rápido o escribe un comando RouterOS.</p>
+          )}
+          {lines.map((item, i) => (
+            <div key={i}>
+              <div className="flex items-baseline gap-2 mb-0.5">
+                <span className="text-[#FFD700] shrink-0">›</span>
+                <span className="text-white break-all">{item.cmd}</span>
+                <span className="text-[#374151] text-xs ml-auto shrink-0">{item.ts}</span>
+              </div>
+              <pre className={`whitespace-pre-wrap pl-4 leading-relaxed ${item.ok ? 'text-green-300' : 'text-red-400'}`}>
+                {item.output}
+              </pre>
+            </div>
+          ))}
+          {loading && (
+            <div className="flex items-center gap-2 text-[#9CA3AF]">
+              <div className="w-3 h-3 border border-[#9CA3AF] border-t-transparent rounded-full animate-spin"/>
+              <span>Ejecutando...</span>
+            </div>
+          )}
+        </div>
+
+        {/* Input */}
+        <div className="px-4 py-3 border-t border-[#1F2937] shrink-0">
+          <div className="flex items-center gap-2 bg-[#111827] rounded-lg px-3 py-2.5 border border-[#374151] focus-within:border-green-500/40 transition-colors">
+            <span className="text-green-400 font-mono text-sm shrink-0 select-none">$</span>
+            <input
+              ref={inputRef}
+              className="flex-1 bg-transparent text-white text-sm font-mono outline-none placeholder-[#374151]"
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={handleKey}
+              placeholder="/ping 10.0.0.1 count=4"
+              disabled={loading}
+              autoFocus
+            />
+          </div>
+          <p className="text-xs text-[#374151] mt-1.5">↑ ↓ historial · Enter ejecutar</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* ── Tarjeta de zona ─────────────────────────────────────────────────── */
 function ZonaCard({ zona, onRefresh }) {
   const [wgStatus, setWgStatus] = useState(null)
   const [modalAP, setModalAP] = useState(false)
   const [modalEdit, setModalEdit] = useState(false)
   const [modalWG, setModalWG] = useState(false)
+  const [modalTerminal, setModalTerminal] = useState(false)
 
   useEffect(() => {
     api.get(`/zonas/${zona.id}/wireguard-status`)
@@ -538,13 +672,22 @@ function ZonaCard({ zona, onRefresh }) {
                 <span className="text-xs text-blue-400 font-medium">· SSH ✓</span>
               )}
             </div>
-            <button
-              onClick={() => setModalWG(true)}
-              className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-[#FFD700] transition-colors"
-              title="Gestionar WireGuard"
-            >
-              <Shield size={12} /> WG
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setModalWG(true)}
+                className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-[#FFD700] transition-colors"
+                title="Gestionar WireGuard"
+              >
+                <Shield size={12} /> WG
+              </button>
+              <button
+                onClick={() => setModalTerminal(true)}
+                className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-green-400 transition-colors"
+                title="Terminal MikroTik"
+              >
+                <Terminal size={12} /> Terminal
+              </button>
+            </div>
           </div>
         </div>
 
@@ -662,6 +805,10 @@ function ZonaCard({ zona, onRefresh }) {
           onClose={() => setModalWG(false)}
           onRefresh={() => { onRefresh(); setModalWG(false) }}
         />
+      )}
+
+      {modalTerminal && (
+        <TerminalModal zona={zona} onClose={() => setModalTerminal(false)} />
       )}
     </>
   )

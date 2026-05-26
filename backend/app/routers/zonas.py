@@ -7,6 +7,9 @@ import socket
 import logging
 from datetime import datetime
 
+import paramiko
+from pydantic import BaseModel
+
 from ..database import get_db
 from .. import models, schemas
 from .auth import get_current_user
@@ -424,3 +427,50 @@ def delete_ap(
     db.delete(ap)
     db.commit()
     return {"ok": True}
+
+
+# ── Terminal SSH MikroTik ─────────────────────────────────────────────────────
+
+class TerminalCmd(BaseModel):
+    cmd: str
+
+
+def _ssh_exec(host: str, cmd: str, timeout: int = 30) -> dict:
+    try:
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(
+            hostname=host,
+            username=settings.SSH_USER,
+            key_filename=settings.SSH_KEY_PATH,
+            timeout=10,
+            look_for_keys=False,
+            allow_agent=False,
+        )
+        _, stdout, stderr = ssh.exec_command(cmd, timeout=timeout)
+        out = stdout.read().decode(errors="ignore").strip()
+        err = stderr.read().decode(errors="ignore").strip()
+        ssh.close()
+        output = out if out else (err if err else "(sin salida)")
+        return {"ok": True, "output": output}
+    except Exception as e:
+        logger.warning("SSH terminal %s falló: %s", host, e)
+        return {"ok": False, "output": f"Error de conexión: {e}"}
+
+
+@router.post("/{zona_id}/exec")
+def exec_terminal(
+    zona_id: int,
+    body: TerminalCmd,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    zona = db.query(models.Zona).filter(models.Zona.id == zona_id).first()
+    if not zona:
+        raise HTTPException(status_code=404, detail="Zona no encontrada")
+    if not zona.ip_wireguard:
+        raise HTTPException(status_code=400, detail="Zona sin WireGuard configurado")
+    cmd = body.cmd.strip()
+    if not cmd:
+        raise HTTPException(status_code=400, detail="Comando vacío")
+    return _ssh_exec(zona.ip_wireguard, cmd)
