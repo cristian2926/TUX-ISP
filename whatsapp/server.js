@@ -89,10 +89,16 @@ app.post('/send', async (req, res) => {
 
   try {
     const number = phone.replace(/[^0-9]/g, '')
-    // Si no empieza con código de país, agrega Perú (51)
-    const chatId = number.startsWith('51') ? `${number}@c.us` : `51${number}@c.us`
-    await client.sendMessage(chatId, message)
-    res.json({ ok: true, to: chatId })
+    const fullNumber = number.startsWith('51') ? number : `51${number}`
+
+    // Verificar que el número existe en WhatsApp y obtener el chatId real (maneja LIDs)
+    const numberId = await client.getNumberId(fullNumber)
+    if (!numberId) {
+      return res.status(404).json({ error: `El número ${fullNumber} no tiene WhatsApp` })
+    }
+
+    await client.sendMessage(numberId._serialized, message)
+    res.json({ ok: true, to: numberId._serialized })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
