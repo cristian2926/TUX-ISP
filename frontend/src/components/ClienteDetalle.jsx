@@ -4,7 +4,7 @@ import {
   ArrowLeft, Save, Edit, X, Wifi, WifiOff,
   MessageCircle, DollarSign, Phone, MapPin,
   User, Shield, Calendar, TrendingUp, AlertCircle,
-  Package,
+  Package, Clock,
 } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
@@ -164,6 +164,9 @@ export default function ClienteDetalle() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [modalProroga, setModalProroga] = useState(false)
+  const [fechaProroga, setFechaProroga] = useState('')
+  const [savingProroga, setSavingProroga] = useState(false)
   const [planes, setPlanes] = useState([])
 
   function fetchCliente() {
@@ -221,6 +224,18 @@ export default function ClienteDetalle() {
     } catch { toast.error('Error (¿WhatsApp conectado?)') }
   }
 
+  async function guardarProroga() {
+    if (!fechaProroga) return toast.error('Selecciona una fecha')
+    setSavingProroga(true)
+    try {
+      await api.put(`/clientes/${id}`, { fecha_vencimiento: fechaProroga })
+      toast.success(`Prórroga aplicada hasta ${fechaProroga}`)
+      setModalProroga(false)
+      fetchCliente()
+    } catch { toast.error('Error al guardar prórroga') }
+    finally { setSavingProroga(false) }
+  }
+
   if (!cliente) return (
     <div className="flex items-center justify-center h-full">
       <div className="w-8 h-8 border-2 border-[#FFD700] border-t-transparent rounded-full animate-spin"/>
@@ -235,6 +250,7 @@ export default function ClienteDetalle() {
   }
 
   return (
+    <>
     <div className="p-4 sm:p-6 space-y-5 w-full">
 
       {/* ── HEADER ─────────────────────────────────────────────────── */}
@@ -271,6 +287,12 @@ export default function ClienteDetalle() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-green-900/20 text-green-400 hover:bg-green-900/40 border border-green-800/30 transition-colors"
           >
             <MessageCircle size={15}/> WhatsApp
+          </button>
+          <button
+            onClick={() => { setFechaProroga(cliente.fecha_vencimiento || ''); setModalProroga(true) }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-blue-900/20 text-blue-400 hover:bg-blue-900/40 border border-blue-800/30 transition-colors"
+          >
+            <Clock size={15}/> Prórroga
           </button>
           {editing ? (
             <button onClick={guardar} disabled={saving}
@@ -585,5 +607,62 @@ export default function ClienteDetalle() {
         </div>
       </div>
     </div>
+
+    {/* Modal Prórroga */}
+    {modalProroga && (
+      <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+        <div className="bg-[#1F2937] rounded-xl border border-[#374151] w-full max-w-sm p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-white flex items-center gap-2"><Clock size={16} className="text-blue-400"/> Dar Prórroga</h3>
+            <button onClick={() => setModalProroga(false)} className="text-[#9CA3AF] hover:text-white"><X size={16}/></button>
+          </div>
+
+          {cliente.fecha_vencimiento && (
+            <div className="bg-[#111827] rounded-lg px-4 py-2 text-xs text-[#9CA3AF]">
+              Vencimiento actual: <span className="text-white font-medium">{cliente.fecha_vencimiento}</span>
+            </div>
+          )}
+
+          <div>
+            <label className="text-xs text-[#9CA3AF] mb-1 block">Nueva fecha de vencimiento</label>
+            <input
+              type="date"
+              className="w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFD700]"
+              value={fechaProroga}
+              onChange={e => setFechaProroga(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+
+          <div className="flex gap-2 flex-wrap">
+            {[7, 10, 15, 30].map(dias => (
+              <button
+                key={dias}
+                type="button"
+                onClick={() => {
+                  const d = new Date()
+                  d.setDate(d.getDate() + dias)
+                  setFechaProroga(d.toISOString().split('T')[0])
+                }}
+                className="px-3 py-1.5 text-xs rounded-lg bg-[#374151] text-[#9CA3AF] hover:text-white hover:bg-[#4B5563] transition-colors"
+              >
+                +{dias} días
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2">
+            <button onClick={() => setModalProroga(false)} className="flex-1 py-2 text-sm border border-[#374151] rounded-lg text-[#9CA3AF] hover:text-white">
+              Cancelar
+            </button>
+            <button onClick={guardarProroga} disabled={savingProroga}
+              className="flex-1 py-2 text-sm bg-[#FFD700] text-[#111827] font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-1">
+              <Save size={14}/> {savingProroga ? 'Guardando...' : 'Aplicar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   )
 }
