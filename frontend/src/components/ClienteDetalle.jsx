@@ -164,11 +164,14 @@ export default function ClienteDetalle() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [planes, setPlanes] = useState([])
 
   function fetchCliente() {
     api.get(`/clientes/${id}`).then(r => { setCliente(r.data); setForm(r.data) })
     api.get(`/clientes/${id}/historial`).then(r => setHistorial(r.data))
   }
+
+  useEffect(() => { api.get('/planes').then(r => setPlanes(r.data)).catch(() => {}) }, [])
 
   useEffect(() => { fetchCliente() }, [id])
 
@@ -179,6 +182,7 @@ export default function ClienteDetalle() {
         nombre: form.nombre, telefono: form.telefono,
         telefono_whatsapp: form.telefono_whatsapp, direccion: form.direccion,
         password_pppoe: form.password_pppoe, ip_estatica: form.ip_estatica,
+        plan_id: form.plan_id ?? form.plan?.id,
         estado: form.estado, notas: form.notas,
         tipo_conexion: form.tipo_conexion,
         tiene_tv: form.tiene_tv,
@@ -360,9 +364,23 @@ export default function ClienteDetalle() {
               {/* Plan */}
               <div className="bg-[#111827] rounded-lg p-3 border border-[#374151]">
                 <p className="text-xs text-[#9CA3AF] mb-1">Plan actual</p>
-                <p className="text-white font-semibold">{cliente.plan?.nombre}</p>
-                <p className="text-[#FFD700] font-bold text-lg mt-1">S/ {cliente.plan?.precio}<span className="text-xs text-[#9CA3AF] font-normal">/mes</span></p>
-                <p className="text-xs text-[#9CA3AF] mt-1">↓{cliente.plan?.bajada_mbps} Mbps / ↑{cliente.plan?.subida_mbps} Mbps</p>
+                {editing ? (
+                  <select
+                    className={inp}
+                    value={form.plan_id ?? form.plan?.id ?? ''}
+                    onChange={e => setForm(f => ({...f, plan_id: parseInt(e.target.value)}))}
+                  >
+                    {planes.map(p => (
+                      <option key={p.id} value={p.id}>{p.nombre} — S/ {p.precio}/mes</option>
+                    ))}
+                  </select>
+                ) : (
+                  <>
+                    <p className="text-white font-semibold">{cliente.plan?.nombre}</p>
+                    <p className="text-[#FFD700] font-bold text-lg mt-1">S/ {cliente.plan?.precio}<span className="text-xs text-[#9CA3AF] font-normal">/mes</span></p>
+                    <p className="text-xs text-[#9CA3AF] mt-1">↓{cliente.plan?.bajada_mbps} Mbps / ↑{cliente.plan?.subida_mbps} Mbps</p>
+                  </>
+                )}
               </div>
 
               {/* Tipo conexión + TV */}
