@@ -32,7 +32,7 @@ services:
       - NET_ADMIN               # necesario para wg set / wg show
     environment:
       DATABASE_URL: postgresql://tuxtell:Tuxtell2026#Secure@127.0.0.1:5432/tuxtell_isp
-      SECRET_KEY: tuxtell2026secretkey#ISP$secure
+      SECRET_KEY: "tuxtell2026secretkey#ISP$$secure"
       WHATSAPP_API_URL: http://127.0.0.1:3001
       SSH_KEY_PATH: /root/.ssh/tuxtell_key
       SSH_USER: tuxtell-api
