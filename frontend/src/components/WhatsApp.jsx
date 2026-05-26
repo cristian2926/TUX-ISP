@@ -173,35 +173,6 @@ export default function WhatsApp() {
         </div>
       </div>
 
-      {/* Plantillas de mensajes */}
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5">
-        <h2 className="text-sm font-semibold text-white mb-4">Plantillas de Mensajes</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {[
-            {
-              title: 'Aviso de Cobro',
-              preview: 'Hola [nombre], le recordamos que su servicio de internet Tuxtell tiene un costo mensual de S/[precio]. Para pagos comuníquese al 936511008 (Yape disponible).',
-            },
-            {
-              title: 'Aviso de Corte',
-              preview: 'Estimado [nombre], le informamos que su servicio de internet Tuxtell será suspendido por falta de pago. Para evitar el corte comuníquese al 936511008.',
-            },
-            {
-              title: 'Bienvenida',
-              preview: 'Bienvenido a Tuxtell, [nombre]. Su servicio de internet ha sido activado. Usuario: [pppoe]. Ante cualquier consulta llame al 936511008.',
-            },
-            {
-              title: 'Reactivación',
-              preview: 'Estimado [nombre], su servicio de internet Tuxtell ha sido reactivado. Gracias por su pago. Para consultas: 936511008.',
-            },
-          ].map(({ title, preview }) => (
-            <div key={title} className="bg-[#111827] rounded-lg p-4 border border-[#374151]">
-              <p className="text-xs font-semibold text-[#FFD700] mb-2">{title}</p>
-              <p className="text-xs text-[#9CA3AF] leading-relaxed">{preview}</p>
-            </div>
-          ))}
-        </div>
-      </div>
     </div>
   )
 }

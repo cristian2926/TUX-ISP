@@ -202,6 +202,17 @@ class AccessPoint(Base):
     zona = relationship("Zona", back_populates="access_points")
 
 
+class ConfiguracionSistema(Base):
+    __tablename__ = "configuracion_sistema"
+
+    id = Column(Integer, primary_key=True, default=1)
+    automation_activa = Column(Boolean, default=False)
+    dia_recordatorio_1 = Column(Integer, nullable=True)
+    dia_recordatorio_2 = Column(Integer, nullable=True)
+    dia_recordatorio_3 = Column(Integer, nullable=True)
+    dia_corte_automatico = Column(Integer, nullable=True)
+
+
 class Historial(Base):
     __tablename__ = "historial"
 

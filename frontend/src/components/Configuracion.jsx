@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Settings, Server, Shield, Database, Plus, Edit, Trash2, X, Save } from 'lucide-react'
+import { Settings, Server, Shield, Database, Plus, Edit, Trash2, X, Save, Bell, Zap } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -101,17 +101,62 @@ function PlanModal({ plan, onClose, onSaved }) {
   )
 }
 
+const DIA_OPTIONS = [
+  { value: '', label: 'Desactivado' },
+  ...Array.from({ length: 28 }, (_, i) => ({ value: String(i + 1), label: `Día ${i + 1}` })),
+]
+
 export default function Configuracion() {
   const [planes, setPlanes] = useState([])
-  const [modal, setModal] = useState(null) // null | 'nuevo' | plan objeto
+  const [modal, setModal] = useState(null)
   const [pwd, setPwd] = useState({ actual: '', nueva: '', confirmar: '' })
   const [savingPwd, setSavingPwd] = useState(false)
+  const [auto, setAuto] = useState({
+    automation_activa: false,
+    dia_recordatorio_1: '',
+    dia_recordatorio_2: '',
+    dia_recordatorio_3: '',
+    dia_corte_automatico: '',
+  })
+  const [savingAuto, setSavingAuto] = useState(false)
 
   function fetchPlanes() {
     api.get('/planes').then(r => setPlanes(r.data)).catch(() => {})
   }
 
-  useEffect(() => { fetchPlanes() }, [])
+  function fetchConfig() {
+    api.get('/configuracion').then(r => {
+      const d = r.data
+      setAuto({
+        automation_activa: d.automation_activa || false,
+        dia_recordatorio_1: d.dia_recordatorio_1 != null ? String(d.dia_recordatorio_1) : '',
+        dia_recordatorio_2: d.dia_recordatorio_2 != null ? String(d.dia_recordatorio_2) : '',
+        dia_recordatorio_3: d.dia_recordatorio_3 != null ? String(d.dia_recordatorio_3) : '',
+        dia_corte_automatico: d.dia_corte_automatico != null ? String(d.dia_corte_automatico) : '',
+      })
+    }).catch(() => {})
+  }
+
+  useEffect(() => { fetchPlanes(); fetchConfig() }, [])
+
+  async function guardarAutomatizacion(e) {
+    e.preventDefault()
+    setSavingAuto(true)
+    try {
+      await api.put('/configuracion', {
+        automation_activa: auto.automation_activa,
+        dia_recordatorio_1: auto.dia_recordatorio_1 ? parseInt(auto.dia_recordatorio_1) : null,
+        dia_recordatorio_2: auto.dia_recordatorio_2 ? parseInt(auto.dia_recordatorio_2) : null,
+        dia_recordatorio_3: auto.dia_recordatorio_3 ? parseInt(auto.dia_recordatorio_3) : null,
+        dia_corte_automatico: auto.dia_corte_automatico ? parseInt(auto.dia_corte_automatico) : null,
+      })
+      toast.success('Automatización guardada')
+    } catch {
+      toast.error('Error al guardar')
+    } finally {
+      setSavingAuto(false)
+    }
+  }
 
   async function eliminarPlan(plan) {
     if (!confirm(`¿Eliminar ${plan.nombre}? Esto también lo eliminará de todos los MikroTiks.`)) return
@@ -184,6 +229,84 @@ export default function Configuracion() {
             <p className="text-[#4B5563] text-sm text-center py-4">Sin planes registrados</p>
           )}
         </div>
+      </div>
+
+      {/* Automatización */}
+      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Zap size={15}/> Automatización</h2>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <span className="text-xs text-[#9CA3AF]">{auto.automation_activa ? 'Activa' : 'Inactiva'}</span>
+            <div
+              onClick={() => setAuto(a => ({ ...a, automation_activa: !a.automation_activa }))}
+              className={`relative w-10 h-5 rounded-full transition-colors cursor-pointer ${auto.automation_activa ? 'bg-[#FFD700]' : 'bg-[#374151]'}`}
+            >
+              <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${auto.automation_activa ? 'left-5' : 'left-0.5'}`} />
+            </div>
+          </label>
+        </div>
+
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-3 text-xs text-blue-300 leading-relaxed">
+          <Bell size={12} className="inline mr-1" />
+          Cada día a las <strong>8:00 AM</strong> el sistema revisa si hoy coincide con algún día configurado.
+          Si un cliente tiene <strong>fecha de vencimiento futura</strong>, el corte automático lo respeta.
+        </div>
+
+        <form onSubmit={guardarAutomatizacion} className="space-y-4">
+          <div>
+            <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Recordatorios WhatsApp</p>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                ['dia_recordatorio_1', '1er aviso'],
+                ['dia_recordatorio_2', '2do aviso'],
+                ['dia_recordatorio_3', '3er aviso'],
+              ].map(([key, label]) => (
+                <div key={key}>
+                  <label className="text-xs text-[#9CA3AF] mb-1 block">{label}</label>
+                  <select
+                    className={inp}
+                    value={auto[key]}
+                    onChange={e => setAuto(a => ({ ...a, [key]: e.target.value }))}
+                  >
+                    {DIA_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold text-red-400 mb-2 uppercase tracking-wide">Corte Automático</p>
+            <div className="grid grid-cols-2 gap-3 items-end">
+              <div>
+                <label className="text-xs text-[#9CA3AF] mb-1 block">Día de corte</label>
+                <select
+                  className={inp}
+                  value={auto.dia_corte_automatico}
+                  onChange={e => setAuto(a => ({ ...a, dia_corte_automatico: e.target.value }))}
+                >
+                  {DIA_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                </select>
+              </div>
+              <p className="text-xs text-[#4B5563] pb-2">Solo corta a clientes sin pago cuya fecha de vencimiento ya pasó o no tiene prórroga.</p>
+            </div>
+          </div>
+
+          {auto.automation_activa && (auto.dia_recordatorio_1 || auto.dia_recordatorio_2 || auto.dia_recordatorio_3 || auto.dia_corte_automatico) && (
+            <div className="bg-[#111827] rounded-lg px-4 py-3 text-xs text-[#9CA3AF] space-y-1">
+              <p className="font-semibold text-white mb-1">Resumen del mes:</p>
+              {auto.dia_recordatorio_1 && <p>📱 Día {auto.dia_recordatorio_1} — 1er recordatorio WhatsApp</p>}
+              {auto.dia_recordatorio_2 && <p>📱 Día {auto.dia_recordatorio_2} — 2do recordatorio WhatsApp</p>}
+              {auto.dia_recordatorio_3 && <p>📱 Día {auto.dia_recordatorio_3} — 3er recordatorio WhatsApp</p>}
+              {auto.dia_corte_automatico && <p>🔴 Día {auto.dia_corte_automatico} — Corte automático de morosos</p>}
+            </div>
+          )}
+
+          <button type="submit" disabled={savingAuto}
+            className="bg-[#FFD700] text-[#111827] font-bold px-5 py-2 rounded-lg hover:bg-yellow-400 text-sm disabled:opacity-50 flex items-center gap-2">
+            <Save size={14}/>{savingAuto ? 'Guardando...' : 'Guardar Automatización'}
+          </button>
+        </form>
       </div>
 
       {/* Info del sistema */}
