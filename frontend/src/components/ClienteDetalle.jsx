@@ -444,13 +444,28 @@ export default function ClienteDetalle() {
                 </div>
               </div>
 
-              <div className="flex gap-3">
-                <div className="flex-1">
+              <div className="grid grid-cols-3 gap-2 bg-[#111827] rounded-lg p-3 border border-[#374151]">
+                <div>
                   <p className="text-xs text-[#9CA3AF] mb-1">Instalación</p>
-                  <p className="text-sm text-white">
+                  <p className="text-xs text-white font-medium">
                     {cliente.fecha_instalacion ? new Date(cliente.fecha_instalacion+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
                   </p>
                 </div>
+                <div>
+                  <p className="text-xs text-[#9CA3AF] mb-1">Últ. activación</p>
+                  <p className="text-xs text-blue-400 font-medium">
+                    {cliente.fecha_ultima_activacion ? new Date(cliente.fecha_ultima_activacion+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-[#9CA3AF] mb-1">Vencimiento</p>
+                  <p className={`text-xs font-medium ${cliente.fecha_vencimiento && new Date(cliente.fecha_vencimiento+'T12:00:00') < new Date() ? 'text-red-400' : 'text-green-400'}`}>
+                    {cliente.fecha_vencimiento ? new Date(cliente.fecha_vencimiento+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex gap-3">
                 <div className="flex-1">
                   <p className="text-xs text-[#9CA3AF] mb-1">Estado</p>
                   {editing ? (
@@ -640,9 +655,9 @@ export default function ClienteDetalle() {
                 key={dias}
                 type="button"
                 onClick={() => {
-                  const d = new Date()
-                  d.setDate(d.getDate() + dias)
-                  setFechaProroga(d.toISOString().split('T')[0])
+                  const base = fechaProroga ? new Date(fechaProroga + 'T00:00:00') : new Date()
+                  base.setDate(base.getDate() + dias)
+                  setFechaProroga(base.toISOString().split('T')[0])
                 }}
                 className="px-3 py-1.5 text-xs rounded-lg bg-[#374151] text-[#9CA3AF] hover:text-white hover:bg-[#4B5563] transition-colors"
               >

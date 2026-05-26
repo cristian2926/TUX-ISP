@@ -130,6 +130,7 @@ def create_cliente(
     dump = data.model_dump()
     if not dump.get("fecha_vencimiento"):
         dump["fecha_vencimiento"] = dump["fecha_instalacion"] + timedelta(days=30)
+    dump["fecha_ultima_activacion"] = dump["fecha_instalacion"]
     cliente = models.Cliente(**dump)
     db.add(cliente)
     db.commit()
@@ -340,6 +341,7 @@ def reactivar_servicio(
     hoy = date.today()
     cliente.estado = models.EstadoCliente.activo
     cliente.fecha_vencimiento = hoy + timedelta(days=30)
+    cliente.fecha_ultima_activacion = hoy
     historial = models.Historial(
         cliente_id=cliente.id,
         tipo=models.TipoHistorial.activacion,

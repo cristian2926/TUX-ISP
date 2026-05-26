@@ -130,6 +130,7 @@ class Cliente(Base):
     equipo_valor = Column(Float)
 
     notas = Column(Text)
+    fecha_ultima_activacion = Column(Date)
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
     actualizado_en = Column(DateTime(timezone=True), onupdate=func.now())
 
