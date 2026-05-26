@@ -280,24 +280,7 @@ def cortar_servicio(
     db.add(historial)
     db.commit()
 
-    # Bloquear en MikroTik
-    mt_result = {"ok": False}
-    wg_ip = _get_wg_ip(db, cliente.zona_id)
-    if wg_ip:
-        cmds = []
-        if cliente.ip_estatica:
-            # Agregar a lista de corte por IP
-            cmds.append(
-                f'/ip firewall address-list add list=CORTE-MOROSO '
-                f'address={cliente.ip_estatica} comment="{cliente.usuario_pppoe}"'
-            )
-        # Desconectar sesión PPPoE activa
-        cmds.append(
-            f'/ppp active remove [find name="{cliente.usuario_pppoe}"]'
-        )
-        mt_result = _mikrotik_exec(wg_ip, cmds)
-
-    # WhatsApp automático
+    # WhatsApp primero — cliente lo recibe mientras aún tiene internet
     phone = cliente.telefono_whatsapp or cliente.telefono
     if phone:
         plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
@@ -312,12 +295,27 @@ def cortar_servicio(
             f"📅 Mes pendiente: *{mes_label}*\n"
             f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
             f"Para reactivar su servicio:\n"
-            f"📱 *Yape:* 936511008\n"
+            f"📱 *Yape / Plin:* 936511008\n"
             f"{tiendas}"
             f"📞 *Llamadas:* 936511008\n\n"
             f"_Tuxtell — Conectando tu mundo_ 🌐"
         )
         _wa_send(phone, msg)
+
+    # Bloquear en MikroTik después del WhatsApp
+    mt_result = {"ok": False}
+    wg_ip = _get_wg_ip(db, cliente.zona_id)
+    if wg_ip:
+        cmds = []
+        if cliente.ip_estatica:
+            cmds.append(
+                f'/ip firewall address-list add list=CORTE-MOROSO '
+                f'address={cliente.ip_estatica} comment="{cliente.usuario_pppoe}"'
+            )
+        cmds.append(
+            f'/ppp active remove [find name="{cliente.usuario_pppoe}"]'
+        )
+        mt_result = _mikrotik_exec(wg_ip, cmds)
 
     return {"ok": True, "estado": "suspendido", "mikrotik_ok": mt_result["ok"]}
 
