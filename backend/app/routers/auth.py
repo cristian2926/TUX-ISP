@@ -64,6 +64,19 @@ def get_me(current_user: models.Usuario = Depends(get_current_user)):
     return current_user
 
 
+@router.put("/password")
+def change_password(
+    data: schemas.ChangePassword,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    if not verify_password(data.password_actual, current_user.hashed_password):
+        raise HTTPException(status_code=400, detail="Contraseña actual incorrecta")
+    current_user.hashed_password = get_password_hash(data.password_nueva)
+    db.commit()
+    return {"ok": True}
+
+
 @router.post("/usuarios", response_model=schemas.UsuarioOut)
 def create_usuario(
     data: schemas.UsuarioCreate,

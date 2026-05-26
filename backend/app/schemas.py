@@ -28,6 +28,10 @@ class UsuarioOut(UsuarioBase):
     class Config:
         from_attributes = True
 
+class ChangePassword(BaseModel):
+    password_actual: str
+    password_nueva: str
+
 
 # ── Plan ──────────────────────────────────────────────────────────────────────
 
