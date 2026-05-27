@@ -120,7 +120,7 @@ export default function Login() {
           {/* Banner superior */}
           <div className="h-1 bg-gradient-to-r from-[#FFD700]/0 via-[#FFD700] to-[#FFD700]/0"/>
 
-          <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="p-6 space-y-4" autoComplete="off">
             <div>
               <label className="block text-xs font-semibold text-[#9CA3AF] uppercase tracking-wide mb-2">
                 Correo electrónico
@@ -148,7 +148,7 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 className="w-full bg-[#111827] border border-[#374151] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/20 transition-all"
                 placeholder="••••••••"
-                autoComplete="current-password"
+                autoComplete="off"
                 required
               />
             </div>
