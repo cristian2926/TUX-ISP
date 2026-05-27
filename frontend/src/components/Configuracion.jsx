@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Server, Shield, Database, Plus, Edit, Trash2, X, Save } from 'lucide-react'
+import { Server, Shield, Database, Plus, Edit, Trash2, X, Save, HardDrive, Download } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -106,12 +106,45 @@ export default function Configuracion() {
   const [modal, setModal] = useState(null)
   const [pwd, setPwd] = useState({ actual: '', nueva: '', confirmar: '' })
   const [savingPwd, setSavingPwd] = useState(false)
+  const [backups, setBackups] = useState([])
+  const [loadingBackup, setLoadingBackup] = useState(false)
 
   function fetchPlanes() {
     api.get('/planes').then(r => setPlanes(r.data)).catch(() => {})
   }
 
-  useEffect(() => { fetchPlanes() }, [])
+  function fetchBackups() {
+    api.get('/admin/backups').then(r => setBackups(r.data)).catch(() => {})
+  }
+
+  useEffect(() => { fetchPlanes(); fetchBackups() }, [])
+
+  async function descargarBackup(filename) {
+    try {
+      const { data } = await api.get(`/admin/backups/download/${filename}`, { responseType: 'blob' })
+      const url = URL.createObjectURL(data)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      toast.error('Error al descargar el backup')
+    }
+  }
+
+  async function hacerBackup() {
+    setLoadingBackup(true)
+    try {
+      const { data } = await api.post('/admin/backup')
+      toast.success(`Backup creado: ${data.filename} (${data.size_kb} KB)`)
+      fetchBackups()
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Error al crear backup')
+    } finally {
+      setLoadingBackup(false)
+    }
+  }
 
   async function eliminarPlan(plan) {
     if (!confirm(`¿Eliminar ${plan.nombre}? Esto también lo eliminará de todos los MikroTiks.`)) return
@@ -183,6 +216,57 @@ export default function Configuracion() {
           {planes.length === 0 && (
             <p className="text-[#4B5563] text-sm text-center py-4">Sin planes registrados</p>
           )}
+        </div>
+      </div>
+
+      {/* Backup de Base de Datos */}
+      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+            <HardDrive size={15}/> Backup de Base de Datos
+          </h2>
+          <button
+            onClick={hacerBackup}
+            disabled={loadingBackup}
+            className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-yellow-400 disabled:opacity-50"
+          >
+            {loadingBackup ? (
+              <>
+                <div className="w-3 h-3 border-2 border-[#111827]/30 border-t-[#111827] rounded-full animate-spin"/>
+                Generando...
+              </>
+            ) : (
+              <><Download size={13}/> Backup Ahora</>
+            )}
+          </button>
+        </div>
+
+        <div className="space-y-2">
+          {backups.length === 0 ? (
+            <p className="text-[#4B5563] text-sm text-center py-4">Sin backups registrados</p>
+          ) : backups.map(b => (
+            <div key={b.filename} className="flex items-center gap-3 bg-[#111827] rounded-lg px-4 py-3 border border-[#374151]">
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-xs font-mono truncate">{b.filename}</p>
+                <p className="text-xs text-[#9CA3AF] mt-0.5">
+                  {new Date(b.created_at).toLocaleString('es-PE')} · {b.size_kb} KB
+                </p>
+              </div>
+              <button
+                onClick={() => descargarBackup(b.filename)}
+                title="Descargar"
+                className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#FFD700] hover:bg-yellow-900/20 transition-colors"
+              >
+                <Download size={14}/>
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="bg-[#111827] rounded-lg p-3 border border-[#374151]">
+          <p className="text-xs text-[#4B5563]">
+            Se conservan los últimos 7 backups · Formato: <span className="font-mono">.sql.gz</span> (restaurar con <span className="font-mono">gunzip | psql</span>)
+          </p>
         </div>
       </div>
 

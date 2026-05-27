@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     wireguard-tools \
     openssh-client \
     iproute2 \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

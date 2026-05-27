@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     WG_CONFIG_PATH: str = "/etc/wireguard/wg0.conf"
     VPS_WG_PUBKEY: str = "z5ErxfupttwgB5L0AA2C+AzRAFwy4N1ZCVvKGRyV5TI="
     PHONE_CONTACTO: str = "936511008"
+    BACKUP_DIR: str = "/backups"
 
     class Config:
         env_file = ".env"

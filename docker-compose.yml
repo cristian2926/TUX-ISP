@@ -39,8 +39,9 @@ services:
       VPS_IP: "161.132.48.127"
     volumes:
       - ./backend:/app
-      - /root/.ssh:/root/.ssh:ro          # llave SSH para MikroTik
-      - /etc/wireguard:/etc/wireguard:rw  # gestión WireGuard
+      - /root/.ssh:/root/.ssh:ro              # llave SSH para MikroTik
+      - /etc/wireguard:/etc/wireguard:rw      # gestión WireGuard
+      - /opt/tuxtell-isp/backups:/backups     # backups PostgreSQL
     depends_on:
       postgres:
         condition: service_healthy
