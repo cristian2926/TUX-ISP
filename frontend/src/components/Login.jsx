@@ -38,7 +38,7 @@ function PinguinoLogo({ size = 80 }) {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@tuxtell.net')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -132,6 +132,7 @@ export default function Login() {
                   onChange={e => setEmail(e.target.value)}
                   className="w-full bg-[#111827] border border-[#374151] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/20 transition-all placeholder-[#4B5563]"
                   placeholder="usuario@tuxtell.net"
+                  autoComplete="off"
                   required
                 />
               </div>
@@ -147,6 +148,7 @@ export default function Login() {
                 onChange={e => setPassword(e.target.value)}
                 className="w-full bg-[#111827] border border-[#374151] rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#FFD700] focus:ring-1 focus:ring-[#FFD700]/20 transition-all"
                 placeholder="••••••••"
+                autoComplete="current-password"
                 required
               />
             </div>
