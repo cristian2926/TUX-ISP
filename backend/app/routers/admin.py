@@ -3,10 +3,10 @@ import subprocess
 import gzip
 from datetime import datetime
 from pathlib import Path
-from urllib.parse import urlparse
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import FileResponse
+from sqlalchemy.engine.url import make_url
 
 from ..config import settings
 from .auth import get_current_user
@@ -24,21 +24,21 @@ def _backup_dir() -> Path:
 @router.post("/backup")
 def crear_backup(current_user: models.Usuario = Depends(get_current_user)):
     backup_dir = _backup_dir()
-    parsed = urlparse(settings.DATABASE_URL)
+    db_url = make_url(settings.DATABASE_URL)
 
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     filename = f"tuxtell_{timestamp}.sql.gz"
     filepath = backup_dir / filename
 
     env = os.environ.copy()
-    env['PGPASSWORD'] = parsed.password or ''
+    env['PGPASSWORD'] = db_url.password or ''
 
     dump_cmd = [
         'pg_dump',
-        '-h', parsed.hostname,
-        '-p', str(parsed.port or 5432),
-        '-U', parsed.username,
-        '-d', parsed.path.lstrip('/'),
+        '-h', db_url.host,
+        '-p', str(db_url.port or 5432),
+        '-U', db_url.username,
+        '-d', db_url.database,
         '--no-password',
     ]
 
