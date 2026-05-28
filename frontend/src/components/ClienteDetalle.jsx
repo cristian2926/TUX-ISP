@@ -19,12 +19,15 @@ const ESTADO_STYLE = {
 }
 
 /* ── Calendario de pagos ────────────────────────────────────────────── */
-function CalendarioPagos({ clienteId, planPrecio }) {
+function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes }) {
   const [calendario, setCalendario] = useState([])
   const [anio, setAnio] = useState(new Date().getFullYear())
-  const [modalMes, setModalMes] = useState(null)
   const [monto, setMonto]   = useState(planPrecio || '')
   const [metodo, setMetodo] = useState('efectivo')
+
+  useEffect(() => {
+    if (modalMes) setMonto(planPrecio || '')
+  }, [modalMes])
   const [saving, setSaving] = useState(false)
 
   function fetch() {
@@ -201,6 +204,7 @@ export default function ClienteDetalle() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
   const [saving, setSaving] = useState(false)
+  const [modalMes, setModalMes] = useState(null)
   const [modalProroga, setModalProroga] = useState(false)
   const [fechaProroga, setFechaProroga] = useState('')
   const [savingProroga, setSavingProroga] = useState(false)
@@ -358,15 +362,30 @@ export default function ClienteDetalle() {
             {cliente.estado === 'activo' ? <><WifiOff size={15}/> Cortar</> : <><Wifi size={15}/> Reactivar</>}
           </button>
           {editing ? (
-            <button onClick={guardar} disabled={saving}
-              className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 disabled:opacity-50">
-              <Save size={15}/> {saving ? 'Guardando...' : 'Guardar'}
-            </button>
+            <>
+              <button onClick={() => setEditing(false)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#1F2937] text-[#9CA3AF] hover:text-white border border-[#374151] transition-colors">
+                <X size={15}/> Cancelar
+              </button>
+              <button onClick={guardar} disabled={saving}
+                className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 disabled:opacity-50">
+                <Save size={15}/> {saving ? 'Guardando...' : 'Guardar'}
+              </button>
+            </>
           ) : (
-            <button onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 transition-colors">
-              <DollarSign size={15}/> Registrar Nuevo Pago
-            </button>
+            <>
+              <button onClick={() => setEditing(true)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#1F2937] text-[#9CA3AF] hover:text-white border border-[#374151] transition-colors">
+                <Edit size={15}/> Editar
+              </button>
+              <button onClick={() => {
+                const hoy = new Date()
+                setModalMes(`${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`)
+              }}
+                className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 transition-colors">
+                <DollarSign size={15}/> Registrar Pago
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -741,6 +760,8 @@ export default function ClienteDetalle() {
               <CalendarioPagos
                 clienteId={+id}
                 planPrecio={cliente.plan?.precio}
+                modalMes={modalMes}
+                setModalMes={setModalMes}
               />
             </div>
           </div>
