@@ -11,6 +11,43 @@ const ESTADO_COLORS = {
   vencido:    'bg-orange-500/20 text-orange-400 border border-orange-500/30',
 }
 
+const MES_DOT = {
+  pagado:         'bg-green-500 text-white',
+  vencido:        'bg-red-500 text-white',
+  pendiente:      'bg-orange-400 text-white',
+  corte_temporal: 'bg-yellow-400 text-[#111827]',
+  futuro:         'bg-[#374151] text-[#6B7280]',
+  no_aplica:      'opacity-0 pointer-events-none',
+}
+
+const MES_LABEL = {
+  pagado: 'Pagado', vencido: 'Vencido', pendiente: 'Pendiente',
+  corte_temporal: 'Corte temporal', futuro: 'Futuro', no_aplica: '—',
+}
+
+const MES_LETRA = 'EFMAMJJASOND'
+const MESES_NOMBRE = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+function MesesPago({ meses }) {
+  if (!meses?.length) return <span className="text-[#374151] text-xs">—</span>
+  return (
+    <div className="flex gap-0.5 items-center">
+      {meses.map(m => {
+        const idx = parseInt(m.mes.split('-')[1]) - 1
+        return (
+          <span
+            key={m.mes}
+            title={`${MESES_NOMBRE[idx]} ${m.mes.split('-')[0]}: ${MES_LABEL[m.estado] || m.estado}`}
+            className={`w-5 h-5 rounded flex items-center justify-center text-[9px] font-black shrink-0 ${MES_DOT[m.estado] || MES_DOT.futuro}`}
+          >
+            {MES_LETRA[idx]}
+          </span>
+        )
+      })}
+    </div>
+  )
+}
+
 const AVATAR_COLORS = [
   'bg-blue-500/25 text-blue-300',
   'bg-purple-500/25 text-purple-300',
@@ -187,7 +224,7 @@ export default function Clientes() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#1F2937]">
-                {['Nombre / ID', 'Usuario PPPoE', 'IP Asignada', 'Zona', 'Fecha Inst.', 'Estado', 'Acciones'].map(h => (
+                {['Nombre / ID', 'Usuario PPPoE', 'IP Asignada', 'Zona', 'Pagos (6m)', 'Estado', 'Acciones'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[#4B5563] uppercase tracking-widest">
                     {h}
                   </th>
@@ -229,10 +266,8 @@ export default function Clientes() {
                         </span>
                       ) : <span className="text-[#374151]">—</span>}
                     </td>
-                    <td className="px-4 py-3 text-[#6B7280] text-xs font-mono">
-                      {c.fecha_instalacion
-                        ? new Date(c.fecha_instalacion + 'T12:00:00').toLocaleDateString('es-PE')
-                        : '—'}
+                    <td className="px-4 py-3">
+                      <MesesPago meses={c.meses_pago} />
                     </td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${ESTADO_COLORS[c.estado] || ESTADO_COLORS.anulado}`}>

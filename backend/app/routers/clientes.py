@@ -83,6 +83,19 @@ def _mikrotik_exec(host: str, commands: list[str]) -> dict:
 MESES = ["","Enero","Febrero","Marzo","Abril","Mayo","Junio",
          "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]
 
+
+def _ultimos_n_meses(n: int) -> list[str]:
+    hoy = date.today()
+    result = []
+    for i in range(n - 1, -1, -1):
+        m = hoy.month - i
+        y = hoy.year
+        while m <= 0:
+            m += 12
+            y -= 1
+        result.append(f"{y}-{m:02d}")
+    return result
+
 def _wa_send(phone: str, message: str):
     try:
         with httpx.Client(timeout=8) as c:
@@ -130,12 +143,46 @@ def list_clientes(
     total = query.count()
     clientes = query.offset((page - 1) * per_page).limit(per_page).all()
 
+    # Batch-query pagos de los últimos 6 meses para todos los clientes de esta página
+    hoy = date.today()
+    meses_6 = _ultimos_n_meses(6)
+    mes_actual_date = hoy.replace(day=1)
+    cliente_ids = [c.id for c in clientes]
+
+    pagos_batch = db.query(models.Pago.cliente_id, models.Pago.mes_pagado, models.Pago.estado).filter(
+        models.Pago.cliente_id.in_(cliente_ids),
+        models.Pago.mes_pagado.in_(meses_6),
+    ).all()
+
+    pagos_por_cliente: dict[int, dict[str, str]] = {}
+    for p in pagos_batch:
+        pagos_por_cliente.setdefault(p.cliente_id, {})[p.mes_pagado] = str(p.estado)
+
+    items = []
+    for c in clientes:
+        item = schemas.ClienteListItem.model_validate(c).model_dump(mode="json")
+        c_pagos = pagos_por_cliente.get(c.id, {})
+        meses_status = []
+        for mes in meses_6:
+            y, m = int(mes[:4]), int(mes[5:])
+            mes_date = date(y, m, 1)
+            if c.fecha_instalacion and mes_date < date(c.fecha_instalacion.year, c.fecha_instalacion.month, 1):
+                meses_status.append({"mes": mes, "estado": "no_aplica"})
+            elif mes in c_pagos:
+                meses_status.append({"mes": mes, "estado": c_pagos[mes]})
+            elif mes_date < mes_actual_date:
+                meses_status.append({"mes": mes, "estado": "vencido"})
+            else:
+                meses_status.append({"mes": mes, "estado": "pendiente"})
+        item["meses_pago"] = meses_status
+        items.append(item)
+
     return {
         "total": total,
         "page": page,
         "per_page": per_page,
         "pages": (total + per_page - 1) // per_page,
-        "items": [schemas.ClienteListItem.model_validate(c) for c in clientes],
+        "items": items,
     }
 
 
