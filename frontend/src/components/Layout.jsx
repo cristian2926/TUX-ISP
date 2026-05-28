@@ -33,7 +33,7 @@ function Topbar({ onMenuOpen }) {
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
         <input
           type="text"
-          placeholder="Search clients, IP, or PPPoE..."
+          placeholder="Buscar clientes, IP o PPPoE..."
           className="w-full bg-[#0D1117] border border-[#1F2937] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700]/40 transition-colors"
         />
       </div>
@@ -65,7 +65,7 @@ function Topbar({ onMenuOpen }) {
           <div className="hidden md:block">
             <p className="text-xs font-bold text-white leading-tight">{username}</p>
             <p className="text-[9px] text-[#4B5563] uppercase tracking-widest leading-tight font-medium">
-              Admin
+              Administrador
             </p>
           </div>
         </div>

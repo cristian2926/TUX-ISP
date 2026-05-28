@@ -23,7 +23,7 @@ function PinguinoLogo({ size = 80 }) {
       {/* Pico */}
       <ellipse cx="50" cy="40" rx="6" ry="4" fill="#FFD700"/>
       {/* Ala izquierda */}
-      <ellipse cx="22" cy="72" rx="9" ry="22" rx2="9" fill="#1a1a2e" transform="rotate(-10 22 72)"/>
+      <ellipse cx="22" cy="72" rx="9" ry="22" fill="#1a1a2e" transform="rotate(-10 22 72)"/>
       {/* Ala derecha */}
       <ellipse cx="78" cy="72" rx="9" ry="22" fill="#1a1a2e" transform="rotate(10 78 72)"/>
       {/* Pie izquierdo */}

@@ -23,6 +23,7 @@ export default function WhatsApp() {
     aviso_corte: true,
     reactivacion: false,
   })
+  const [ejecutando, setEjecutando] = useState(false)
 
   async function fetchStatus() {
     setLoading(true)
@@ -70,6 +71,19 @@ export default function WhatsApp() {
       toast.success(`Enviados: ${data.enviados} avisos`)
     } catch {
       toast.error('Error al enviar avisos masivos')
+    }
+  }
+
+  async function ejecutarRecordatorio() {
+    if (!confirm('¿Ejecutar recordatorio preventivo ahora? Se enviará a clientes con vencimiento en 3 días.')) return
+    setEjecutando(true)
+    try {
+      const { data } = await api.post('/whatsapp/recordatorio-preventivo/ejecutar')
+      toast.success(`Recordatorios enviados: ${data.enviados} de ${data.total} clientes`)
+    } catch {
+      toast.error('Error al ejecutar recordatorio preventivo')
+    } finally {
+      setEjecutando(false)
     }
   }
 
@@ -178,17 +192,28 @@ export default function WhatsApp() {
                 { key: 'aviso_corte', label: 'Aviso de Corte', desc: 'Cuando se suspende el servicio' },
                 { key: 'reactivacion', label: 'Reactivación', desc: 'Cuando el servicio es restaurado' },
               ].map(({ key, label, desc }) => (
-                <div key={key} className="flex items-center justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-white font-medium">{label}</p>
-                    <p className="text-[10px] text-[#4B5563]">{desc}</p>
+                <div key={key} className="space-y-1">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-white font-medium">{label}</p>
+                      <p className="text-[10px] text-[#4B5563]">{desc}</p>
+                    </div>
+                    <button
+                      onClick={() => setToggles(t => ({ ...t, [key]: !t[key] }))}
+                      className={`relative inline-flex w-10 h-5 rounded-full transition-colors shrink-0 ${toggles[key] ? 'bg-[#FFD700]' : 'bg-[#1F2937]'}`}
+                    >
+                      <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${toggles[key] ? 'translate-x-5' : 'translate-x-0.5'}`}/>
+                    </button>
                   </div>
-                  <button
-                    onClick={() => setToggles(t => ({ ...t, [key]: !t[key] }))}
-                    className={`relative inline-flex w-10 h-5 rounded-full transition-colors shrink-0 ${toggles[key] ? 'bg-[#FFD700]' : 'bg-[#1F2937]'}`}
-                  >
-                    <span className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${toggles[key] ? 'translate-x-5' : 'translate-x-0.5'}`}/>
-                  </button>
+                  {key === 'recordatorio' && toggles.recordatorio && (
+                    <button
+                      onClick={ejecutarRecordatorio}
+                      disabled={ejecutando || !isConnected}
+                      className="w-full py-1.5 text-xs font-semibold text-[#FFD700] border border-[#FFD700]/30 hover:bg-[#FFD700]/10 rounded-lg transition-colors disabled:opacity-40"
+                    >
+                      {ejecutando ? 'Ejecutando...' : '▶ Ejecutar Ahora'}
+                    </button>
+                  )}
                 </div>
               ))}
 

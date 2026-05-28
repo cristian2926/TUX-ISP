@@ -7,12 +7,12 @@ import {
 
 const NAV = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/clientes',      icon: Users,           label: 'Clients' },
-  { to: '/zonas',         icon: Globe,           label: 'Zones' },
+  { to: '/clientes',      icon: Users,           label: 'Clientes' },
+  { to: '/zonas',         icon: Globe,           label: 'Zonas' },
   { to: '/pagos',         icon: DollarSign,      label: 'Pagos' },
   { to: '/gastos',        icon: TrendingDown,    label: 'Gastos' },
   { to: '/whatsapp',      icon: MessageCircle,   label: 'WhatsApp' },
-  { to: '/configuracion', icon: Settings,        label: 'Config' },
+  { to: '/configuracion', icon: Settings,        label: 'Configuración' },
 ]
 
 export default function Sidebar({ onClose }) {
@@ -75,18 +75,18 @@ export default function Sidebar({ onClose }) {
           className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg bg-[#FFD700] text-[#111827] font-bold text-sm hover:bg-yellow-400 transition-all"
         >
           <Plus size={16} />
-          New Client
+          Nuevo Cliente
         </Link>
         <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[#6B7280] hover:bg-[#1F2937] hover:text-white transition-all">
           <HelpCircle size={16} />
-          Support
+          Soporte
         </button>
         <button
           onClick={logout}
           className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[#6B7280] hover:bg-red-900/20 hover:text-red-400 transition-all"
         >
           <LogOut size={16} />
-          Sign Out
+          Cerrar Sesión
         </button>
       </div>
     </aside>

@@ -180,6 +180,7 @@ class ClienteListItem(BaseModel):
     tiene_tv: Optional[bool] = False
     zona: Optional[ZonaOut] = None
     plan: Optional[PlanOut] = None
+    fecha_instalacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
     class Config:
         from_attributes = True
@@ -208,18 +209,6 @@ class PagoOut(PagoBase):
 
 
 # ── Gasto ─────────────────────────────────────────────────────────────────────
-
-CATEGORIAS_GASTO = [
-    "Energía eléctrica",
-    "Internet proveedor",
-    "Mantenimiento",
-    "Equipos / Hardware",
-    "Personal / Sueldos",
-    "Transporte",
-    "Alquiler",
-    "Telefonía",
-    "Otros",
-]
 
 class GastoBase(BaseModel):
     descripcion: str

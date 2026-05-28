@@ -40,18 +40,6 @@ class EstadoEquipo(str, enum.Enum):
     sin_equipo = "sin_equipo"
 
 
-class CategoriaGasto(str, enum.Enum):
-    energia = "Energía eléctrica"
-    internet_proveedor = "Internet proveedor"
-    mantenimiento = "Mantenimiento"
-    equipos = "Equipos / Hardware"
-    personal = "Personal / Sueldos"
-    transporte = "Transporte"
-    alquiler = "Alquiler"
-    telefonia = "Telefonía"
-    otros = "Otros"
-
-
 class Usuario(Base):
     __tablename__ = "usuarios"
 

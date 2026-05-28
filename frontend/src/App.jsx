@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Toaster } from 'react-hot-toast'
-import { useState, useEffect } from 'react'
 import Layout from './components/Layout'
 import Login from './components/Login'
 import Dashboard from './components/Dashboard'

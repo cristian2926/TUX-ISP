@@ -12,12 +12,15 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     from .seed import seed_initial_data
     from .database import SessionLocal
+    from .scheduler import init_scheduler, stop_scheduler
     db = SessionLocal()
     try:
         seed_initial_data(db)
     finally:
         db.close()
+    init_scheduler()
     yield
+    stop_scheduler()
 
 
 app = FastAPI(

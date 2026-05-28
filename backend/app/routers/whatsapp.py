@@ -221,3 +221,13 @@ async def broadcast_cobros(
             errores.append({"cliente": cliente.nombre, "error": str(e)})
 
     return {"enviados": enviados, "errores": errores, "mes": mes}
+
+
+@router.post("/recordatorio-preventivo/ejecutar")
+async def ejecutar_recordatorio_preventivo(
+    dias_antes: int = 3,
+    current_user: models.Usuario = Depends(get_current_user),
+):
+    from ..scheduler import job_recordatorio_preventivo
+    result = await job_recordatorio_preventivo(dias_antes=dias_antes)
+    return result
