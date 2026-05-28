@@ -788,7 +788,7 @@ export default function ClienteDetalle() {
                       </div>
                       <div className="flex-1 pb-3">
                         <p className="text-xs text-[#4B5563]">
-                          {new Date(h.creado_en).toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})}
+                          {new Date(h.creado_en).toLocaleString('es-PE', {day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit'})}
                         </p>
                         <p className="text-sm text-white mt-0.5 leading-snug">{h.descripcion}</p>
                         <span className={`inline-block mt-1 text-xs px-1.5 py-0.5 rounded ${

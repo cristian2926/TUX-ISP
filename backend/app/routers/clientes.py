@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from typing import Optional, List
-from datetime import date
+from datetime import date, timedelta
 import logging
 import re
 
@@ -197,7 +197,6 @@ def create_cliente(
     if db.query(models.Cliente).filter(models.Cliente.usuario_pppoe == data.usuario_pppoe).first():
         raise HTTPException(status_code=400, detail="Usuario PPPoE ya existe")
 
-    from datetime import timedelta
     dump = data.model_dump()
     if not dump.get("fecha_vencimiento"):
         dump["fecha_vencimiento"] = dump["fecha_instalacion"] + timedelta(days=30)
@@ -411,7 +410,6 @@ def reactivar_servicio(
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
-    from datetime import timedelta
     hoy = date.today()
     cliente.estado = models.EstadoCliente.activo
     cliente.fecha_vencimiento = hoy + timedelta(days=30)

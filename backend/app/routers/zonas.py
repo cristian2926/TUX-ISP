@@ -165,7 +165,7 @@ def _zona_to_dict(zona, db: Session) -> dict:
     total = db.query(models.Cliente).filter(models.Cliente.zona_id == zona.id).count()
     activos = db.query(models.Cliente).filter(
         models.Cliente.zona_id == zona.id,
-        models.Cliente.estado == "activo",
+        models.Cliente.estado == models.EstadoCliente.activo,
     ).count()
     aps = db.query(models.AccessPoint).filter(models.AccessPoint.zona_id == zona.id).all()
 
