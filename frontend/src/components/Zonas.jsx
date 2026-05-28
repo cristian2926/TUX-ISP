@@ -587,6 +587,10 @@ function TerminalModal({ zona, onClose }) {
   )
 }
 
+function getZoneCode(nombre, id) {
+  return `${nombre.slice(0, 2).toUpperCase()}-${String(id).padStart(3, '0')}`
+}
+
 /* ── Tarjeta de zona ─────────────────────────────────────────────────── */
 function ZonaCard({ zona, onRefresh }) {
   const [wgStatus, setWgStatus] = useState(null)
@@ -637,53 +641,48 @@ function ZonaCard({ zona, onRefresh }) {
 
   return (
     <>
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] overflow-hidden">
+      <div className="bg-[#111827] rounded-xl border border-[#1F2937] overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-[#374151]">
+        <div className="p-4 border-b border-[#1F2937]">
           <div className="flex items-start justify-between gap-2">
-            <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2.5 flex-1 min-w-0">
+              <span className="text-[10px] font-mono bg-[#1F2937] text-[#9CA3AF] px-2 py-0.5 rounded shrink-0">
+                {getZoneCode(zona.nombre, zona.id)}
+              </span>
               <h3 className="font-bold text-white text-base truncate">{zona.nombre}</h3>
-              <p className="text-[#9CA3AF] text-xs mt-0.5 truncate">{zona.descripcion || 'Zona de cobertura'}</p>
             </div>
             <div className="flex gap-1 shrink-0">
-              <button onClick={() => setModalEdit(true)} className="p-1.5 rounded text-[#9CA3AF] hover:text-[#FFD700] hover:bg-yellow-900/20 transition-colors" title="Editar zona">
-                <Edit size={14} />
-              </button>
-              <button onClick={handleDelete} className="p-1.5 rounded text-[#9CA3AF] hover:text-red-400 hover:bg-red-900/20 transition-colors" title="Eliminar zona">
+              <button onClick={handleDelete} className="p-1.5 rounded text-[#4B5563] hover:text-red-400 hover:bg-red-900/20 transition-colors" title="Eliminar zona">
                 <Trash2 size={14} />
               </button>
             </div>
           </div>
 
-          {/* WireGuard status + botón gestionar */}
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-2">
-              {wgOnline === null ? (
-                <span className="text-xs text-[#4B5563]">Verificando...</span>
-              ) : wgOnline ? (
-                <span className="flex items-center gap-1 text-xs text-green-400 font-medium">
-                  <Wifi size={12} /> WG Online — {zona.ip_wireguard}
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-xs text-red-400 font-medium">
-                  <WifiOff size={12} /> WG Offline — {zona.ip_wireguard}
-                </span>
-              )}
-              {wgStatus?.ssh_ok && (
-                <span className="text-xs text-blue-400 font-medium">· SSH ✓</span>
-              )}
-            </div>
+          {/* WireGuard status badge + WG/Terminal buttons */}
+          <div className="flex items-center justify-between mt-3">
+            {wgOnline === null ? (
+              <span className="text-[10px] text-[#4B5563] font-mono">Verificando...</span>
+            ) : wgOnline ? (
+              <span className="flex items-center gap-1.5 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0"/> WIREGUARD UP
+                {wgStatus?.ssh_ok && <span className="text-blue-400 ml-1">· SSH</span>}
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/25 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"/> WIREGUARD DOWN
+              </span>
+            )}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setModalWG(true)}
-                className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-[#FFD700] transition-colors"
+                className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#FFD700] transition-colors"
                 title="Gestionar WireGuard"
               >
                 <Shield size={12} /> WG
               </button>
               <button
                 onClick={() => setModalTerminal(true)}
-                className="flex items-center gap-1 text-xs text-[#9CA3AF] hover:text-green-400 transition-colors"
+                className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-green-400 transition-colors"
                 title="Terminal MikroTik"
               >
                 <Terminal size={12} /> Terminal
@@ -695,28 +694,32 @@ function ZonaCard({ zona, onRefresh }) {
         {/* Stats */}
         <div className="p-4 space-y-3">
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-[#111827] rounded-lg p-2.5">
-              <p className="text-lg font-bold text-white">{zona.total_clientes}</p>
-              <p className="text-xs text-[#9CA3AF]">Total</p>
+            <div className="bg-[#1F2937] rounded-lg p-2.5">
+              <p className="text-2xl font-black text-white">{zona.total_clientes}</p>
+              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide">Total</p>
             </div>
-            <div className="bg-[#111827] rounded-lg p-2.5">
-              <p className="text-lg font-bold text-green-400">{zona.clientes_activos}</p>
-              <p className="text-xs text-[#9CA3AF]">Activos</p>
+            <div className="bg-[#1F2937] rounded-lg p-2.5">
+              <p className="text-2xl font-black text-green-400">{zona.clientes_activos}</p>
+              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide">Activos</p>
             </div>
-            <div className="bg-[#111827] rounded-lg p-2.5">
-              <p className="text-lg font-bold text-[#FFD700]">{pct}%</p>
-              <p className="text-xs text-[#9CA3AF]">Activo</p>
+            <div className="bg-[#1F2937] rounded-lg p-2.5">
+              <p className="text-2xl font-black text-[#FFD700]">{pct}%</p>
+              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide">Pool</p>
             </div>
           </div>
 
           <div>
-            <div className="h-1.5 bg-[#374151] rounded-full overflow-hidden">
-              <div className="h-full bg-[#FFD700] rounded-full transition-all" style={{ width: `${pct}%` }} />
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide font-semibold">Pool Ocupación</p>
+              <p className="text-[10px] text-[#6B7280]">{zona.clientes_activos}/{zona.total_clientes}</p>
+            </div>
+            <div className="h-1.5 bg-[#1F2937] rounded-full overflow-hidden">
+              <div className={`h-full rounded-full transition-all ${pct >= 80 ? 'bg-red-500' : pct >= 50 ? 'bg-[#FFD700]' : 'bg-green-500'}`} style={{ width: `${Math.max(pct, 2)}%` }} />
             </div>
           </div>
 
           {/* Router */}
-          <div className="flex items-center gap-2 bg-[#111827] rounded-lg p-3">
+          <div className="flex items-center gap-2 bg-[#1F2937] rounded-lg p-3">
             <Router size={14} className="text-[#9CA3AF] shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-xs text-[#9CA3AF]">MikroTik</p>
@@ -727,7 +730,7 @@ function ZonaCard({ zona, onRefresh }) {
             {zona.ip_lan && <span className="text-xs text-[#9CA3AF] font-mono">{zona.ip_lan}</span>}
           </div>
           {zona.wg_public_key && (
-            <div className="bg-[#111827] rounded-lg px-3 py-2">
+            <div className="bg-[#1F2937] rounded-lg px-3 py-2">
               <p className="text-xs text-[#9CA3AF] mb-0.5">Clave pública WG</p>
               <p className="text-xs text-white font-mono truncate">{zona.wg_public_key}</p>
             </div>
@@ -736,8 +739,8 @@ function ZonaCard({ zona, onRefresh }) {
           {/* APs */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-[#9CA3AF] flex items-center gap-1">
-                <Radio size={11} /> APs Ubiquiti ({zona.access_points?.length || 0})
+              <p className="text-xs text-[#6B7280] flex items-center gap-1">
+                <Radio size={11} /> APs ({zona.access_points?.length || 0})
               </p>
               <button
                 onClick={() => setModalAP(true)}
@@ -749,7 +752,7 @@ function ZonaCard({ zona, onRefresh }) {
             {zona.access_points?.length > 0 ? (
               <div className="space-y-1.5">
                 {zona.access_points.map(ap => (
-                  <div key={ap.id} className="bg-[#111827] rounded px-3 py-2">
+                  <div key={ap.id} className="bg-[#1F2937] rounded px-3 py-2">
                     <div className="flex items-center justify-between">
                       <p className="text-xs text-white font-medium truncate">{ap.nombre}</p>
                       <button onClick={() => deleteAP(ap.id)} className="p-1 text-[#4B5563] hover:text-red-400 transition-colors shrink-0 ml-2">
@@ -770,6 +773,16 @@ function ZonaCard({ zona, onRefresh }) {
               <p className="text-xs text-[#4B5563] text-center py-2">Sin APs registrados</p>
             )}
           </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 pb-4 pt-0">
+          <button
+            onClick={() => setModalEdit(true)}
+            className="w-full py-2 text-xs text-[#6B7280] hover:text-[#FFD700] border border-[#1F2937] hover:border-[#FFD700]/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+          >
+            <Edit size={12} /> Editar Zona
+          </button>
         </div>
       </div>
 
@@ -844,22 +857,35 @@ export default function Zonas() {
 
   return (
     <div className="p-4 sm:p-6 space-y-5">
+
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-xs text-[#4B5563] font-mono uppercase tracking-widest">
+        <span>Network</span>
+        <span className="text-[#1F2937]">›</span>
+        <span className="text-[#FFD700]">Zone_Management</span>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Zonas</h1>
-          <p className="text-[#9CA3AF] text-sm">{zonas.length} zonas registradas</p>
+          <h1 className="text-xl font-bold text-white">Zonas y Equipos</h1>
+          <p className="text-[#6B7280] text-sm">Gestión de infraestructura de red regional TUX-ISP</p>
         </div>
-        <button
-          onClick={() => setModalNueva(true)}
-          className="flex items-center gap-2 bg-[#FFD700] text-[#111827] font-semibold px-3 py-2 rounded-lg hover:bg-yellow-400 transition-colors text-sm shrink-0"
-        >
-          <Plus size={16} /> Nueva Zona
-        </button>
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] text-[#6B7280] hover:text-white px-3 py-2 rounded-lg text-sm transition-colors shrink-0">
+            <Globe size={14} /> Configurar Pool
+          </button>
+          <button
+            onClick={() => setModalNueva(true)}
+            className="flex items-center gap-2 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors text-sm shrink-0"
+          >
+            <Plus size={16} /> Nueva Zona
+          </button>
+        </div>
       </div>
 
       {/* VPS Info */}
-      <div className="bg-[#1F2937] rounded-xl p-4 border border-[#374151] flex items-center gap-3">
+      <div className="bg-[#111827] rounded-xl p-4 border border-[#1F2937] flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
           <Globe size={18} className="text-blue-400" />
         </div>
@@ -867,9 +893,9 @@ export default function Zonas() {
           <p className="text-sm font-semibold text-white">Servidor VPS Principal</p>
           <p className="text-xs text-[#9CA3AF] truncate">161.132.48.127 — WireGuard Hub — Tuxtell Network</p>
         </div>
-        <span className="flex items-center gap-1.5 text-xs text-green-400 shrink-0">
+        <span className="flex items-center gap-1.5 text-xs text-green-400 shrink-0 font-bold">
           <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          Online
+          ONLINE
         </span>
       </div>
 

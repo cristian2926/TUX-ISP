@@ -289,36 +289,64 @@ export default function ClienteDetalle() {
     </div>
   )
 
-  const inp = "w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFD700] transition-colors"
+  const inp = "w-full bg-[#111827] border border-[#1F2937] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFD700] transition-colors"
 
   const HIST_COLOR = {
     activacion: 'bg-green-500', corte: 'bg-red-500',
     pago: 'bg-[#FFD700]', cambio_plan: 'bg-blue-500', nota: 'bg-[#9CA3AF]',
   }
 
+  const diasRestantes = cliente.fecha_vencimiento
+    ? Math.ceil((new Date(cliente.fecha_vencimiento + 'T12:00:00') - new Date()) / (1000 * 60 * 60 * 24))
+    : null
+
   return (
     <>
     <div className="p-4 sm:p-6 space-y-5 w-full">
 
+      {/* ── BREADCRUMB ──────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 text-xs text-[#4B5563] font-mono uppercase tracking-widest">
+        <Link to="/clientes" className="hover:text-[#9CA3AF] transition-colors">Clientes</Link>
+        <span className="text-[#1F2937]">›</span>
+        <span className="text-[#FFD700]">{cliente.nombre}</span>
+      </div>
+
       {/* ── HEADER ─────────────────────────────────────────────────── */}
       <div className="flex items-start gap-3">
-        <Link to="/clientes" className="p-2 mt-0.5 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#374151] transition-colors shrink-0">
+        <Link to="/clientes" className="p-2 mt-0.5 rounded-lg text-[#6B7280] hover:text-white hover:bg-[#1F2937] transition-colors shrink-0">
           <ArrowLeft size={18}/>
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-xl font-bold text-white truncate">{cliente.nombre}</h1>
-            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${ESTADO_STYLE[cliente.estado]}`}>
+            <span className={`px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${ESTADO_STYLE[cliente.estado]}`}>
               {cliente.estado}
             </span>
+            {pppoeStatus?.conectado && (
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-green-500/15 text-green-400 border border-green-500/30 uppercase tracking-wide">
+                Active Node
+              </span>
+            )}
           </div>
-          <p className="text-[#9CA3AF] text-sm mt-0.5">
+          <p className="text-[#6B7280] text-sm mt-0.5">
             {cliente.usuario_pppoe} — {cliente.zona?.nombre} — {cliente.plan?.nombre}
           </p>
         </div>
 
         {/* Acciones rápidas */}
         <div className="flex items-center gap-2 flex-wrap justify-end shrink-0">
+          <button
+            onClick={() => { setFechaProroga(cliente.fecha_vencimiento || ''); setModalProroga(true) }}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#1F2937] text-[#9CA3AF] hover:text-white border border-[#374151] transition-colors"
+          >
+            <Clock size={15}/> Prórroga
+          </button>
+          <button
+            onClick={() => enviarAviso(cliente.estado === 'activo' ? 'cobro' : 'corte')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-green-900/20 text-green-400 hover:bg-green-900/40 border border-green-800/30 transition-colors"
+          >
+            <MessageCircle size={15}/> WhatsApp
+          </button>
           <button
             onClick={toggleEstado}
             className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -329,18 +357,6 @@ export default function ClienteDetalle() {
           >
             {cliente.estado === 'activo' ? <><WifiOff size={15}/> Cortar</> : <><Wifi size={15}/> Reactivar</>}
           </button>
-          <button
-            onClick={() => enviarAviso(cliente.estado === 'activo' ? 'cobro' : 'corte')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-green-900/20 text-green-400 hover:bg-green-900/40 border border-green-800/30 transition-colors"
-          >
-            <MessageCircle size={15}/> WhatsApp
-          </button>
-          <button
-            onClick={() => { setFechaProroga(cliente.fecha_vencimiento || ''); setModalProroga(true) }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-blue-900/20 text-blue-400 hover:bg-blue-900/40 border border-blue-800/30 transition-colors"
-          >
-            <Clock size={15}/> Prórroga
-          </button>
           {editing ? (
             <button onClick={guardar} disabled={saving}
               className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 disabled:opacity-50">
@@ -348,9 +364,74 @@ export default function ClienteDetalle() {
             </button>
           ) : (
             <button onClick={() => setEditing(true)}
-              className="flex items-center gap-1.5 bg-[#374151] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#4B5563] transition-colors">
-              <Edit size={15}/> Editar
+              className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 transition-colors">
+              <DollarSign size={15}/> Registrar Nuevo Pago
             </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── TOP INFO CARDS ─────────────────────────────────────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Plan Contratado */}
+        <div className="bg-[#111827] rounded-xl border border-[#1F2937] p-4">
+          <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold mb-2">Plan Contratado</p>
+          <p className="text-lg font-bold text-white">{cliente.plan?.nombre || '—'}</p>
+          {cliente.plan && (
+            <p className="text-xs text-[#6B7280] mt-1">
+              ↓{cliente.plan.bajada_mbps} / ↑{cliente.plan.subida_mbps} Mbps · S/ {cliente.plan.precio}/mes
+            </p>
+          )}
+          <div className="flex items-center gap-1.5 mt-2">
+            <span className={`w-1.5 h-1.5 rounded-full ${pppoeStatus?.conectado ? 'bg-green-400' : 'bg-[#374151]'}`}/>
+            <span className="text-xs text-[#6B7280]">
+              {loadingPppoe ? 'Verificando...' : pppoeStatus?.conectado ? 'Link Status: Operational' : 'Link Status: Offline'}
+            </span>
+          </div>
+        </div>
+
+        {/* Próximo Vencimiento */}
+        <div className={`rounded-xl border p-4 ${diasRestantes !== null && diasRestantes <= 15 ? 'bg-[#FFD700]/8 border-[#FFD700]/25' : 'bg-[#111827] border-[#1F2937]'}`}>
+          <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold mb-2">Próximo Vencimiento</p>
+          {cliente.fecha_vencimiento ? (
+            <>
+              <p className="text-xl font-black text-white">
+                {new Date(cliente.fecha_vencimiento + 'T12:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'long' })}
+              </p>
+              {diasRestantes !== null && (
+                <p className={`text-xs mt-1.5 flex items-center gap-1 font-medium ${
+                  diasRestantes < 0 ? 'text-red-400' : diasRestantes <= 5 ? 'text-red-400' : diasRestantes <= 15 ? 'text-[#FFD700]' : 'text-[#6B7280]'
+                }`}>
+                  {diasRestantes <= 15 && <AlertCircle size={11}/>}
+                  {diasRestantes < 0 ? `Vencido hace ${Math.abs(diasRestantes)} días` : `Días restantes: ${diasRestantes}`}
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="text-sm text-[#374151]">Sin fecha de vencimiento</p>
+          )}
+        </div>
+
+        {/* Estado de conexión */}
+        <div className="bg-[#111827] rounded-xl border border-[#1F2937] p-4">
+          <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold mb-2">Estado PPPoE</p>
+          <div className="flex items-center gap-2 mt-1">
+            {loadingPppoe ? (
+              <div className="w-2 h-2 rounded-full bg-[#374151] animate-pulse"/>
+            ) : pppoeStatus?.conectado ? (
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]"/>
+            ) : (
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500"/>
+            )}
+            <p className="text-base font-bold text-white">
+              {loadingPppoe ? 'Consultando...' : pppoeStatus?.conectado ? 'Sesión Activa' : 'Sin Sesión'}
+            </p>
+          </div>
+          {pppoeStatus?.conectado && (
+            <div className="mt-2 space-y-0.5">
+              {pppoeStatus.ip_remota && <p className="text-xs text-[#6B7280] font-mono">{pppoeStatus.ip_remota}</p>}
+              {pppoeStatus.uptime && <p className="text-xs text-[#6B7280]">Uptime: {pppoeStatus.uptime}</p>}
+            </div>
           )}
         </div>
       </div>

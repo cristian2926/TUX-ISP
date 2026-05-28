@@ -1,17 +1,18 @@
-import { NavLink, useNavigate } from 'react-router-dom'
+import { NavLink, useNavigate, Link } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Globe, MessageCircle,
   Settings, LogOut, Wifi, DollarSign, X, TrendingDown,
+  Plus, HelpCircle,
 } from 'lucide-react'
 
 const NAV = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/clientes', icon: Users, label: 'Clientes' },
-  { to: '/zonas', icon: Globe, label: 'Zonas' },
-  { to: '/pagos', icon: DollarSign, label: 'Pagos' },
-  { to: '/gastos', icon: TrendingDown, label: 'Gastos' },
-  { to: '/whatsapp', icon: MessageCircle, label: 'WhatsApp' },
-  { to: '/configuracion', icon: Settings, label: 'Configuración' },
+  { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/clientes',      icon: Users,           label: 'Clients' },
+  { to: '/zonas',         icon: Globe,           label: 'Zones' },
+  { to: '/pagos',         icon: DollarSign,      label: 'Pagos' },
+  { to: '/gastos',        icon: TrendingDown,    label: 'Gastos' },
+  { to: '/whatsapp',      icon: MessageCircle,   label: 'WhatsApp' },
+  { to: '/configuracion', icon: Settings,        label: 'Config' },
 ]
 
 export default function Sidebar({ onClose }) {
@@ -23,17 +24,18 @@ export default function Sidebar({ onClose }) {
   }
 
   return (
-    <aside className="w-56 h-full bg-[#1F2937] border-r border-[#374151] flex flex-col">
+    <aside className="w-56 h-full bg-[#111827] border-r border-[#1F2937] flex flex-col">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-4 py-5 border-b border-[#374151]">
+      <div className="flex items-center gap-3 px-4 py-5 border-b border-[#1F2937]">
         <div className="w-9 h-9 rounded-xl bg-[#FFD700] flex items-center justify-center shrink-0">
           <Wifi size={18} className="text-[#111827]" strokeWidth={2.5} />
         </div>
-        <div className="flex-1">
-          <p className="text-white font-bold text-sm leading-tight">TUX-ISP</p>
-          <p className="text-[#9CA3AF] text-xs">tuxtell.net</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-black text-sm leading-tight tracking-wider">TUX-ISP</p>
+          <p className="text-[#4B5563] text-[9px] uppercase tracking-widest font-semibold mt-0.5">
+            Network Operations
+          </p>
         </div>
-        {/* Close btn — solo visible en mobile */}
         {onClose && (
           <button
             onClick={onClose}
@@ -45,7 +47,7 @@ export default function Sidebar({ onClose }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+      <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
         {NAV.map(({ to, icon: Icon, label }) => (
           <NavLink
             key={to}
@@ -55,7 +57,7 @@ export default function Sidebar({ onClose }) {
               `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? 'bg-[#FFD700] text-[#111827]'
-                  : 'text-[#9CA3AF] hover:bg-[#374151] hover:text-white'
+                  : 'text-[#6B7280] hover:bg-[#1F2937] hover:text-white'
               }`
             }
           >
@@ -66,13 +68,25 @@ export default function Sidebar({ onClose }) {
       </nav>
 
       {/* Footer */}
-      <div className="px-2 pb-4">
+      <div className="px-2 pb-4 pt-3 space-y-1 border-t border-[#1F2937]">
+        <Link
+          to="/clientes/nuevo"
+          onClick={onClose}
+          className="flex items-center justify-center gap-2 w-full px-3 py-2.5 rounded-lg bg-[#FFD700] text-[#111827] font-bold text-sm hover:bg-yellow-400 transition-all"
+        >
+          <Plus size={16} />
+          New Client
+        </Link>
+        <button className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[#6B7280] hover:bg-[#1F2937] hover:text-white transition-all">
+          <HelpCircle size={16} />
+          Support
+        </button>
         <button
           onClick={logout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm text-[#9CA3AF] hover:bg-red-900/30 hover:text-red-400 transition-all"
+          className="flex items-center gap-3 w-full px-3 py-2 rounded-lg text-sm text-[#6B7280] hover:bg-red-900/20 hover:text-red-400 transition-all"
         >
-          <LogOut size={17} />
-          Cerrar sesión
+          <LogOut size={16} />
+          Sign Out
         </button>
       </div>
     </aside>
