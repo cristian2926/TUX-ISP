@@ -1,6 +1,8 @@
 const express = require('express')
 const { Client, LocalAuth } = require('whatsapp-web.js')
 const qrcode = require('qrcode')
+const fs = require('fs')
+const path = require('path')
 
 const app = express()
 app.use(express.json())
@@ -13,9 +15,26 @@ let isConnected = false
 let connectedPhone = null
 let client = null
 
+const AUTH_PATH = '/app/.wwebjs_auth'
+
+function cleanChromiumLocks() {
+  const lockNames = ['SingletonLock', 'SingletonSocket', 'SingletonCookie']
+  try {
+    const entries = fs.readdirSync(AUTH_PATH)
+    for (const entry of entries) {
+      const sessionDir = path.join(AUTH_PATH, entry)
+      for (const lock of lockNames) {
+        const p = path.join(sessionDir, lock)
+        try { fs.unlinkSync(p); console.log(`Lock eliminado: ${p}`) } catch {}
+      }
+    }
+  } catch {}
+}
+
 function initClient() {
+  cleanChromiumLocks()
   client = new Client({
-    authStrategy: new LocalAuth({ dataPath: '/app/.wwebjs_auth' }),
+    authStrategy: new LocalAuth({ dataPath: AUTH_PATH }),
     puppeteer: {
       executablePath: CHROMIUM,
       headless: true,
