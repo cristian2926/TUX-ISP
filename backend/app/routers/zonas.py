@@ -396,42 +396,6 @@ def wg_peers_activos(
 
 # ── Access Points ─────────────────────────────────────────────────────────────
 
-@router.get("/{zona_id}/ips-disponibles")
-def ips_disponibles(
-    zona_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(get_current_user),
-):
-    import ipaddress
-    zona = db.query(models.Zona).filter(models.Zona.id == zona_id).first()
-    if not zona or not zona.ip_lan:
-        return {"ips": [], "subnet": None, "usadas_count": 0}
-
-    parts = zona.ip_lan.split(".")
-    if len(parts) != 4:
-        return {"ips": [], "subnet": None, "usadas_count": 0}
-
-    network_str = f"{parts[0]}.{parts[1]}.{parts[2]}.0/24"
-    network = ipaddress.IPv4Network(network_str, strict=False)
-
-    usadas = {
-        r[0] for r in db.query(models.Cliente.ip_estatica).filter(
-            models.Cliente.zona_id == zona_id,
-            models.Cliente.ip_estatica.isnot(None),
-            models.Cliente.ip_estatica != "",
-        ).all()
-    }
-
-    excluidas = {str(network.network_address), str(network.broadcast_address), zona.ip_lan}
-
-    disponibles = [
-        str(ip) for ip in network.hosts()
-        if str(ip) not in usadas and str(ip) not in excluidas
-    ]
-
-    return {"ips": disponibles, "subnet": network_str, "usadas_count": len(usadas)}
-
-
 @router.post("/{zona_id}/access-points", response_model=schemas.AccessPointOut, status_code=201)
 def create_ap(
     zona_id: int,
@@ -496,6 +460,21 @@ def _ssh_exec(host: str, cmd: str, timeout: int = 30) -> dict:
         return {"ok": False, "output": f"Error de conexión: {e}"}
 
 
+_BLOCKED_CMD_TERMS = {
+    "/system reboot", "/system shutdown", "/system reset-configuration",
+    "/user", "/ip service", "/tool fetch", "/tool e-mail",
+    "/certificate", "execute", "fetch", "tftp",
+}
+
+
+def _is_safe_routeros_cmd(cmd: str) -> bool:
+    cmd_lower = cmd.lower()
+    for blocked in _BLOCKED_CMD_TERMS:
+        if blocked in cmd_lower:
+            return False
+    return True
+
+
 @router.post("/{zona_id}/exec")
 def exec_terminal(
     zona_id: int,
@@ -503,6 +482,8 @@ def exec_terminal(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user),
 ):
+    if current_user.rol != "admin":
+        raise HTTPException(status_code=403, detail="Se requiere rol de administrador")
     zona = db.query(models.Zona).filter(models.Zona.id == zona_id).first()
     if not zona:
         raise HTTPException(status_code=404, detail="Zona no encontrada")
@@ -511,4 +492,8 @@ def exec_terminal(
     cmd = body.cmd.strip()
     if not cmd:
         raise HTTPException(status_code=400, detail="Comando vacío")
+    if not _is_safe_routeros_cmd(cmd):
+        logger.warning("Comando bloqueado por seguridad — usuario: %s, cmd: %s", current_user.email, cmd)
+        raise HTTPException(status_code=400, detail="Comando no permitido por política de seguridad")
+    logger.info("Exec terminal — zona: %s, usuario: %s, cmd: %s", zona.nombre, current_user.email, cmd)
     return _ssh_exec(zona.ip_wireguard, cmd)

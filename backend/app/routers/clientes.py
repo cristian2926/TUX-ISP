@@ -18,6 +18,30 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
+# ── RouterOS input sanitization ───────────────────────────────────────────────
+
+_PPPOE_USER_RE = re.compile(r'^[a-zA-Z0-9._@-]{1,100}$')
+_IPV4_RE = re.compile(r'^(\d{1,3}\.){3}\d{1,3}$')
+
+
+def _ros_str(value: str) -> str:
+    """Escape a value for use inside a RouterOS double-quoted string argument.
+    Strips characters that could break out of the string or chain commands."""
+    return str(value).replace('\\', '').replace('"', '').replace('\n', '').replace('\r', '').replace(';', '').replace('[', '').replace(']', '')
+
+
+def _validate_pppoe_user(username: str) -> str:
+    if not _PPPOE_USER_RE.match(username):
+        raise HTTPException(status_code=400, detail="Usuario PPPoE contiene caracteres no permitidos")
+    return username
+
+
+def _validate_ip(ip: str) -> str:
+    if ip and not _IPV4_RE.match(ip):
+        raise HTTPException(status_code=400, detail="IP estática no es una dirección IPv4 válida")
+    return ip
+
+
 # ── SSH MikroTik ──────────────────────────────────────────────────────────────
 
 def _mikrotik_exec(host: str, commands: list[str]) -> dict:
@@ -156,16 +180,18 @@ def create_cliente(
     wg_ip = _get_wg_ip(db, cliente.zona_id)
     if wg_ip:
         plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
-        perfil = plan.codigo if plan else "default"
+        perfil = _ros_str(plan.codigo if plan else "default")
         ip_remote = cliente.ip_estatica if cliente.ip_estatica else "0.0.0.0"
-        nombre_safe = cliente.nombre.replace('"', "'")
+        user = _ros_str(cliente.usuario_pppoe)
+        pwd = _ros_str(cliente.password_pppoe)
+        comment = _ros_str(cliente.nombre)
         cmd = (
-            f'/ppp secret add name="{cliente.usuario_pppoe}" '
-            f'password="{cliente.password_pppoe}" '
+            f'/ppp secret add name="{user}" '
+            f'password="{pwd}" '
             f'profile="{perfil}" '
             f'remote-address={ip_remote} '
             f'service=pppoe '
-            f'comment="{nombre_safe}"'
+            f'comment="{comment}"'
         )
         mt_result = _mikrotik_exec(wg_ip, [cmd])
 
@@ -211,13 +237,14 @@ def update_cliente(
     cmds = []
     wg_ip = _get_wg_ip(db, cliente.zona_id)
 
+    user = _ros_str(cliente.usuario_pppoe)
     if "password_pppoe" in update_data:
-        cmds.append(f'/ppp secret set [find name="{cliente.usuario_pppoe}"] password="{update_data["password_pppoe"]}"')
+        cmds.append(f'/ppp secret set [find name="{user}"] password="{_ros_str(update_data["password_pppoe"])}"')
 
     if "plan_id" in update_data:
         plan = db.query(models.Plan).filter(models.Plan.id == update_data["plan_id"]).first()
         if plan:
-            cmds.append(f'/ppp secret set [find name="{cliente.usuario_pppoe}"] profile="{plan.codigo}"')
+            cmds.append(f'/ppp secret set [find name="{user}"] profile="{_ros_str(plan.codigo)}"')
 
     if cmds and wg_ip:
         _mikrotik_exec(wg_ip, cmds)
@@ -245,7 +272,7 @@ def delete_cliente(
     if not cliente:
         raise HTTPException(status_code=404, detail="Cliente no encontrado")
 
-    usuario = cliente.usuario_pppoe
+    usuario = _ros_str(cliente.usuario_pppoe)
     wg_ip = _get_wg_ip(db, cliente.zona_id)
 
     # Eliminar registros relacionados primero
@@ -300,9 +327,9 @@ def cortar_servicio(
             f"📅 Mes pendiente: *{mes_label}*\n"
             f"💰 Monto: *S/ {plan.precio if plan else '---'}*\n\n"
             f"Para reactivar su servicio:\n"
-            f"📱 *Yape / Plin:* 936511008\n"
+            f"📱 *Yape / Plin:* {settings.PHONE_CONTACTO}\n"
             f"{tiendas}"
-            f"📞 *Llamadas:* 936511008\n\n"
+            f"📞 *Llamadas:* {settings.PHONE_CONTACTO}\n\n"
             f"_Tuxtell — Conectando tu mundo_ 🌐"
         )
         _wa_send(phone, msg)
@@ -311,15 +338,15 @@ def cortar_servicio(
     mt_result = {"ok": False}
     wg_ip = _get_wg_ip(db, cliente.zona_id)
     if wg_ip:
+        user = _ros_str(cliente.usuario_pppoe)
         cmds = []
         if cliente.ip_estatica:
+            ip_safe = _validate_ip(cliente.ip_estatica)
             cmds.append(
                 f'/ip firewall address-list add list=CORTE-MOROSO '
-                f'address={cliente.ip_estatica} comment="{cliente.usuario_pppoe}"'
+                f'address={ip_safe} comment="{user}"'
             )
-        cmds.append(
-            f'/ppp active remove [find name="{cliente.usuario_pppoe}"]'
-        )
+        cmds.append(f'/ppp active remove [find name="{user}"]')
         mt_result = _mikrotik_exec(wg_ip, cmds)
 
     return {"ok": True, "estado": "suspendido", "mikrotik_ok": mt_result["ok"]}
@@ -355,9 +382,10 @@ def reactivar_servicio(
     mt_result = {"ok": False}
     wg_ip = _get_wg_ip(db, cliente.zona_id)
     if wg_ip and cliente.ip_estatica:
+        ip_safe = _validate_ip(cliente.ip_estatica)
         cmd = (
             f'/ip firewall address-list remove '
-            f'[find where list=CORTE-MOROSO address={cliente.ip_estatica}]'
+            f'[find where list=CORTE-MOROSO address={ip_safe}]'
         )
         mt_result = _mikrotik_exec(wg_ip, [cmd])
     elif wg_ip:
@@ -457,7 +485,7 @@ def get_pppoe_status(
         return {"conectado": False, "uptime": None, "ip_remota": None, "error": "Zona sin WireGuard"}
 
     result = _mikrotik_exec(zona.ip_wireguard, [
-        f'/ppp active print detail where name="{cliente.usuario_pppoe}"'
+        f'/ppp active print detail where name="{_ros_str(cliente.usuario_pppoe)}"'
     ])
 
     if not result["ok"]:

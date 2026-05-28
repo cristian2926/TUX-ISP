@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -11,6 +13,7 @@ from .. import models, schemas
 from ..config import settings
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
@@ -54,7 +57,10 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.Usuario).filter(models.Usuario.email == form_data.username).first()
     if not user or not verify_password(form_data.password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Credenciales incorrectas")
+        logger.warning("Login fallido para: %s", form_data.username)
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Credenciales incorrectas")
+    if not user.activo:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cuenta desactivada")
     token = create_access_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
 
@@ -83,6 +89,8 @@ def create_usuario(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user),
 ):
+    if current_user.rol != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Se requiere rol de administrador")
     if db.query(models.Usuario).filter(models.Usuario.email == data.email).first():
         raise HTTPException(status_code=400, detail="Email ya registrado")
     user = models.Usuario(

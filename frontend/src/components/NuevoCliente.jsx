@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Save, Wifi, Tv, Package, ChevronDown, Search } from 'lucide-react'
+import { ArrowLeft, Save, Wifi, Tv, Package } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -101,33 +101,6 @@ export default function NuevoCliente() {
 
   const tieneEquipo = form.estado_equipo !== 'sin_equipo'
 
-  const [ipsDisponibles, setIpsDisponibles] = useState([])
-  const [ipsLoading, setIpsLoading] = useState(false)
-  const [showIpDrop, setShowIpDrop] = useState(false)
-  const [ipSearch, setIpSearch] = useState('')
-  const ipDropRef = useRef(null)
-
-  useEffect(() => {
-    if (!form.zona_id) { setIpsDisponibles([]); return }
-    setIpsLoading(true)
-    api.get(`/zonas/${form.zona_id}/ips-disponibles`)
-      .then(r => setIpsDisponibles(r.data.ips || []))
-      .catch(() => setIpsDisponibles([]))
-      .finally(() => setIpsLoading(false))
-  }, [form.zona_id])
-
-  useEffect(() => {
-    function handleClick(e) {
-      if (ipDropRef.current && !ipDropRef.current.contains(e.target)) {
-        setShowIpDrop(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
-  }, [])
-
-  const ipsFiltradas = ipsDisponibles.filter(ip => ip.includes(ipSearch))
-
   return (
     <div className="p-6 max-w-3xl">
       {/* Header */}
@@ -220,63 +193,14 @@ export default function NuevoCliente() {
             <Field label="Contraseña PPPoE" required>
               <input className={inputCls} value={form.password_pppoe} onChange={e => set('password_pppoe', e.target.value)} placeholder="••••••••" />
             </Field>
+            <Field label="IP Estática">
+              <input className={inputCls} value={form.ip_estatica} onChange={e => set('ip_estatica', e.target.value)} placeholder="192.168.1.100" />
+            </Field>
             <Field label="Zona" required>
-              <select className={inputCls} value={form.zona_id} onChange={e => { set('zona_id', e.target.value); set('ip_estatica', '') }}>
+              <select className={inputCls} value={form.zona_id} onChange={e => set('zona_id', e.target.value)}>
                 <option value="">Seleccionar zona</option>
                 {zonas.map(z => <option key={z.id} value={z.id}>{z.nombre} ({z.ip_wireguard})</option>)}
               </select>
-            </Field>
-            <Field label="IP Estática">
-              <div className="relative" ref={ipDropRef}>
-                <input
-                  className={inputCls}
-                  value={form.ip_estatica}
-                  onChange={e => set('ip_estatica', e.target.value)}
-                  placeholder={ipsLoading ? 'Cargando IPs...' : form.zona_id ? '192.168.x.x' : 'Seleccione una zona'}
-                />
-                {!ipsLoading && ipsDisponibles.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => { setShowIpDrop(v => !v); setIpSearch('') }}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-[10px] text-[#FFD700] font-bold bg-[#FFD700]/10 hover:bg-[#FFD700]/20 px-2 py-0.5 rounded transition-colors"
-                  >
-                    {ipsDisponibles.length} libres <ChevronDown size={10} />
-                  </button>
-                )}
-                {showIpDrop && (
-                  <div className="absolute top-full mt-1 left-0 right-0 bg-[#0D1117] border border-[#374151] rounded-lg z-30 shadow-2xl">
-                    <div className="p-2 border-b border-[#1F2937]">
-                      <div className="relative">
-                        <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-[#4B5563]" />
-                        <input
-                          autoFocus
-                          value={ipSearch}
-                          onChange={e => setIpSearch(e.target.value)}
-                          placeholder="Filtrar IPs..."
-                          className="w-full bg-[#1F2937] border border-[#374151] rounded-md pl-7 pr-3 py-1.5 text-xs text-white placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700]/50"
-                        />
-                      </div>
-                    </div>
-                    <div className="max-h-44 overflow-y-auto">
-                      {ipsFiltradas.length === 0 ? (
-                        <p className="text-center text-xs text-[#4B5563] py-4">Sin resultados</p>
-                      ) : ipsFiltradas.map(ip => (
-                        <button
-                          key={ip}
-                          type="button"
-                          onClick={() => { set('ip_estatica', ip); setShowIpDrop(false) }}
-                          className="w-full text-left px-3 py-1.5 text-sm font-mono text-white hover:bg-[#1F2937] transition-colors"
-                        >
-                          {ip}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="px-3 py-1.5 border-t border-[#1F2937]">
-                      <p className="text-[10px] text-[#4B5563]">{ipsFiltradas.length} IPs disponibles en {zonas.find(z => +z.id === +form.zona_id)?.nombre}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
             </Field>
           </div>
         </div>

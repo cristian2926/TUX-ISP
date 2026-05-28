@@ -1,7 +1,11 @@
-from pydantic import BaseModel, EmailStr
+import re
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, List
 from datetime import date, datetime
 from .models import EstadoCliente, EstadoPago, TipoHistorial, TipoConexion, EstadoEquipo
+
+_PPPOE_RE = re.compile(r'^[a-zA-Z0-9._@-]{1,100}$')
+_IPV4_RE = re.compile(r'^(\d{1,3}\.){3}\d{1,3}$')
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -120,6 +124,20 @@ class ClienteBase(BaseModel):
     usuario_pppoe: str
     password_pppoe: str
     ip_estatica: Optional[str] = None
+
+    @field_validator('usuario_pppoe')
+    @classmethod
+    def validate_usuario_pppoe(cls, v: str) -> str:
+        if not _PPPOE_RE.match(v):
+            raise ValueError('Solo se permiten letras, números, punto, guión, arroba y guión bajo (máx 100 caracteres)')
+        return v
+
+    @field_validator('ip_estatica')
+    @classmethod
+    def validate_ip_estatica(cls, v: Optional[str]) -> Optional[str]:
+        if v and not _IPV4_RE.match(v):
+            raise ValueError('Debe ser una dirección IPv4 válida')
+        return v
     zona_id: int
     plan_id: int
     fecha_instalacion: date
