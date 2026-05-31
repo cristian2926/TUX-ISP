@@ -502,7 +502,7 @@ def get_calendario_pagos(
         elif mes_date > hoy.replace(day=1):
             estado = "futuro"
         elif mes_str in pagos_dict:
-            estado = str(pagos_dict[mes_str])
+            estado = pagos_dict[mes_str].value if hasattr(pagos_dict[mes_str], 'value') else str(pagos_dict[mes_str])
         else:
             estado = "vencido" if mes_date < hoy.replace(day=1) else "pendiente"
 

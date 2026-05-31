@@ -24,6 +24,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
   const [anio, setAnio] = useState(new Date().getFullYear())
   const [monto, setMonto]   = useState(planPrecio || '')
   const [metodo, setMetodo] = useState('efectivo')
+  const [loadingCal, setLoadingCal] = useState(false)
 
   useEffect(() => {
     if (modalMes) setMonto(planPrecio || '')
@@ -31,10 +32,19 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
   const [saving, setSaving] = useState(false)
 
   function fetch() {
+    setLoadingCal(true)
     api.get(`/clientes/${clienteId}/calendario-pagos`, { params: { anio } })
       .then(r => setCalendario(r.data))
+      .finally(() => setLoadingCal(false))
   }
   useEffect(() => { fetch() }, [clienteId, anio])
+
+  // Refrescar cuando el usuario vuelve a la pestaña
+  useEffect(() => {
+    const onVisible = () => { if (!document.hidden) fetch() }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => document.removeEventListener('visibilitychange', onVisible)
+  }, [clienteId, anio])
 
   const pagados        = calendario.filter(m => m.estado === 'pagado').length
   const vencidos       = calendario.filter(m => m.estado === 'vencido').length
@@ -122,6 +132,9 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs text-[#9CA3AF]">Toca un mes para registrar</p>
         <div className="flex items-center gap-2">
+          <button onClick={fetch} disabled={loadingCal} title="Actualizar" className="w-6 h-6 flex items-center justify-center rounded bg-[#374151] text-[#9CA3AF] hover:text-white text-xs disabled:opacity-40">
+            <RefreshCw size={11} className={loadingCal ? 'animate-spin' : ''}/>
+          </button>
           <button onClick={() => setAnio(a => a-1)} className="w-6 h-6 flex items-center justify-center rounded bg-[#374151] text-[#9CA3AF] hover:text-white text-xs">◀</button>
           <span className="text-sm font-bold text-white w-10 text-center">{anio}</span>
           <button onClick={() => setAnio(a => a+1)} className="w-6 h-6 flex items-center justify-center rounded bg-[#374151] text-[#9CA3AF] hover:text-white text-xs">▶</button>
