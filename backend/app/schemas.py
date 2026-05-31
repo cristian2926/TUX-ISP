@@ -219,9 +219,16 @@ class PagoBase(BaseModel):
 class PagoCreate(PagoBase):
     pass
 
+class ClienteNombre(BaseModel):
+    id: int
+    nombre: str
+    class Config:
+        from_attributes = True
+
 class PagoOut(PagoBase):
     id: int
     creado_en: datetime
+    cliente: Optional[ClienteNombre] = None
     class Config:
         from_attributes = True
 

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft, Save, Edit, X, Wifi, WifiOff,
-  MessageCircle, DollarSign, Phone, MapPin,
+  MessageCircle, Phone, MapPin,
   User, Shield, Calendar, TrendingUp, AlertCircle,
   Package, Clock, RefreshCw,
 } from 'lucide-react'
@@ -19,7 +19,7 @@ const ESTADO_STYLE = {
 }
 
 /* ── Calendario de pagos ────────────────────────────────────────────── */
-function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes }) {
+function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPaymentSaved }) {
   const [calendario, setCalendario] = useState([])
   const [anio, setAnio] = useState(new Date().getFullYear())
   const [monto, setMonto]   = useState(planPrecio || '')
@@ -69,6 +69,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes }) {
       toast.success(`Pago registrado`)
       setModalMes(null)
       fetch()
+      if (onPaymentSaved) onPaymentSaved()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al registrar')
     } finally {
@@ -91,6 +92,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes }) {
       toast.success(`Mes marcado como corte temporal`)
       setModalMes(null)
       fetch()
+      if (onPaymentSaved) onPaymentSaved()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al registrar')
     } finally {
@@ -373,19 +375,10 @@ export default function ClienteDetalle() {
               </button>
             </>
           ) : (
-            <>
-              <button onClick={() => setEditing(true)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#1F2937] text-[#9CA3AF] hover:text-white border border-[#374151] transition-colors">
-                <Edit size={15}/> Editar
-              </button>
-              <button onClick={() => {
-                const hoy = new Date()
-                setModalMes(`${hoy.getFullYear()}-${String(hoy.getMonth()+1).padStart(2,'0')}`)
-              }}
-                className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg text-sm hover:bg-yellow-400 transition-colors">
-                <DollarSign size={15}/> Registrar Pago
-              </button>
-            </>
+            <button onClick={() => setEditing(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium bg-[#1F2937] text-[#9CA3AF] hover:text-white border border-[#374151] transition-colors">
+              <Edit size={15}/> Editar
+            </button>
           )}
         </div>
       </div>
@@ -762,6 +755,7 @@ export default function ClienteDetalle() {
                 planPrecio={cliente.plan?.precio}
                 modalMes={modalMes}
                 setModalMes={setModalMes}
+                onPaymentSaved={fetchCliente}
               />
             </div>
           </div>

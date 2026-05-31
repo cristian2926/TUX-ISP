@@ -355,7 +355,7 @@ export default function Pagos() {
                   </tr>
                 ) : pagos.map(p => (
                   <tr key={p.id} className="border-b border-[#374151]/50 hover:bg-[#374151]/20 transition-colors">
-                    <td className="px-4 py-3 text-white font-medium">#{p.cliente_id}</td>
+                    <td className="px-4 py-3 text-white font-medium">{p.cliente?.nombre || `#${p.cliente_id}`}</td>
                     <td className="px-4 py-3 text-[#9CA3AF] font-mono">{p.mes_pagado}</td>
                     <td className="px-4 py-3 text-[#9CA3AF] whitespace-nowrap">
                       {new Date(p.fecha_pago + 'T12:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: 'short', year: 'numeric' })}

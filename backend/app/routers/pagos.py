@@ -4,6 +4,7 @@ from sqlalchemy import func, extract
 from typing import List, Optional
 from datetime import date
 import calendar
+import threading
 import httpx
 import logging
 
@@ -49,14 +50,17 @@ def _enviar_confirmacion_pago(cliente: models.Cliente, pago: models.Pago, plan: 
         f"_Tuxtell — Conectando tu mundo_ 🌐"
     )
 
-    try:
-        with httpx.Client(timeout=8) as client:
-            client.post(
-                f"{settings.WHATSAPP_API_URL}/send",
-                json={"phone": phone, "message": mensaje},
-            )
-    except Exception as e:
-        logger.warning("WhatsApp pago no enviado a %s: %s", phone, e)
+    def _enviar():
+        try:
+            with httpx.Client(timeout=8) as http:
+                http.post(
+                    f"{settings.WHATSAPP_API_URL}/send",
+                    json={"phone": phone, "message": mensaje},
+                )
+        except Exception as e:
+            logger.warning("WhatsApp pago no enviado a %s: %s", phone, e)
+
+    threading.Thread(target=_enviar, daemon=True).start()
 
 router = APIRouter()
 
