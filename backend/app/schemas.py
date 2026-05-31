@@ -166,6 +166,7 @@ class ClienteUpdate(BaseModel):
     ip_estatica: Optional[str] = None
     zona_id: Optional[int] = None
     plan_id: Optional[int] = None
+    fecha_instalacion: Optional[date] = None
     fecha_vencimiento: Optional[date] = None
     estado: Optional[EstadoCliente] = None
     tipo_conexion: Optional[TipoConexion] = None

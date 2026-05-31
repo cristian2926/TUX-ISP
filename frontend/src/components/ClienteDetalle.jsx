@@ -255,6 +255,8 @@ export default function ClienteDetalle() {
         estado: form.estado, notas: form.notas,
         tipo_conexion: form.tipo_conexion,
         tiene_tv: form.tiene_tv,
+        fecha_instalacion: form.fecha_instalacion || null,
+        fecha_vencimiento: form.fecha_vencimiento || null,
         estado_equipo: form.estado_equipo,
         equipo_marca: form.equipo_marca,
         equipo_modelo: form.equipo_modelo,
@@ -636,9 +638,13 @@ export default function ClienteDetalle() {
               <div className="grid grid-cols-3 gap-2 bg-[#111827] rounded-lg p-3 border border-[#374151]">
                 <div>
                   <p className="text-xs text-[#9CA3AF] mb-1">Instalación</p>
-                  <p className="text-xs text-white font-medium">
-                    {cliente.fecha_instalacion ? new Date(cliente.fecha_instalacion+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
-                  </p>
+                  {editing ? (
+                    <input type="date" className={inp + ' text-xs py-1'} value={form.fecha_instalacion || ''} onChange={e => setForm(f => ({...f, fecha_instalacion: e.target.value}))}/>
+                  ) : (
+                    <p className="text-xs text-white font-medium">
+                      {cliente.fecha_instalacion ? new Date(cliente.fecha_instalacion+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-[#9CA3AF] mb-1">Últ. activación</p>
@@ -648,9 +654,13 @@ export default function ClienteDetalle() {
                 </div>
                 <div>
                   <p className="text-xs text-[#9CA3AF] mb-1">Vencimiento</p>
-                  <p className={`text-xs font-medium ${cliente.fecha_vencimiento && new Date(cliente.fecha_vencimiento+'T12:00:00') < new Date() ? 'text-red-400' : 'text-green-400'}`}>
-                    {cliente.fecha_vencimiento ? new Date(cliente.fecha_vencimiento+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
-                  </p>
+                  {editing ? (
+                    <input type="date" className={inp + ' text-xs py-1'} value={form.fecha_vencimiento || ''} onChange={e => setForm(f => ({...f, fecha_vencimiento: e.target.value}))}/>
+                  ) : (
+                    <p className={`text-xs font-medium ${cliente.fecha_vencimiento && new Date(cliente.fecha_vencimiento+'T12:00:00') < new Date() ? 'text-red-400' : 'text-green-400'}`}>
+                      {cliente.fecha_vencimiento ? new Date(cliente.fecha_vencimiento+'T12:00:00').toLocaleDateString('es-PE', {day:'2-digit', month:'short', year:'numeric'}) : '—'}
+                    </p>
+                  )}
                 </div>
               </div>
 
