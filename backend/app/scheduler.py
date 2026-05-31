@@ -4,7 +4,7 @@ from datetime import date, timedelta
 import httpx
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from . import models
 from .config import settings
@@ -28,7 +28,10 @@ async def job_recordatorio_preventivo(dias_antes: int = 3):
             models.Pago.estado == models.EstadoPago.pagado,
         ).subquery()
 
-        clientes = db.query(models.Cliente).filter(
+        clientes = db.query(models.Cliente).options(
+            joinedload(models.Cliente.plan),
+            joinedload(models.Cliente.zona),
+        ).filter(
             models.Cliente.estado == models.EstadoCliente.activo,
             models.Cliente.fecha_vencimiento == fecha_objetivo,
             (models.Cliente.telefono_whatsapp.isnot(None)) | (models.Cliente.telefono.isnot(None)),
@@ -38,8 +41,8 @@ async def job_recordatorio_preventivo(dias_antes: int = 3):
         enviados = 0
         for cliente in clientes:
             phone = cliente.telefono_whatsapp or cliente.telefono
-            plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
-            zona = db.query(models.Zona).filter(models.Zona.id == cliente.zona_id).first()
+            plan = cliente.plan
+            zona = cliente.zona
             nombre = cliente.nombre.split()[0]
             tiendas = f"🏪 *Tiendas autorizadas:*\n{zona.tiendas_pago}\n" if zona and zona.tiendas_pago else ""
             mensaje = (

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import {
   ArrowLeft, Save, Edit, X, Wifi, WifiOff,
@@ -31,20 +31,21 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
   }, [modalMes])
   const [saving, setSaving] = useState(false)
 
-  function fetch() {
+  const fetch = useCallback(() => {
     setLoadingCal(true)
     api.get(`/clientes/${clienteId}/calendario-pagos`, { params: { anio } })
       .then(r => setCalendario(r.data))
       .finally(() => setLoadingCal(false))
-  }
-  useEffect(() => { fetch() }, [clienteId, anio])
+  }, [clienteId, anio])
+
+  useEffect(() => { fetch() }, [fetch])
 
   // Refrescar cuando el usuario vuelve a la pestaña
   useEffect(() => {
     const onVisible = () => { if (!document.hidden) fetch() }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [clienteId, anio])
+  }, [fetch])
 
   const pagados        = calendario.filter(m => m.estado === 'pagado').length
   const vencidos       = calendario.filter(m => m.estado === 'vencido').length

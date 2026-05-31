@@ -2,12 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session, joinedload
 from typing import Optional
 import httpx
+import logging
 from datetime import date
 
 from ..database import get_db
 from .. import models
 from .auth import get_current_user
 from ..config import settings
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -85,7 +88,8 @@ async def send_message(
         data = await wa_request("POST", "/send", {"phone": phone, "message": message})
         return data
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Error en send manual a %s: %s", phone, e)
+        raise HTTPException(status_code=500, detail="Error al enviar mensaje")
 
 
 @router.post("/aviso-cobro/{cliente_id}")
@@ -123,9 +127,10 @@ async def aviso_cobro(
 
     try:
         data = await wa_request("POST", "/send", {"phone": phone, "message": mensaje})
-        return {"ok": True, "mensaje_enviado": mensaje, "resultado": data}
+        return {"ok": True, "resultado": data}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Error aviso-cobro cliente %d: %s", cliente_id, e)
+        raise HTTPException(status_code=500, detail="Error al enviar aviso de cobro")
 
 
 @router.post("/aviso-corte/{cliente_id}")
@@ -162,9 +167,10 @@ async def aviso_corte(
 
     try:
         data = await wa_request("POST", "/send", {"phone": phone, "message": mensaje})
-        return {"ok": True, "mensaje_enviado": mensaje, "resultado": data}
+        return {"ok": True, "resultado": data}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Error aviso-corte cliente %d: %s", cliente_id, e)
+        raise HTTPException(status_code=500, detail="Error al enviar aviso de corte")
 
 
 @router.post("/broadcast-cobros")

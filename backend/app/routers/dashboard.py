@@ -29,12 +29,12 @@ def get_stats(
 
     ingresos_actual = db.query(func.sum(models.Pago.monto)).filter(
         models.Pago.mes_pagado == mes_actual,
-        models.Pago.estado == "pagado",
+        models.Pago.estado == models.EstadoPago.pagado,
     ).scalar() or 0
 
     ingresos_ant = db.query(func.sum(models.Pago.monto)).filter(
         models.Pago.mes_pagado == mes_ant,
-        models.Pago.estado == "pagado",
+        models.Pago.estado == models.EstadoPago.pagado,
     ).scalar() or 0
 
     gastos_actual = db.query(func.sum(models.Gasto.monto)).filter(
@@ -79,7 +79,7 @@ def ingresos_mensual(
         mes_str = f"{anio}-{mes:02d}"
         ingresos = db.query(func.sum(models.Pago.monto)).filter(
             models.Pago.mes_pagado == mes_str,
-            models.Pago.estado == "pagado",
+            models.Pago.estado == models.EstadoPago.pagado,
         ).scalar() or 0
 
         gastos = db.query(func.sum(models.Gasto.monto)).filter(

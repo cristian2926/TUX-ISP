@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract
-from typing import List, Optional
+from typing import Optional
 from datetime import date
 import calendar
 import threading
@@ -157,7 +157,7 @@ def resumen_mensual(
         mes_str = f"{anio}-{mes:02d}"
         total = db.query(func.sum(models.Pago.monto)).filter(
             models.Pago.mes_pagado == mes_str,
-            models.Pago.estado == "pagado",
+            models.Pago.estado == models.EstadoPago.pagado,
         ).scalar() or 0
 
         gastos = db.query(func.sum(models.Gasto.monto)).filter(
@@ -192,7 +192,7 @@ def clientes_sin_pago(
         joinedload(models.Cliente.zona),
         joinedload(models.Cliente.plan),
     ).filter(
-        models.Cliente.estado == "activo",
+        models.Cliente.estado == models.EstadoCliente.activo,
         ~models.Cliente.id.in_(pagaron),
     ).all()
 
