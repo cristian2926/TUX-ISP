@@ -21,12 +21,15 @@ def _enviar_confirmacion_pago(cliente: models.Cliente, pago: models.Pago, plan: 
     if not phone:
         return
 
-    # Calcular último día del mes pagado (ej: "2026-06" → 30 jun)
     anio, mes = map(int, pago.mes_pagado.split("-"))
-    ultimo_dia = calendar.monthrange(anio, mes)[1]
-    fecha_limite = f"{ultimo_dia:02d}/{mes:02d}/{anio}"
+    # Usar fecha_vencimiento del cliente (ej: 22/06/2026) si está disponible
+    if cliente.fecha_vencimiento:
+        fecha_limite = cliente.fecha_vencimiento.strftime("%d/%m/%Y")
+    else:
+        ultimo_dia = calendar.monthrange(anio, mes)[1]
+        fecha_limite = f"{ultimo_dia:02d}/{mes:02d}/{anio}"
 
-    nombres = cliente.nombre.split()[0]  # solo el primer nombre
+    nombres = cliente.nombre.split()[0]
     plan_nombre = plan.nombre if plan else "Internet"
     monto = f"{pago.monto:.2f}"
     mes_nombres = [
