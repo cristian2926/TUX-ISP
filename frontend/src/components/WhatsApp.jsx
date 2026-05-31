@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react'
-import { RefreshCw, Send, Wifi, WifiOff, QrCode, Bell, CheckCircle, XCircle } from 'lucide-react'
+import { RefreshCw, Send, Wifi, WifiOff, QrCode, Bell } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
-const MOCK_HISTORIAL = [
-  { id: 1, cliente: 'Carlos Mamani', tipo: 'recordatorio', fecha: '2025-05-26 09:15', estado: 'entregado' },
-  { id: 2, cliente: 'Rosa Quispe', tipo: 'aviso_corte', fecha: '2025-05-26 08:30', estado: 'entregado' },
-  { id: 3, cliente: 'Juan Flores', tipo: 'recordatorio', fecha: '2025-05-25 10:00', estado: 'fallido' },
-  { id: 4, cliente: 'Maria Huanca', tipo: 'reactivacion', fecha: '2025-05-25 14:20', estado: 'entregado' },
-  { id: 5, cliente: 'Pedro Condori', tipo: 'aviso_corte', fecha: '2025-05-24 09:00', estado: 'entregado' },
-]
 
 export default function WhatsApp() {
   const [status, setStatus] = useState(null)
@@ -224,62 +217,8 @@ export default function WhatsApp() {
           </div>
         </div>
 
-        {/* Right column: historial + send manual */}
+        {/* Right column: send manual */}
         <div className="lg:col-span-2 space-y-4">
-
-          {/* Historial de envíos */}
-          <div className="bg-[#111827] rounded-xl border border-[#1F2937] overflow-hidden">
-            <div className="px-4 py-3 border-b border-[#1F2937] flex items-center justify-between">
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold">Historial de Envíos</p>
-              <span className="text-[10px] text-[#4B5563] bg-[#1F2937] px-2 py-0.5 rounded font-mono">{MOCK_HISTORIAL.length} registros</span>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#1F2937]">
-                    {['Cliente', 'Tipo', 'Fecha / Hora', 'Estado', 'Acción'].map(h => (
-                      <th key={h} className="text-left px-4 py-2.5 text-[10px] font-semibold text-[#4B5563] uppercase tracking-widest">
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {MOCK_HISTORIAL.map(row => (
-                    <tr key={row.id} className="border-b border-[#1F2937]/60 hover:bg-[#1F2937]/40 transition-colors">
-                      <td className="px-4 py-2.5 text-white text-xs font-medium">{row.cliente}</td>
-                      <td className="px-4 py-2.5">
-                        <span className={`text-[10px] px-2 py-0.5 rounded uppercase tracking-wide font-bold ${
-                          row.tipo === 'aviso_corte' ? 'bg-red-500/15 text-red-400'
-                          : row.tipo === 'reactivacion' ? 'bg-green-500/15 text-green-400'
-                          : 'bg-[#FFD700]/10 text-[#FFD700]'
-                        }`}>
-                          {row.tipo.replace('_', ' ')}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2.5 text-[#6B7280] text-xs font-mono">{row.fecha}</td>
-                      <td className="px-4 py-2.5">
-                        {row.estado === 'entregado' ? (
-                          <span className="flex items-center gap-1 text-xs text-green-400">
-                            <CheckCircle size={12}/> Entregado
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-xs text-red-400">
-                            <XCircle size={12}/> Fallido
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-2.5">
-                        <button className="text-xs text-[#4B5563] hover:text-[#FFD700] transition-colors">
-                          Reenviar
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
 
           {/* Enviar mensaje manual */}
           <div className="bg-[#111827] rounded-xl border border-[#1F2937] overflow-hidden">
