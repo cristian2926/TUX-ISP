@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, extract
 from typing import Optional
-from datetime import date
+from datetime import date, timedelta
 import calendar
 import threading
 import httpx
@@ -14,6 +14,14 @@ from .auth import get_current_user
 from ..config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def _sumar_un_mes(d: date) -> date:
+    """Avanza exactamente un mes respetando días al final de mes (ej: 31 ene → 28/29 feb)."""
+    mes = d.month % 12 + 1
+    anio = d.year + (1 if d.month == 12 else 0)
+    dia = min(d.day, calendar.monthrange(anio, mes)[1])
+    return date(anio, mes, dia)
 
 
 def _enviar_confirmacion_pago(cliente: models.Cliente, pago: models.Pago, plan: models.Plan):
@@ -133,6 +141,11 @@ def create_pago(
         usuario_id=current_user.id,
     )
     db.add(historial_pago)
+
+    # Avanzar fecha de vencimiento al siguiente ciclo
+    base = cliente.fecha_vencimiento or date.today()
+    cliente.fecha_vencimiento = _sumar_un_mes(base)
+
     db.commit()
     db.refresh(pago)
 
