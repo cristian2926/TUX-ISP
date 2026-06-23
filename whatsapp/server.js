@@ -140,6 +140,20 @@ app.post('/send', async (req, res) => {
     await client.sendMessage(numberId._serialized, message)
     res.json({ ok: true, to: numberId._serialized })
   } catch (err) {
+    // Frame detached o error interno de Puppeteer — reinicializar cliente
+    const isPuppeteerError = err.message && (
+      err.message.includes('detached Frame') ||
+      err.message.includes('Target closed') ||
+      err.message.includes('Session closed') ||
+      err.message.includes('Protocol error')
+    )
+    if (isPuppeteerError) {
+      console.error('Error Puppeteer detectado, reiniciando cliente WhatsApp:', err.message)
+      isConnected = false
+      connectedPhone = null
+      try { await client.destroy() } catch {}
+      setTimeout(initClient, 5000)
+    }
     res.status(500).json({ error: err.message })
   }
 })
