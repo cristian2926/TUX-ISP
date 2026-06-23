@@ -26,12 +26,12 @@ def _sumar_un_mes(d: date) -> date:
 
 def _enviar_confirmacion_pago(cliente: models.Cliente, pago: models.Pago, plan: models.Plan):
     """Envía confirmación de pago por WhatsApp. No lanza excepciones."""
-    phone = cliente.telefono_whatsapp or cliente.telefono
+    phone = (cliente.telefono_whatsapp or cliente.telefono or "").strip()
     if not phone:
+        logger.warning("WhatsApp pago omitido — cliente %d sin número de teléfono", cliente.id)
         return
 
     anio, mes = map(int, pago.mes_pagado.split("-"))
-    # Usar fecha_vencimiento del cliente (ej: 22/06/2026) si está disponible
     if cliente.fecha_vencimiento:
         fecha_limite = cliente.fecha_vencimiento.strftime("%d/%m/%Y")
     else:
@@ -58,15 +58,21 @@ def _enviar_confirmacion_pago(cliente: models.Cliente, pago: models.Pago, plan: 
         f"_Tuxtell — Conectando tu mundo_ 🌐"
     )
 
+    logger.info("WhatsApp pago: enviando a %s (cliente %d)", phone, cliente.id)
+
     def _enviar():
         try:
-            with httpx.Client(timeout=8) as http:
-                http.post(
+            with httpx.Client(timeout=10) as http:
+                r = http.post(
                     f"{settings.WHATSAPP_API_URL}/send",
                     json={"phone": phone, "message": mensaje},
                 )
+                if r.status_code == 200:
+                    logger.info("WhatsApp pago enviado OK a %s", phone)
+                else:
+                    logger.warning("WhatsApp pago falló HTTP %d a %s: %s", r.status_code, phone, r.text[:200])
         except Exception as e:
-            logger.warning("WhatsApp pago no enviado a %s: %s", phone, e)
+            logger.warning("WhatsApp pago excepción a %s: %s", phone, e)
 
     threading.Thread(target=_enviar, daemon=True).start()
 
@@ -148,6 +154,7 @@ def create_pago(
 
     db.commit()
     db.refresh(pago)
+    db.refresh(cliente)
 
     # Notificación WhatsApp — no bloqueante, falla silenciosa
     plan = db.query(models.Plan).filter(models.Plan.id == cliente.plan_id).first()
