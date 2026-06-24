@@ -42,12 +42,11 @@ function ModalPago({ clienteInicial = null, mesInicial = mesActual, onClose, onS
   const [clienteSel, setClienteSel] = useState(clienteInicial)
   const [saving, setSaving]       = useState(false)
   const [form, setForm]           = useState({
-    mes_pagado:   mesInicial,
-    fecha_pago:   fechaHoy,
-    monto:        clienteInicial?.plan?.precio || '',
-    metodo_pago:  'efectivo',
-    referencia:   '',
-    notas:        '',
+    mes_pagado:  mesInicial,
+    fecha_pago:  fechaHoy,
+    monto:       clienteInicial?.plan?.precio || '',
+    metodo_pago: 'efectivo',
+    referencia:  '',
   })
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -89,7 +88,6 @@ function ModalPago({ clienteInicial = null, mesInicial = mesActual, onClose, onS
         fecha_pago:  form.fecha_pago,
         metodo_pago: form.metodo_pago,
         referencia:  form.referencia || null,
-        notas:       form.notas || null,
         estado:      'pagado',
       })
       toast.success(`Pago registrado — ${clienteSel.nombre}`)
@@ -195,7 +193,7 @@ export default function Pagos() {
   const [mesFilter, setMesFilter]   = useState(mesActual)
   const [zonaFiltro, setZonaFiltro] = useState('')
   const [zonas, setZonas]           = useState([])
-  const [vista, setVista]           = useState('deudores') // 'deudores' | 'historial'
+  const [vista, setVista]           = useState('deudores')
   const [loading, setLoading]       = useState(true)
   const [modal, setModal]           = useState(false)
   const [clienteRapido, setClienteRapido] = useState(null)
@@ -212,7 +210,7 @@ export default function Pagos() {
     setLoading(true)
     try {
       const { data } = await api.get('/pagos/clientes-sin-pago', {
-        params: { mes: mesFilter || mesActual },
+        params: { mes: mesFilter },
       })
       let filtered = data
       if (zonaFiltro) filtered = data.filter(c => String(c.zona_id) === String(zonaFiltro))
@@ -263,7 +261,7 @@ export default function Pagos() {
   async function enviarAvisoMasivo() {
     const total = sinPago.length
     if (!total) return
-    if (!confirm(`¿Enviar aviso de cobro a ${total} clientes?\n\nSe enviará 1 mensaje cada 8–15 segundos para proteger tu cuenta de WhatsApp.`)) return
+    if (!confirm(`¿Enviar aviso de cobro a ${total} clientes?\n\nSe enviará 1 mensaje cada 8-15 segundos para proteger tu cuenta de WhatsApp.`)) return
 
     setEnviandoMasivo(true)
     setProgresoMasivo({ actual: 0, total })
@@ -280,7 +278,6 @@ export default function Pagos() {
       } catch {
         errores++
       }
-      // Delay aleatorio 8-15 segundos entre mensajes (evitar bloqueo WhatsApp)
       if (i < sinPago.length - 1) {
         const delay = 8000 + Math.floor(Math.random() * 7000)
         await new Promise(r => setTimeout(r, delay))
@@ -297,7 +294,6 @@ export default function Pagos() {
     }
   }
 
-  // Stats
   const totalPendiente = sinPago.reduce((s, c) => s + (c.plan?.precio || 0), 0)
   const recaudacionMes = dashStats?.ingresos_mes_actual || 0
   const totalEsperado  = recaudacionMes + totalPendiente
@@ -317,7 +313,7 @@ export default function Pagos() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => { /* export */ toast('Exportar próximamente') }}
+            onClick={() => toast('Exportar próximamente')}
             className="flex items-center gap-2 bg-white border border-[#E5E0D5] text-[#5A5A6A] font-semibold px-4 py-2.5 rounded-xl hover:border-[#C8C2B5] transition-colors text-sm"
           >
             <Download size={15}/> Exportar reporte
@@ -492,7 +488,7 @@ export default function Pagos() {
                   </td></tr>
                 ) : sinPago.map(c => {
                   const initials = (c.nombre || '').slice(0, 2).toUpperCase()
-                  const dias = getDiasAtraso(c, mesFilter || mesActual)
+                  const dias = getDiasAtraso(c, mesFilter)
                   const monto = c.plan?.precio || 0
                   return (
                     <tr key={c.id} className="border-b border-[#F5F0E8] hover:bg-[#FAF7F0] transition-colors">
@@ -635,7 +631,7 @@ export default function Pagos() {
       {modal && (
         <ModalPago
           clienteInicial={clienteRapido}
-          mesInicial={mesFilter || mesActual}
+          mesInicial={mesFilter}
           onClose={() => { setModal(false); setClienteRapido(null) }}
           onSaved={onPagoSaved}
         />
