@@ -1,16 +1,16 @@
 import { Outlet, Link } from 'react-router-dom'
 import { useState } from 'react'
 import Sidebar from './Sidebar'
-import { Menu, Bell, Plus, MessageCircle, User } from 'lucide-react'
+import { Menu, Bell, Plus, MessageCircle } from 'lucide-react'
 
 function getUsername() {
   const token = localStorage.getItem('token')
-  if (!token) return 'Admin Root'
+  if (!token) return 'Admin Panel'
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.sub || 'Admin Root'
+    return payload.sub || 'Admin Panel'
   } catch {
-    return 'Admin Root'
+    return 'Admin Panel'
   }
 }
 
@@ -32,7 +32,7 @@ function Topbar({ onMenuOpen }) {
         <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C8C2B5]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input
           type="text"
-          placeholder="Search clients, IPs or zones..."
+          placeholder="Buscar clientes por ID o PPPoE..."
           className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl pl-9 pr-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700]/60 transition-colors"
         />
       </div>
@@ -68,10 +68,33 @@ function Topbar({ onMenuOpen }) {
           <div className="hidden md:block">
             <p className="text-xs font-bold text-[#1C1C1C] leading-tight">{username}</p>
             <p className="text-[9px] text-[#9A9AAA] uppercase tracking-widest leading-tight font-medium">
-              Network Operations
+              ISP Operator
             </p>
           </div>
         </div>
+      </div>
+    </div>
+  )
+}
+
+function StatusBar() {
+  return (
+    <div className="h-9 bg-[#1C1C1C] shrink-0 flex items-center px-4 gap-4">
+      <div className="flex items-center gap-2 flex-1">
+        <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0" />
+        <span className="text-xs text-[#9CA3AF]">
+          Auditoría de Red: <span className="text-white font-medium">Sincronización MikroTik OK</span>
+        </span>
+      </div>
+      <div className="hidden sm:flex items-center gap-4 text-xs text-[#6B7280]">
+        <span className="flex items-center gap-1.5">
+          <span className="text-[#9CA3AF]">⬡</span>
+          <span className="text-white font-mono">RB-CORE-01</span>
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="text-[#9CA3AF]">◷</span>
+          <span className="text-white font-mono">Lat: 12ms</span>
+        </span>
       </div>
     </div>
   )
@@ -95,7 +118,17 @@ export default function Layout() {
         <main className="flex-1 overflow-y-auto bg-[#FAF7F0]">
           <Outlet />
         </main>
+        <StatusBar />
       </div>
+
+      {/* Floating action button */}
+      <Link
+        to="/clientes/nuevo"
+        className="fixed bottom-12 right-4 w-12 h-12 bg-[#FFD700] rounded-full flex items-center justify-center shadow-lg hover:bg-yellow-400 transition-colors z-40"
+        title="Nuevo Cliente"
+      >
+        <span className="text-2xl font-bold text-[#1C1C1C] leading-none">+</span>
+      </Link>
     </div>
   )
 }

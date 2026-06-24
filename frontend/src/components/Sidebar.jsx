@@ -6,8 +6,8 @@ import {
 
 const NAV = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/clientes',      icon: Users,           label: 'Clients' },
-  { to: '/zonas',         icon: Globe,           label: 'Zones' },
+  { to: '/clientes',      icon: Users,           label: 'Clientes' },
+  { to: '/zonas',         icon: Globe,           label: 'Zonas' },
   { to: '/pagos',         icon: DollarSign,      label: 'Pagos' },
   { to: '/gastos',        icon: TrendingDown,    label: 'Gastos' },
   { to: '/whatsapp',      icon: MessageCircle,   label: 'WhatsApp' },
@@ -67,11 +67,11 @@ export default function Sidebar({ onClose }) {
       <div className="px-3 pb-4 pt-3 border-t border-[#D8D2C5]">
         <div className="flex items-center gap-3 px-1 mb-3">
           <div className="w-9 h-9 rounded-full bg-[#FFD700] flex items-center justify-center shrink-0">
-            <span className="text-xs font-black text-[#1C1C1C]">TX</span>
+            <span className="text-xs font-black text-[#1C1C1C]">A</span>
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-[#1C1C1C] leading-tight truncate">Admin Root</p>
-            <p className="text-[10px] text-[#9A9AAA]">Network Operations</p>
+            <p className="text-sm font-bold text-[#1C1C1C] leading-tight truncate">Admin Panel</p>
+            <p className="text-[10px] text-[#9A9AAA]">ISP Operator</p>
           </div>
         </div>
         <button
