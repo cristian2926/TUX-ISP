@@ -200,6 +200,8 @@ export default function Pagos() {
   const [modal, setModal]           = useState(false)
   const [clienteRapido, setClienteRapido] = useState(null)
   const [dashStats, setDashStats]   = useState(null)
+  const [enviandoMasivo, setEnviandoMasivo] = useState(false)
+  const [progresoMasivo, setProgresoMasivo] = useState({ actual: 0, total: 0 })
 
   useEffect(() => {
     api.get('/zonas').then(r => setZonas(r.data)).catch(() => {})
@@ -259,14 +261,39 @@ export default function Pagos() {
   }
 
   async function enviarAvisoMasivo() {
-    if (!confirm(`¿Enviar aviso de cobro a ${sinPago.length} clientes?`)) return
-    try {
-      const { data } = await api.post('/whatsapp/broadcast-cobros', null, {
-        params: { mes: mesFilter || mesActual },
-      })
-      toast.success(`${data.enviados} avisos enviados`)
-    } catch {
-      toast.error('Error al enviar avisos masivos')
+    const total = sinPago.length
+    if (!total) return
+    if (!confirm(`¿Enviar aviso de cobro a ${total} clientes?\n\nSe enviará 1 mensaje cada 8–15 segundos para proteger tu cuenta de WhatsApp.`)) return
+
+    setEnviandoMasivo(true)
+    setProgresoMasivo({ actual: 0, total })
+
+    let enviados = 0
+    let errores  = 0
+
+    for (let i = 0; i < sinPago.length; i++) {
+      const c = sinPago[i]
+      setProgresoMasivo({ actual: i + 1, total })
+      try {
+        await api.post(`/whatsapp/aviso-cobro/${c.id}`)
+        enviados++
+      } catch {
+        errores++
+      }
+      // Delay aleatorio 8-15 segundos entre mensajes (evitar bloqueo WhatsApp)
+      if (i < sinPago.length - 1) {
+        const delay = 8000 + Math.floor(Math.random() * 7000)
+        await new Promise(r => setTimeout(r, delay))
+      }
+    }
+
+    setEnviandoMasivo(false)
+    setProgresoMasivo({ actual: 0, total: 0 })
+
+    if (errores === 0) {
+      toast.success(`✓ ${enviados} avisos enviados correctamente`)
+    } else {
+      toast(`${enviados} enviados, ${errores} fallidos`, { icon: '⚠️' })
     }
   }
 
@@ -423,9 +450,19 @@ export default function Pagos() {
             {sinPago.length > 0 && (
               <button
                 onClick={enviarAvisoMasivo}
-                className="flex items-center gap-1.5 text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-xl hover:bg-green-100 border border-green-200 transition-colors font-semibold"
+                disabled={enviandoMasivo}
+                className="flex items-center gap-1.5 text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-xl hover:bg-green-100 border border-green-200 transition-colors font-semibold disabled:opacity-60 disabled:cursor-wait"
               >
-                <MessageCircle size={13}/> Avisar a todos por WhatsApp
+                {enviandoMasivo ? (
+                  <>
+                    <div className="w-3 h-3 border-2 border-green-500 border-t-transparent rounded-full animate-spin"/>
+                    Enviando {progresoMasivo.actual}/{progresoMasivo.total}...
+                  </>
+                ) : (
+                  <>
+                    <MessageCircle size={13}/> Avisar a todos por WhatsApp
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -503,10 +540,10 @@ export default function Pagos() {
                           </button>
                           <button
                             onClick={() => enviarAviso(c.id)}
-                            className="p-1.5 rounded-lg text-green-500 hover:bg-green-50 transition-colors"
-                            title="Enviar aviso WhatsApp"
+                            className="flex items-center gap-1 text-xs text-green-600 bg-green-50 border border-green-200 px-2.5 py-1.5 rounded-lg hover:bg-green-100 transition-colors font-semibold whitespace-nowrap"
+                            title="Enviar aviso por WhatsApp"
                           >
-                            <MessageCircle size={14}/>
+                            <MessageCircle size={12}/> WhatsApp
                           </button>
                         </div>
                       </td>
