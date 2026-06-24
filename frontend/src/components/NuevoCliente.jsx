@@ -7,7 +7,7 @@ import toast from 'react-hot-toast'
 function Field({ label, children, required, span2 }) {
   return (
     <div className={span2 ? 'sm:col-span-2' : ''}>
-      <label className="block text-sm text-[#9CA3AF] mb-1">
+      <label className="block text-sm text-[#5A5A6A] mb-1">
         {label} {required && <span className="text-red-400">*</span>}
       </label>
       {children}
@@ -15,7 +15,7 @@ function Field({ label, children, required, span2 }) {
   )
 }
 
-const inputCls = "w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700] transition-colors"
+const inputCls = "w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700] transition-colors"
 
 const FORM_INIT = {
   nombre: '',
@@ -105,19 +105,19 @@ export default function NuevoCliente() {
     <div className="p-6 max-w-3xl">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/clientes" className="p-2 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#374151] transition-colors">
+        <Link to="/clientes" className="p-2 rounded-xl text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors">
           <ArrowLeft size={18} />
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-white">Nuevo Cliente</h1>
-          <p className="text-[#9CA3AF] text-sm">Registrar nuevo abonado</p>
+          <h1 className="text-xl font-bold text-[#1C1C1C]">Nuevo Cliente</h1>
+          <p className="text-[#5A5A6A] text-sm">Registrar nuevo abonado</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
         {/* Datos personales */}
-        <div className="bg-[#1F2937] rounded-xl p-5 border border-[#374151] space-y-4">
+        <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm space-y-4">
           <h2 className="text-sm font-semibold text-[#FFD700] uppercase tracking-wide">Datos Personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Nombre completo" required>
@@ -136,14 +136,13 @@ export default function NuevoCliente() {
         </div>
 
         {/* Tipo de servicio */}
-        <div className="bg-[#1F2937] rounded-xl p-5 border border-[#374151] space-y-4">
+        <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm space-y-4">
           <h2 className="text-sm font-semibold text-[#FFD700] uppercase tracking-wide flex items-center gap-2">
             <Wifi size={14} /> Tipo de Servicio
           </h2>
 
-          {/* Tipo conexión */}
           <div>
-            <label className="block text-sm text-[#9CA3AF] mb-2">Tipo de conexión</label>
+            <label className="block text-sm text-[#5A5A6A] mb-2">Tipo de conexión</label>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { val: 'inalambrico', label: 'Inalámbrico', desc: 'Antena / Access Point' },
@@ -153,10 +152,10 @@ export default function NuevoCliente() {
                   key={opt.val}
                   type="button"
                   onClick={() => set('tipo_conexion', opt.val)}
-                  className={`text-left p-3 rounded-lg border transition-all ${
+                  className={`text-left p-3 rounded-xl border transition-all ${
                     form.tipo_conexion === opt.val
-                      ? 'border-[#FFD700] bg-yellow-500/10 text-white'
-                      : 'border-[#374151] text-[#9CA3AF] hover:border-[#4B5563]'
+                      ? 'border-[#FFD700] bg-[#FFD700]/10 text-[#1C1C1C]'
+                      : 'border-[#E5E0D5] text-[#5A5A6A] hover:border-[#D8D2C5] bg-[#FAF7F0]'
                   }`}
                 >
                   <p className="font-semibold text-sm">{opt.label}</p>
@@ -166,17 +165,16 @@ export default function NuevoCliente() {
             </div>
           </div>
 
-          {/* TV */}
-          <div className="flex items-center gap-3 bg-[#111827] rounded-lg px-4 py-3">
-            <Tv size={16} className="text-[#9CA3AF]" />
+          <div className="flex items-center gap-3 bg-[#FAF7F0] rounded-xl px-4 py-3 border border-[#E5E0D5]">
+            <Tv size={16} className="text-[#5A5A6A]" />
             <div className="flex-1">
-              <p className="text-sm text-white font-medium">Servicio de TV</p>
-              <p className="text-xs text-[#4B5563]">El cliente incluye servicio de televisión</p>
+              <p className="text-sm text-[#1C1C1C] font-medium">Servicio de TV</p>
+              <p className="text-xs text-[#9A9AAA]">El cliente incluye servicio de televisión</p>
             </div>
             <button
               type="button"
               onClick={() => set('tiene_tv', !form.tiene_tv)}
-              className={`relative w-11 h-6 rounded-full transition-colors ${form.tiene_tv ? 'bg-[#FFD700]' : 'bg-[#374151]'}`}
+              className={`relative w-11 h-6 rounded-full transition-colors ${form.tiene_tv ? 'bg-[#FFD700]' : 'bg-[#D8D2C5]'}`}
             >
               <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.tiene_tv ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
             </button>
@@ -184,7 +182,7 @@ export default function NuevoCliente() {
         </div>
 
         {/* Conexión PPPoE */}
-        <div className="bg-[#1F2937] rounded-xl p-5 border border-[#374151] space-y-4">
+        <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm space-y-4">
           <h2 className="text-sm font-semibold text-[#FFD700] uppercase tracking-wide">Configuración PPPoE</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Usuario PPPoE" required>
@@ -206,7 +204,7 @@ export default function NuevoCliente() {
         </div>
 
         {/* Plan y fechas */}
-        <div className="bg-[#1F2937] rounded-xl p-5 border border-[#374151] space-y-4">
+        <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm space-y-4">
           <h2 className="text-sm font-semibold text-[#FFD700] uppercase tracking-wide">Plan y Fechas</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Plan" required>
@@ -234,28 +232,27 @@ export default function NuevoCliente() {
         </div>
 
         {/* Equipo entregado */}
-        <div className="bg-[#1F2937] rounded-xl p-5 border border-[#374151] space-y-4">
+        <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm space-y-4">
           <h2 className="text-sm font-semibold text-[#FFD700] uppercase tracking-wide flex items-center gap-2">
             <Package size={14} /> Equipo Entregado
           </h2>
 
-          {/* Estado equipo */}
           <div>
-            <label className="block text-sm text-[#9CA3AF] mb-2">Estado del equipo</label>
+            <label className="block text-sm text-[#5A5A6A] mb-2">Estado del equipo</label>
             <div className="grid grid-cols-3 gap-2">
               {[
-                { val: 'sin_equipo', label: 'Sin equipo', color: 'text-[#9CA3AF]' },
-                { val: 'prestado',   label: 'Prestado',   color: 'text-yellow-400' },
-                { val: 'comprado',   label: 'Comprado',   color: 'text-green-400'  },
+                { val: 'sin_equipo', label: 'Sin equipo', color: 'text-[#5A5A6A]' },
+                { val: 'prestado',   label: 'Prestado',   color: 'text-yellow-600' },
+                { val: 'comprado',   label: 'Comprado',   color: 'text-green-600'  },
               ].map(opt => (
                 <button
                   key={opt.val}
                   type="button"
                   onClick={() => set('estado_equipo', opt.val)}
-                  className={`py-2 px-3 rounded-lg border text-sm font-medium transition-all ${
+                  className={`py-2 px-3 rounded-xl border text-sm font-medium transition-all ${
                     form.estado_equipo === opt.val
-                      ? 'border-[#FFD700] bg-yellow-500/10 text-white'
-                      : `border-[#374151] ${opt.color} hover:border-[#4B5563]`
+                      ? 'border-[#FFD700] bg-[#FFD700]/10 text-[#1C1C1C]'
+                      : `border-[#E5E0D5] bg-[#FAF7F0] ${opt.color} hover:border-[#D8D2C5]`
                   }`}
                 >
                   {opt.label}
@@ -264,7 +261,6 @@ export default function NuevoCliente() {
             </div>
           </div>
 
-          {/* Detalles del equipo (solo si tiene) */}
           {tieneEquipo && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
               <Field label="Marca">
@@ -290,7 +286,7 @@ export default function NuevoCliente() {
         </div>
 
         {/* Notas */}
-        <div className="bg-[#1F2937] rounded-xl p-5 border border-[#374151]">
+        <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm">
           <h2 className="text-sm font-semibold text-[#FFD700] uppercase tracking-wide mb-3">Notas</h2>
           <textarea
             className={inputCls + ' resize-none'}
@@ -305,14 +301,14 @@ export default function NuevoCliente() {
         <div className="flex gap-3">
           <Link
             to="/clientes"
-            className="px-5 py-2.5 rounded-lg border border-[#374151] text-[#9CA3AF] hover:text-white hover:border-[#9CA3AF] transition-colors text-sm"
+            className="px-5 py-2.5 rounded-xl border border-[#D8D2C5] text-[#5A5A6A] hover:text-[#1C1C1C] hover:border-[#C8C2B5] transition-colors text-sm"
           >
             Cancelar
           </Link>
           <button
             type="submit"
             disabled={loading}
-            className="flex items-center gap-2 bg-[#FFD700] text-[#111827] font-bold px-6 py-2.5 rounded-lg hover:bg-yellow-400 transition-colors text-sm disabled:opacity-50"
+            className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-6 py-2.5 rounded-xl hover:bg-yellow-400 transition-colors text-sm disabled:opacity-50"
           >
             <Save size={16} />
             {loading ? 'Guardando...' : 'Guardar Cliente'}

@@ -6,7 +6,7 @@ import {
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
-const inputCls = "w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700] transition-colors"
+const inputCls = "w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700] transition-colors"
 
 const ZONA_EMPTY = {
   nombre: '', ip_lan: '', usuario_mikrotik: '', password_mikrotik: '',
@@ -18,14 +18,13 @@ const AP_EMPTY = {
   usuario_admin: '', password_admin: '', mac: '', ubicacion: '', zona_id: 0,
 }
 
-/* ── Modal genérico ───────────────────────────────────────────────────── */
 function Modal({ title, onClose, children }) {
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] w-full max-w-md">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#374151]">
-          <h3 className="font-bold text-white">{title}</h3>
-          <button onClick={onClose} className="p-1 rounded text-[#9CA3AF] hover:text-white">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-xl w-full max-w-md">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#EDE9E0]">
+          <h3 className="font-bold text-[#1C1C1C]">{title}</h3>
+          <button onClick={onClose} className="p-1 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#FAF7F0]">
             <X size={16} />
           </button>
         </div>
@@ -35,7 +34,6 @@ function Modal({ title, onClose, children }) {
   )
 }
 
-/* ── Formulario zona ─────────────────────────────────────────────────── */
 function ZonaForm({ initial, onSave, onClose }) {
   const [form, setForm] = useState(initial)
   const [saving, setSaving] = useState(false)
@@ -58,27 +56,25 @@ function ZonaForm({ initial, onSave, onClose }) {
 
   return (
     <form onSubmit={submit} className="space-y-3">
-      {/* Nombre */}
       <div>
-        <label className="text-xs text-[#9CA3AF] mb-1 block">Nombre de zona <span className="text-red-400">*</span></label>
+        <label className="text-xs text-[#5A5A6A] mb-1 block">Nombre de zona <span className="text-red-400">*</span></label>
         <input className={inputCls} value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="Ej: Cabanillas" />
       </div>
 
-      {/* MikroTik */}
-      <div className="border-t border-[#374151] pt-3">
+      <div className="border-t border-[#EDE9E0] pt-3">
         <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">MikroTik</p>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">IP LAN MikroTik</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">IP LAN MikroTik</label>
             <input className={inputCls} value={form.ip_lan || ''} onChange={e => set('ip_lan', e.target.value)} placeholder="192.168.80.1" />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Usuario MikroTik</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Usuario MikroTik</label>
             <input className={inputCls} value={form.usuario_mikrotik || ''} onChange={e => set('usuario_mikrotik', e.target.value)} placeholder="tuxtell-api" />
           </div>
         </div>
         <div className="mt-2">
-          <label className="text-xs text-[#9CA3AF] mb-1 block">Contraseña MikroTik</label>
+          <label className="text-xs text-[#5A5A6A] mb-1 block">Contraseña MikroTik</label>
           <div className="relative">
             <input
               type={showPwd ? 'text' : 'password'}
@@ -90,7 +86,7 @@ function ZonaForm({ initial, onSave, onClose }) {
             <button
               type="button"
               onClick={() => setShowPwd(v => !v)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#9CA3AF] hover:text-white px-1"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#9A9AAA] hover:text-[#1C1C1C] px-1"
             >
               {showPwd ? 'Ocultar' : 'Ver'}
             </button>
@@ -98,24 +94,22 @@ function ZonaForm({ initial, onSave, onClose }) {
         </div>
       </div>
 
-      {/* WireGuard */}
-      <div className="border-t border-[#374151] pt-3">
+      <div className="border-t border-[#EDE9E0] pt-3">
         <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">WireGuard</p>
         <div>
-          <label className="text-xs text-[#9CA3AF] mb-1 block">IP túnel WireGuard <span className="text-red-400">*</span></label>
+          <label className="text-xs text-[#5A5A6A] mb-1 block">IP túnel WireGuard <span className="text-red-400">*</span></label>
           <input className={inputCls} value={form.ip_wireguard} onChange={e => set('ip_wireguard', e.target.value)} placeholder="10.10.0.2" />
         </div>
         <div className="mt-2">
-          <label className="text-xs text-[#9CA3AF] mb-1 block">Clave pública WireGuard</label>
+          <label className="text-xs text-[#5A5A6A] mb-1 block">Clave pública WireGuard</label>
           <input className={inputCls + ' font-mono text-xs'} value={form.wg_public_key || ''} onChange={e => set('wg_public_key', e.target.value)} placeholder="AUtoKud++xog7Kp9a4xD/..." />
         </div>
       </div>
 
-      {/* Tiendas de pago */}
-      <div className="border-t border-[#374151] pt-3">
+      <div className="border-t border-[#EDE9E0] pt-3">
         <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Pagos</p>
         <div>
-          <label className="text-xs text-[#9CA3AF] mb-1 block">Tiendas autorizadas (aparece en mensajes WhatsApp)</label>
+          <label className="text-xs text-[#5A5A6A] mb-1 block">Tiendas autorizadas (aparece en mensajes WhatsApp)</label>
           <textarea
             className={inputCls + ' resize-none'}
             rows={3}
@@ -127,8 +121,8 @@ function ZonaForm({ initial, onSave, onClose }) {
       </div>
 
       <div className="flex gap-2 pt-2">
-        <button type="button" onClick={onClose} className="flex-1 py-2 text-sm border border-[#374151] rounded-lg text-[#9CA3AF] hover:text-white">Cancelar</button>
-        <button type="submit" disabled={saving} className="flex-1 py-2 text-sm bg-[#FFD700] text-[#111827] font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-1">
+        <button type="button" onClick={onClose} className="flex-1 py-2 text-sm border border-[#D8D2C5] rounded-xl text-[#5A5A6A] hover:text-[#1C1C1C]">Cancelar</button>
+        <button type="submit" disabled={saving} className="flex-1 py-2 text-sm bg-[#FFD700] text-[#1C1C1C] font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-1">
           <Save size={14} /> {saving ? 'Guardando...' : 'Guardar'}
         </button>
       </div>
@@ -136,7 +130,6 @@ function ZonaForm({ initial, onSave, onClose }) {
   )
 }
 
-/* ── Formulario AP ───────────────────────────────────────────────────── */
 function APForm({ zonaId, onSave, onClose }) {
   const [form, setForm] = useState({ ...AP_EMPTY, zona_id: zonaId })
   const [saving, setSaving] = useState(false)
@@ -164,16 +157,15 @@ function APForm({ zonaId, onSave, onClose }) {
 
   return (
     <form onSubmit={submit} className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
-      {/* Identificación */}
       <div>
         <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Identificación</p>
         <div className="grid grid-cols-2 gap-2">
           <div className="col-span-2">
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Nombre <span className="text-red-400">*</span></label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Nombre <span className="text-red-400">*</span></label>
             <input className={inputCls} value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="AP-Cabanillas-01" />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Marca</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Marca</label>
             <select className={inputCls} value={form.marca} onChange={e => set('marca', e.target.value)}>
               <option>Ubiquiti</option>
               <option>TP-Link</option>
@@ -184,26 +176,25 @@ function APForm({ zonaId, onSave, onClose }) {
             </select>
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Modelo</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Modelo</label>
             <input className={inputCls} value={form.modelo} onChange={e => set('modelo', e.target.value)} placeholder="NanoStation M5" />
           </div>
           <div className="col-span-2">
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Ubicación</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Ubicación</label>
             <input className={inputCls} value={form.ubicacion} onChange={e => set('ubicacion', e.target.value)} placeholder="Torre principal — Cabanillas" />
           </div>
         </div>
       </div>
 
-      {/* Red inalámbrica */}
-      <div className="border-t border-[#374151] pt-3">
+      <div className="border-t border-[#EDE9E0] pt-3">
         <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Red Inalámbrica</p>
         <div className="grid grid-cols-2 gap-2">
           <div className="col-span-2">
-            <label className="text-xs text-[#9CA3AF] mb-1 block">SSID</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">SSID</label>
             <input className={inputCls} value={form.ssid} onChange={e => set('ssid', e.target.value)} placeholder="TuxtellZona1" />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Frecuencia</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Frecuencia</label>
             <select className={inputCls} value={form.frecuencia} onChange={e => set('frecuencia', e.target.value)}>
               <option value="5.8GHz">5.8 GHz</option>
               <option value="5GHz">5 GHz</option>
@@ -212,11 +203,11 @@ function APForm({ zonaId, onSave, onClose }) {
             </select>
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Canal</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Canal</label>
             <input className={inputCls} value={form.canal} onChange={e => set('canal', e.target.value)} placeholder="149, 153..." />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Seguridad</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Seguridad</label>
             <select className={inputCls} value={form.seguridad} onChange={e => set('seguridad', e.target.value)}>
               <option>WPA2</option>
               <option>WPA3</option>
@@ -225,30 +216,29 @@ function APForm({ zonaId, onSave, onClose }) {
             </select>
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Potencia (dBm)</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Potencia (dBm)</label>
             <input type="number" className={inputCls} value={form.potencia_dbm} onChange={e => set('potencia_dbm', e.target.value)} placeholder="23" min="0" max="40" />
           </div>
         </div>
       </div>
 
-      {/* Red / IP */}
-      <div className="border-t border-[#374151] pt-3">
+      <div className="border-t border-[#EDE9E0] pt-3">
         <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Red / Acceso</p>
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">IP cliente</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">IP cliente</label>
             <input className={inputCls} value={form.ip} onChange={e => set('ip', e.target.value)} placeholder="192.168.1.10" />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">IP admin</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">IP admin</label>
             <input className={inputCls} value={form.ip_admin} onChange={e => set('ip_admin', e.target.value)} placeholder="192.168.1.1" />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Usuario admin</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Usuario admin</label>
             <input className={inputCls} value={form.usuario_admin} onChange={e => set('usuario_admin', e.target.value)} placeholder="ubnt" />
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Contraseña admin</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Contraseña admin</label>
             <div className="relative">
               <input
                 type={showApPwd ? 'text' : 'password'}
@@ -257,21 +247,21 @@ function APForm({ zonaId, onSave, onClose }) {
                 onChange={e => set('password_admin', e.target.value)}
                 placeholder="••••••••"
               />
-              <button type="button" onClick={() => setShowApPwd(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#9CA3AF] hover:text-white px-1">
+              <button type="button" onClick={() => setShowApPwd(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#9A9AAA] hover:text-[#1C1C1C] px-1">
                 {showApPwd ? 'Ocultar' : 'Ver'}
               </button>
             </div>
           </div>
           <div className="col-span-2">
-            <label className="text-xs text-[#9CA3AF] mb-1 block">MAC</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">MAC</label>
             <input className={inputCls + ' font-mono'} value={form.mac} onChange={e => set('mac', e.target.value)} placeholder="AA:BB:CC:DD:EE:FF" />
           </div>
         </div>
       </div>
 
       <div className="flex gap-2 pt-1">
-        <button type="button" onClick={onClose} className="flex-1 py-2 text-sm border border-[#374151] rounded-lg text-[#9CA3AF] hover:text-white">Cancelar</button>
-        <button type="submit" disabled={saving} className="flex-1 py-2 text-sm bg-[#FFD700] text-[#111827] font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50">
+        <button type="button" onClick={onClose} className="flex-1 py-2 text-sm border border-[#D8D2C5] rounded-xl text-[#5A5A6A] hover:text-[#1C1C1C]">Cancelar</button>
+        <button type="submit" disabled={saving} className="flex-1 py-2 text-sm bg-[#FFD700] text-[#1C1C1C] font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50">
           {saving ? 'Guardando...' : 'Agregar AP'}
         </button>
       </div>
@@ -279,7 +269,6 @@ function APForm({ zonaId, onSave, onClose }) {
   )
 }
 
-/* ── Modal WireGuard ─────────────────────────────────────────────────── */
 function WireGuardModal({ zona, onClose, onRefresh }) {
   const [status, setStatus] = useState(null)
   const [pubkey, setPubkey] = useState(zona.wg_public_key || '')
@@ -308,7 +297,6 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
       const { data } = await api.post(`/zonas/${zona.id}/wireguard/peer?${params}`)
       toast.success('Peer WireGuard agregado')
       onRefresh()
-      // Mostrar datos para configurar MikroTik
       setStatus(prev => ({ ...prev, config_mt: data }))
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al agregar peer')
@@ -336,18 +324,17 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
   const VPS_ENDPOINT = status?.vps_endpoint || '161.132.48.127:51820'
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] w-full max-w-lg max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#374151] shrink-0">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#EDE9E0] shrink-0">
           <div className="flex items-center gap-2">
             <Shield size={16} className="text-[#FFD700]" />
-            <h3 className="font-bold text-white">WireGuard — {zona.nombre}</h3>
+            <h3 className="font-bold text-[#1C1C1C]">WireGuard — {zona.nombre}</h3>
           </div>
-          <button onClick={onClose} className="p-1 rounded text-[#9CA3AF] hover:text-white"><X size={16} /></button>
+          <button onClick={onClose} className="p-1 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#FAF7F0]"><X size={16} /></button>
         </div>
 
         <div className="p-5 space-y-5 overflow-y-auto">
-          {/* Estado actual */}
           {status && (
             <div className="grid grid-cols-3 gap-2">
               {[
@@ -355,58 +342,56 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
                 { label: 'SSH', ok: status.ssh_ok },
                 { label: 'WG Peer', ok: status.wg_peer_online },
               ].map(({ label, ok }) => (
-                <div key={label} className={`rounded-lg p-2.5 text-center border ${ok ? 'bg-green-500/10 border-green-500/30' : 'bg-red-500/10 border-red-500/20'}`}>
-                  <p className={`text-sm font-bold ${ok ? 'text-green-400' : 'text-red-400'}`}>{ok ? '▲ UP' : '▼ DOWN'}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-0.5">{label}</p>
+                <div key={label} className={`rounded-xl p-2.5 text-center border ${ok ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                  <p className={`text-sm font-bold ${ok ? 'text-green-600' : 'text-red-500'}`}>{ok ? '▲ UP' : '▼ DOWN'}</p>
+                  <p className="text-xs text-[#5A5A6A] mt-0.5">{label}</p>
                 </div>
               ))}
             </div>
           )}
           {status?.last_handshake && status.last_handshake !== 'Sin handshake' && (
-            <div className="flex items-center gap-2 bg-[#111827] rounded-lg px-3 py-2 text-xs">
+            <div className="flex items-center gap-2 bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-xs">
               <Activity size={12} className="text-[#FFD700]" />
-              <span className="text-[#9CA3AF]">Último handshake:</span>
-              <span className="text-white">{status.last_handshake}</span>
+              <span className="text-[#5A5A6A]">Último handshake:</span>
+              <span className="text-[#1C1C1C] font-medium">{status.last_handshake}</span>
             </div>
           )}
 
-          {/* Pubkey del VPS (para configurar en MikroTik) */}
           <div>
             <p className="text-xs font-semibold text-[#FFD700] uppercase tracking-wide mb-2">Pubkey del VPS (configurar en MikroTik)</p>
-            <div className="flex items-center gap-2 bg-[#111827] rounded-lg px-3 py-2.5 border border-[#374151]">
-              <code className="flex-1 text-xs text-white font-mono break-all">{VPS_PUBKEY}</code>
+            <div className="flex items-center gap-2 bg-[#FAF7F0] rounded-xl px-3 py-2.5 border border-[#E5E0D5]">
+              <code className="flex-1 text-xs text-[#1C1C1C] font-mono break-all">{VPS_PUBKEY}</code>
               <button
                 onClick={() => copyVpsPubkey(VPS_PUBKEY)}
-                className="shrink-0 p-1.5 rounded text-[#9CA3AF] hover:text-[#FFD700] transition-colors"
+                className="shrink-0 p-1.5 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors"
                 title="Copiar"
               >
-                {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
               </button>
             </div>
-            <p className="text-xs text-[#4B5563] mt-1">
-              Endpoint VPS: <code className="text-[#9CA3AF]">{VPS_ENDPOINT}</code> — IP asignada al peer: <code className="text-[#9CA3AF]">{zona.ip_wireguard}</code>
+            <p className="text-xs text-[#9A9AAA] mt-1">
+              Endpoint VPS: <code className="text-[#5A5A6A]">{VPS_ENDPOINT}</code> — IP asignada al peer: <code className="text-[#5A5A6A]">{zona.ip_wireguard}</code>
             </p>
           </div>
 
-          {/* Agregar / actualizar peer */}
           <div>
             <p className="text-xs font-semibold text-[#FFD700] uppercase tracking-wide mb-2">
               {zona.wg_public_key ? 'Peer configurado' : 'Agregar peer MikroTik'}
             </p>
             <div className="space-y-2">
               <div>
-                <label className="text-xs text-[#9CA3AF] mb-1 block">Clave pública del MikroTik</label>
+                <label className="text-xs text-[#5A5A6A] mb-1 block">Clave pública del MikroTik</label>
                 <input
-                  className={`w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-xs text-white font-mono placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700]`}
+                  className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-xs text-[#1C1C1C] font-mono placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700]"
                   value={pubkey}
                   onChange={e => setPubkey(e.target.value)}
                   placeholder="Pegar aquí la pubkey del MikroTik..."
                 />
               </div>
               <div>
-                <label className="text-xs text-[#9CA3AF] mb-1 block">Red LAN (opcional, se auto-deriva de IP LAN)</label>
+                <label className="text-xs text-[#5A5A6A] mb-1 block">Red LAN (opcional, se auto-deriva de IP LAN)</label>
                 <input
-                  className={`w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-xs text-white font-mono placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700]`}
+                  className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-xs text-[#1C1C1C] font-mono placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700]"
                   value={lanNet}
                   onChange={e => setLanNet(e.target.value)}
                   placeholder="192.168.80.0/24"
@@ -416,7 +401,7 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
                 <button
                   onClick={handleAddPeer}
                   disabled={loading}
-                  className="flex-1 py-2 text-sm bg-[#FFD700] text-[#111827] font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-1"
+                  className="flex-1 py-2 text-sm bg-[#FFD700] text-[#1C1C1C] font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-1"
                 >
                   <Shield size={14} /> {loading ? 'Aplicando...' : zona.wg_public_key ? 'Actualizar peer' : 'Agregar peer'}
                 </button>
@@ -424,7 +409,7 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
                   <button
                     onClick={handleRemovePeer}
                     disabled={loading}
-                    className="px-4 py-2 text-sm border border-red-800/50 text-red-400 rounded-lg hover:bg-red-900/20 disabled:opacity-50"
+                    className="px-4 py-2 text-sm border border-red-200 text-red-500 rounded-xl hover:bg-red-50 disabled:opacity-50"
                   >
                     Eliminar
                   </button>
@@ -433,10 +418,9 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
             </div>
           </div>
 
-          {/* Instrucción MikroTik */}
-          <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-            <p className="text-xs font-semibold text-blue-400 mb-1.5">Configurar en MikroTik RouterOS v7</p>
-            <code className="text-xs text-[#9CA3AF] leading-relaxed block whitespace-pre-wrap">{
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3">
+            <p className="text-xs font-semibold text-blue-600 mb-1.5">Configurar en MikroTik RouterOS v7</p>
+            <code className="text-xs text-[#5A5A6A] leading-relaxed block whitespace-pre-wrap">{
 `/interface wireguard add name=wg-tuxtell private-key="<TU_PRIVATE_KEY>"
 /interface wireguard peers add \\
   interface=wg-tuxtell \\
@@ -454,7 +438,6 @@ function WireGuardModal({ zona, onClose, onRefresh }) {
   )
 }
 
-/* ── Terminal MikroTik ───────────────────────────────────────────────── */
 const QUICK_CMDS = [
   { label: 'Ping 8.8.8.8',      cmd: '/ping 8.8.8.8 count=4' },
   { label: 'PPPoE activos',      cmd: '/ppp active print' },
@@ -516,7 +499,6 @@ function TerminalModal({ zona, onClose }) {
     <div className="fixed inset-0 bg-black/75 flex items-center justify-center z-50 p-3">
       <div className="bg-[#0D1117] rounded-xl border border-[#374151] w-full max-w-2xl flex flex-col" style={{ maxHeight: '88vh' }}>
 
-        {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-[#374151] shrink-0">
           <div className="flex items-center gap-2">
             <Terminal size={14} className="text-green-400"/>
@@ -526,7 +508,6 @@ function TerminalModal({ zona, onClose }) {
           <button onClick={onClose} className="p-1 text-[#9CA3AF] hover:text-white"><X size={15}/></button>
         </div>
 
-        {/* Comandos rápidos */}
         <div className="px-4 py-2 border-b border-[#1F2937] flex gap-1.5 flex-wrap shrink-0">
           {QUICK_CMDS.map(q => (
             <button
@@ -540,7 +521,6 @@ function TerminalModal({ zona, onClose }) {
           ))}
         </div>
 
-        {/* Salida */}
         <div ref={outputRef} className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 font-mono text-xs">
           {lines.length === 0 && (
             <p className="text-[#374151]">Listo. Usa un botón rápido o escribe un comando RouterOS.</p>
@@ -565,7 +545,6 @@ function TerminalModal({ zona, onClose }) {
           )}
         </div>
 
-        {/* Input */}
         <div className="px-4 py-3 border-t border-[#1F2937] shrink-0">
           <div className="flex items-center gap-2 bg-[#111827] rounded-lg px-3 py-2.5 border border-[#374151] focus-within:border-green-500/40 transition-colors">
             <span className="text-green-400 font-mono text-sm shrink-0 select-none">$</span>
@@ -591,7 +570,6 @@ function getZoneCode(nombre, id) {
   return `${nombre.slice(0, 2).toUpperCase()}-${String(id).padStart(3, '0')}`
 }
 
-/* ── Tarjeta de zona ─────────────────────────────────────────────────── */
 function ZonaCard({ zona, onRefresh }) {
   const [wgStatus, setWgStatus] = useState(null)
   const [modalAP, setModalAP] = useState(false)
@@ -641,48 +619,47 @@ function ZonaCard({ zona, onRefresh }) {
 
   return (
     <>
-      <div className="bg-[#111827] rounded-xl border border-[#1F2937] overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
         {/* Header */}
-        <div className="p-4 border-b border-[#1F2937]">
+        <div className="p-4 border-b border-[#EDE9E0]">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2.5 flex-1 min-w-0">
-              <span className="text-[10px] font-mono bg-[#1F2937] text-[#9CA3AF] px-2 py-0.5 rounded shrink-0">
+              <span className="text-[10px] font-mono bg-[#FAF7F0] border border-[#E5E0D5] text-[#5A5A6A] px-2 py-0.5 rounded-lg shrink-0">
                 {getZoneCode(zona.nombre, zona.id)}
               </span>
-              <h3 className="font-bold text-white text-base truncate">{zona.nombre}</h3>
+              <h3 className="font-bold text-[#1C1C1C] text-base truncate">{zona.nombre}</h3>
             </div>
             <div className="flex gap-1 shrink-0">
-              <button onClick={handleDelete} className="p-1.5 rounded text-[#4B5563] hover:text-red-400 hover:bg-red-900/20 transition-colors" title="Eliminar zona">
+              <button onClick={handleDelete} className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar zona">
                 <Trash2 size={14} />
               </button>
             </div>
           </div>
 
-          {/* WireGuard status badge + WG/Terminal buttons */}
           <div className="flex items-center justify-between mt-3">
             {wgOnline === null ? (
-              <span className="text-[10px] text-[#4B5563] font-mono">Verificando...</span>
+              <span className="text-[10px] text-[#9A9AAA] font-mono">Verificando...</span>
             ) : wgOnline ? (
-              <span className="flex items-center gap-1.5 text-[10px] font-bold bg-green-500/15 text-green-400 border border-green-500/25 px-2.5 py-1 rounded-full uppercase tracking-wide">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0"/> WIREGUARD UP
-                {wgStatus?.ssh_ok && <span className="text-blue-400 ml-1">· SSH</span>}
+              <span className="flex items-center gap-1.5 text-[10px] font-bold bg-green-50 text-green-600 border border-green-200 px-2.5 py-1 rounded-full uppercase tracking-wide">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0"/> WIREGUARD UP
+                {wgStatus?.ssh_ok && <span className="text-blue-500 ml-1">· SSH</span>}
               </span>
             ) : (
-              <span className="flex items-center gap-1.5 text-[10px] font-bold bg-red-500/15 text-red-400 border border-red-500/25 px-2.5 py-1 rounded-full uppercase tracking-wide">
+              <span className="flex items-center gap-1.5 text-[10px] font-bold bg-red-50 text-red-500 border border-red-200 px-2.5 py-1 rounded-full uppercase tracking-wide">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0"/> WIREGUARD DOWN
               </span>
             )}
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setModalWG(true)}
-                className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#FFD700] transition-colors"
+                className="flex items-center gap-1 text-xs text-[#9A9AAA] hover:text-[#FFD700] transition-colors"
                 title="Gestionar WireGuard"
               >
                 <Shield size={12} /> WG
               </button>
               <button
                 onClick={() => setModalTerminal(true)}
-                className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-green-400 transition-colors"
+                className="flex items-center gap-1 text-xs text-[#9A9AAA] hover:text-green-600 transition-colors"
                 title="Terminal MikroTik"
               >
                 <Terminal size={12} /> Terminal
@@ -694,57 +671,55 @@ function ZonaCard({ zona, onRefresh }) {
         {/* Stats */}
         <div className="p-4 space-y-3">
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-[#1F2937] rounded-lg p-2.5">
-              <p className="text-2xl font-black text-white">{zona.total_clientes}</p>
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide">Total</p>
+            <div className="bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl p-2.5">
+              <p className="text-2xl font-black text-[#1C1C1C]">{zona.total_clientes}</p>
+              <p className="text-[10px] text-[#9A9AAA] uppercase tracking-wide">Total</p>
             </div>
-            <div className="bg-[#1F2937] rounded-lg p-2.5">
-              <p className="text-2xl font-black text-green-400">{zona.clientes_activos}</p>
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide">Activos</p>
+            <div className="bg-green-50 border border-green-200 rounded-xl p-2.5">
+              <p className="text-2xl font-black text-green-600">{zona.clientes_activos}</p>
+              <p className="text-[10px] text-[#9A9AAA] uppercase tracking-wide">Activos</p>
             </div>
-            <div className="bg-[#1F2937] rounded-lg p-2.5">
-              <p className="text-2xl font-black text-[#FFD700]">{pct}%</p>
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide">Pool</p>
+            <div className="bg-[#FFD700]/10 border border-[#FFD700]/30 rounded-xl p-2.5">
+              <p className="text-2xl font-black text-[#1C1C1C]">{pct}%</p>
+              <p className="text-[10px] text-[#9A9AAA] uppercase tracking-wide">Pool</p>
             </div>
           </div>
 
           <div>
             <div className="flex items-center justify-between mb-1">
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-wide font-semibold">Pool Ocupación</p>
-              <p className="text-[10px] text-[#6B7280]">{zona.clientes_activos}/{zona.total_clientes}</p>
+              <p className="text-[10px] text-[#9A9AAA] uppercase tracking-wide font-semibold">Pool Ocupación</p>
+              <p className="text-[10px] text-[#5A5A6A]">{zona.clientes_activos}/{zona.total_clientes}</p>
             </div>
-            <div className="h-1.5 bg-[#1F2937] rounded-full overflow-hidden">
+            <div className="h-1.5 bg-[#EDE9E0] rounded-full overflow-hidden">
               <div className={`h-full rounded-full transition-all ${pct >= 80 ? 'bg-red-500' : pct >= 50 ? 'bg-[#FFD700]' : 'bg-green-500'}`} style={{ width: `${Math.max(pct, 2)}%` }} />
             </div>
           </div>
 
-          {/* Router */}
-          <div className="flex items-center gap-2 bg-[#1F2937] rounded-lg p-3">
-            <Router size={14} className="text-[#9CA3AF] shrink-0" />
+          <div className="flex items-center gap-2 bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl p-3">
+            <Router size={14} className="text-[#5A5A6A] shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-xs text-[#9CA3AF]">MikroTik</p>
-              <p className="text-sm text-white font-medium truncate">
+              <p className="text-xs text-[#9A9AAA]">MikroTik</p>
+              <p className="text-sm text-[#1C1C1C] font-medium truncate">
                 {zona.usuario_mikrotik ? `${zona.usuario_mikrotik}@` : ''}{zona.ip_lan || zona.router_mikrotik || '—'}
               </p>
             </div>
-            {zona.ip_lan && <span className="text-xs text-[#9CA3AF] font-mono">{zona.ip_lan}</span>}
+            {zona.ip_lan && <span className="text-xs text-[#5A5A6A] font-mono">{zona.ip_lan}</span>}
           </div>
           {zona.wg_public_key && (
-            <div className="bg-[#1F2937] rounded-lg px-3 py-2">
-              <p className="text-xs text-[#9CA3AF] mb-0.5">Clave pública WG</p>
-              <p className="text-xs text-white font-mono truncate">{zona.wg_public_key}</p>
+            <div className="bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2">
+              <p className="text-xs text-[#9A9AAA] mb-0.5">Clave pública WG</p>
+              <p className="text-xs text-[#1C1C1C] font-mono truncate">{zona.wg_public_key}</p>
             </div>
           )}
 
-          {/* APs */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-[#6B7280] flex items-center gap-1">
+              <p className="text-xs text-[#5A5A6A] flex items-center gap-1">
                 <Radio size={11} /> APs ({zona.access_points?.length || 0})
               </p>
               <button
                 onClick={() => setModalAP(true)}
-                className="flex items-center gap-1 text-xs text-[#FFD700] hover:text-yellow-300 transition-colors"
+                className="flex items-center gap-1 text-xs text-[#FFD700] hover:text-yellow-500 transition-colors font-semibold"
               >
                 <Plus size={12} /> Agregar AP
               </button>
@@ -752,25 +727,25 @@ function ZonaCard({ zona, onRefresh }) {
             {zona.access_points?.length > 0 ? (
               <div className="space-y-1.5">
                 {zona.access_points.map(ap => (
-                  <div key={ap.id} className="bg-[#1F2937] rounded px-3 py-2">
+                  <div key={ap.id} className="bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs text-white font-medium truncate">{ap.nombre}</p>
-                      <button onClick={() => deleteAP(ap.id)} className="p-1 text-[#4B5563] hover:text-red-400 transition-colors shrink-0 ml-2">
+                      <p className="text-xs text-[#1C1C1C] font-medium truncate">{ap.nombre}</p>
+                      <button onClick={() => deleteAP(ap.id)} className="p-1 text-[#9A9AAA] hover:text-red-500 transition-colors shrink-0 ml-2">
                         <Trash2 size={12} />
                       </button>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                      {ap.marca && <span className="text-xs text-[#4B5563]">{ap.marca}</span>}
-                      {ap.modelo && <span className="text-xs text-[#4B5563]">{ap.modelo}</span>}
-                      {ap.ssid && <span className="text-xs text-[#9CA3AF] font-mono">📶 {ap.ssid}</span>}
-                      {ap.frecuencia && <span className="text-xs text-[#FFD700]/70">{ap.frecuencia}</span>}
-                      {ap.ip_admin && <span className="text-xs text-[#9CA3AF] font-mono">{ap.ip_admin}</span>}
+                      {ap.marca && <span className="text-xs text-[#9A9AAA]">{ap.marca}</span>}
+                      {ap.modelo && <span className="text-xs text-[#9A9AAA]">{ap.modelo}</span>}
+                      {ap.ssid && <span className="text-xs text-[#5A5A6A] font-mono">📶 {ap.ssid}</span>}
+                      {ap.frecuencia && <span className="text-xs text-[#FFD700]/80 font-semibold">{ap.frecuencia}</span>}
+                      {ap.ip_admin && <span className="text-xs text-[#9A9AAA] font-mono">{ap.ip_admin}</span>}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-[#4B5563] text-center py-2">Sin APs registrados</p>
+              <p className="text-xs text-[#9A9AAA] text-center py-2">Sin APs registrados</p>
             )}
           </div>
         </div>
@@ -779,7 +754,7 @@ function ZonaCard({ zona, onRefresh }) {
         <div className="px-4 pb-4 pt-0">
           <button
             onClick={() => setModalEdit(true)}
-            className="w-full py-2 text-xs text-[#6B7280] hover:text-[#FFD700] border border-[#1F2937] hover:border-[#FFD700]/30 rounded-lg transition-colors flex items-center justify-center gap-1.5"
+            className="w-full py-2 text-xs text-[#5A5A6A] hover:text-[#1C1C1C] border border-[#E5E0D5] hover:border-[#D8D2C5] rounded-xl transition-colors flex items-center justify-center gap-1.5 bg-[#FAF7F0] hover:bg-[#EDE9E0]"
           >
             <Edit size={12} /> Editar Zona
           </button>
@@ -828,7 +803,6 @@ function ZonaCard({ zona, onRefresh }) {
   )
 }
 
-/* ── Página principal ────────────────────────────────────────────────── */
 export default function Zonas() {
   const [zonas, setZonas] = useState([])
   const [loading, setLoading] = useState(true)
@@ -858,26 +832,24 @@ export default function Zonas() {
   return (
     <div className="p-4 sm:p-6 space-y-5">
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-[#4B5563] font-mono uppercase tracking-widest">
+      <div className="flex items-center gap-2 text-xs text-[#9A9AAA] font-mono uppercase tracking-widest">
         <span>Network</span>
-        <span className="text-[#1F2937]">›</span>
+        <span className="text-[#D8D2C5]">›</span>
         <span className="text-[#FFD700]">Zone_Management</span>
       </div>
 
-      {/* Header */}
       <div className="flex items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Zonas y Equipos</h1>
-          <p className="text-[#6B7280] text-sm">Gestión de infraestructura de red regional TUX-ISP</p>
+          <h1 className="text-xl font-bold text-[#1C1C1C]">Zonas y Equipos</h1>
+          <p className="text-[#5A5A6A] text-sm">Gestión de infraestructura de red regional TUX-ISP</p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] text-[#6B7280] hover:text-white px-3 py-2 rounded-lg text-sm transition-colors shrink-0">
+          <button className="flex items-center gap-2 bg-white border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] px-3 py-2 rounded-xl text-sm transition-colors shrink-0">
             <Globe size={14} /> Configurar Pool
           </button>
           <button
             onClick={() => setModalNueva(true)}
-            className="flex items-center gap-2 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors text-sm shrink-0"
+            className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors text-sm shrink-0"
           >
             <Plus size={16} /> Nueva Zona
           </button>
@@ -885,16 +857,16 @@ export default function Zonas() {
       </div>
 
       {/* VPS Info */}
-      <div className="bg-[#111827] rounded-xl p-4 border border-[#1F2937] flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center shrink-0">
-          <Globe size={18} className="text-blue-400" />
+      <div className="bg-white rounded-2xl p-4 border border-[#E5E0D5] shadow-sm flex items-center gap-3">
+        <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
+          <Globe size={18} className="text-blue-500" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-white">Servidor VPS Principal</p>
-          <p className="text-xs text-[#9CA3AF] truncate">161.132.48.127 — WireGuard Hub — Tuxtell Network</p>
+          <p className="text-sm font-semibold text-[#1C1C1C]">Servidor VPS Principal</p>
+          <p className="text-xs text-[#5A5A6A] truncate">161.132.48.127 — WireGuard Hub — Tuxtell Network</p>
         </div>
-        <span className="flex items-center gap-1.5 text-xs text-green-400 shrink-0 font-bold">
-          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+        <span className="flex items-center gap-1.5 text-xs text-green-600 shrink-0 font-bold bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
+          <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
           ONLINE
         </span>
       </div>
@@ -903,8 +875,8 @@ export default function Zonas() {
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {zonas.map(z => <ZonaCard key={z.id} zona={z} onRefresh={fetchZonas} />)}
         {zonas.length === 0 && (
-          <div className="col-span-full text-center py-12 text-[#9CA3AF]">
-            <Globe size={40} className="mx-auto mb-3 opacity-30" />
+          <div className="col-span-full text-center py-12 text-[#9A9AAA]">
+            <Globe size={40} className="mx-auto mb-3 text-[#D8D2C5]" />
             <p>Sin zonas registradas</p>
             <button onClick={() => setModalNueva(true)} className="mt-3 text-[#FFD700] text-sm underline">
               Crear primera zona

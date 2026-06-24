@@ -3,7 +3,7 @@ import { Server, Shield, Database, Plus, Edit, Trash2, X, Save, HardDrive, Downl
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
-const inp = "w-full bg-[#111827] border border-[#374151] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFD700]"
+const inp = "w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700] transition-colors"
 
 const PLAN_EMPTY = { codigo: '', nombre: '', bajada_mbps: '', subida_mbps: '', precio: '' }
 
@@ -42,57 +42,57 @@ function PlanModal({ plan, onClose, onSaved }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] w-full max-w-sm p-5 space-y-4">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-xl w-full max-w-sm p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-bold text-white">{editing ? 'Editar Plan' : 'Nuevo Plan'}</h3>
-          <button onClick={onClose} className="text-[#9CA3AF] hover:text-white"><X size={16}/></button>
+          <h3 className="font-bold text-[#1C1C1C]">{editing ? 'Editar Plan' : 'Nuevo Plan'}</h3>
+          <button onClick={onClose} className="text-[#9A9AAA] hover:text-[#1C1C1C]"><X size={16}/></button>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Código *</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Código *</label>
             <input className={inp} placeholder="PLAN05" value={form.codigo}
               onChange={e => setForm(f => ({...f, codigo: e.target.value}))}
               disabled={editing}/>
-            {editing && <p className="text-xs text-[#4B5563] mt-1">El código no se puede cambiar</p>}
+            {editing && <p className="text-xs text-[#9A9AAA] mt-1">El código no se puede cambiar</p>}
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Nombre *</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Nombre *</label>
             <input className={inp} placeholder="Básico 15M" value={form.nombre}
               onChange={e => setForm(f => ({...f, nombre: e.target.value}))}/>
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Bajada (Mbps) *</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Bajada (Mbps) *</label>
             <input type="number" className={inp} placeholder="15" value={form.bajada_mbps}
               onChange={e => setForm(f => ({...f, bajada_mbps: e.target.value}))}/>
           </div>
           <div>
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Subida (Mbps) *</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Subida (Mbps) *</label>
             <input type="number" className={inp} placeholder="6" value={form.subida_mbps}
               onChange={e => setForm(f => ({...f, subida_mbps: e.target.value}))}/>
           </div>
           <div className="col-span-2">
-            <label className="text-xs text-[#9CA3AF] mb-1 block">Precio S/ *</label>
+            <label className="text-xs text-[#5A5A6A] mb-1 block">Precio S/ *</label>
             <input type="number" step="0.01" className={inp} placeholder="50.00" value={form.precio}
               onChange={e => setForm(f => ({...f, precio: e.target.value}))}/>
           </div>
         </div>
 
-        <div className="bg-[#111827] rounded-lg p-3 border border-[#374151]">
-          <p className="text-xs text-[#9CA3AF]">Rate-limit en MikroTik:</p>
+        <div className="bg-[#FAF7F0] rounded-xl p-3 border border-[#E5E0D5]">
+          <p className="text-xs text-[#5A5A6A]">Rate-limit en MikroTik:</p>
           <p className="text-sm font-mono text-[#FFD700] mt-1">
             {form.bajada_mbps || '?'}M/{form.subida_mbps || '?'}M
           </p>
-          <p className="text-xs text-[#4B5563] mt-1">Se aplicará en todos los MikroTiks activos</p>
+          <p className="text-xs text-[#9A9AAA] mt-1">Se aplicará en todos los MikroTiks activos</p>
         </div>
 
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2 text-sm border border-[#374151] rounded-lg text-[#9CA3AF] hover:text-white">
+          <button onClick={onClose} className="flex-1 py-2 text-sm border border-[#D8D2C5] rounded-xl text-[#5A5A6A] hover:text-[#1C1C1C]">
             Cancelar
           </button>
           <button onClick={guardar} disabled={saving}
-            className="flex-1 py-2 text-sm bg-[#FFD700] text-[#111827] font-bold rounded-lg hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-2">
+            className="flex-1 py-2 text-sm bg-[#FFD700] text-[#1C1C1C] font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-2">
             <Save size={14}/>{saving ? 'Sincronizando...' : 'Guardar'}
           </button>
         </div>
@@ -176,63 +176,63 @@ export default function Configuracion() {
   return (
     <div className="p-6 space-y-5 max-w-2xl">
       <div>
-        <h1 className="text-xl font-bold text-white">Configuración</h1>
-        <p className="text-[#9CA3AF] text-sm">Ajustes del sistema TUX-ISP</p>
+        <h1 className="text-xl font-bold text-[#1C1C1C]">Configuración</h1>
+        <p className="text-[#5A5A6A] text-sm">Ajustes del sistema TUX-ISP</p>
       </div>
 
       {/* Planes */}
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-            <Database size={15}/> Planes de Internet
+          <h2 className="text-sm font-semibold text-[#1C1C1C] flex items-center gap-2">
+            <Database size={15} className="text-[#5A5A6A]"/> Planes de Internet
           </h2>
           <button onClick={() => setModal('nuevo')}
-            className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-yellow-400">
+            className="flex items-center gap-1.5 bg-[#FFD700] text-[#1C1C1C] font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-yellow-400">
             <Plus size={13}/> Nuevo Plan
           </button>
         </div>
 
         <div className="space-y-2">
           {planes.map(p => (
-            <div key={p.id} className="flex items-center gap-3 bg-[#111827] rounded-lg px-4 py-3 border border-[#374151]">
-              <span className="text-[#FFD700] font-bold text-sm w-16">{p.codigo}</span>
+            <div key={p.id} className="flex items-center gap-3 bg-[#FAF7F0] rounded-xl px-4 py-3 border border-[#E5E0D5]">
+              <span className="text-[#1C1C1C] font-bold text-sm w-16 bg-[#FFD700]/20 text-center rounded-lg px-2 py-0.5">{p.codigo}</span>
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium">{p.nombre}</p>
-                <p className="text-xs text-[#9CA3AF]">↓{p.bajada_mbps} Mbps / ↑{p.subida_mbps} Mbps</p>
+                <p className="text-[#1C1C1C] text-sm font-medium">{p.nombre}</p>
+                <p className="text-xs text-[#5A5A6A]">↓{p.bajada_mbps} Mbps / ↑{p.subida_mbps} Mbps</p>
               </div>
-              <span className="text-[#FFD700] font-bold text-sm">S/ {p.precio}</span>
+              <span className="text-[#1C1C1C] font-bold text-sm bg-[#FFD700] px-2 py-0.5 rounded-lg">S/ {p.precio}</span>
               <div className="flex items-center gap-1">
                 <button onClick={() => setModal(p)}
-                  className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-white hover:bg-[#374151] transition-colors">
+                  className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors">
                   <Edit size={13}/>
                 </button>
                 <button onClick={() => eliminarPlan(p)}
-                  className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-red-400 hover:bg-red-900/20 transition-colors">
+                  className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-red-500 hover:bg-red-50 transition-colors">
                   <Trash2 size={13}/>
                 </button>
               </div>
             </div>
           ))}
           {planes.length === 0 && (
-            <p className="text-[#4B5563] text-sm text-center py-4">Sin planes registrados</p>
+            <p className="text-[#9A9AAA] text-sm text-center py-4">Sin planes registrados</p>
           )}
         </div>
       </div>
 
-      {/* Backup de Base de Datos */}
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
+      {/* Backup */}
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-            <HardDrive size={15}/> Backup de Base de Datos
+          <h2 className="text-sm font-semibold text-[#1C1C1C] flex items-center gap-2">
+            <HardDrive size={15} className="text-[#5A5A6A]"/> Backup de Base de Datos
           </h2>
           <button
             onClick={hacerBackup}
             disabled={loadingBackup}
-            className="flex items-center gap-1.5 bg-[#FFD700] text-[#111827] font-bold px-3 py-1.5 rounded-lg text-xs hover:bg-yellow-400 disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-[#FFD700] text-[#1C1C1C] font-bold px-3 py-1.5 rounded-xl text-xs hover:bg-yellow-400 disabled:opacity-50"
           >
             {loadingBackup ? (
               <>
-                <div className="w-3 h-3 border-2 border-[#111827]/30 border-t-[#111827] rounded-full animate-spin"/>
+                <div className="w-3 h-3 border-2 border-[#1C1C1C]/30 border-t-[#1C1C1C] rounded-full animate-spin"/>
                 Generando...
               </>
             ) : (
@@ -243,19 +243,19 @@ export default function Configuracion() {
 
         <div className="space-y-2">
           {backups.length === 0 ? (
-            <p className="text-[#4B5563] text-sm text-center py-4">Sin backups registrados</p>
+            <p className="text-[#9A9AAA] text-sm text-center py-4">Sin backups registrados</p>
           ) : backups.map(b => (
-            <div key={b.filename} className="flex items-center gap-3 bg-[#111827] rounded-lg px-4 py-3 border border-[#374151]">
+            <div key={b.filename} className="flex items-center gap-3 bg-[#FAF7F0] rounded-xl px-4 py-3 border border-[#E5E0D5]">
               <div className="flex-1 min-w-0">
-                <p className="text-white text-xs font-mono truncate">{b.filename}</p>
-                <p className="text-xs text-[#9CA3AF] mt-0.5">
+                <p className="text-[#1C1C1C] text-xs font-mono truncate">{b.filename}</p>
+                <p className="text-xs text-[#5A5A6A] mt-0.5">
                   {new Date(b.created_at).toLocaleString('es-PE')} · {b.size_kb} KB
                 </p>
               </div>
               <button
                 onClick={() => descargarBackup(b.filename)}
                 title="Descargar"
-                className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#FFD700] hover:bg-yellow-900/20 transition-colors"
+                className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors"
               >
                 <Download size={14}/>
               </button>
@@ -263,16 +263,16 @@ export default function Configuracion() {
           ))}
         </div>
 
-        <div className="bg-[#111827] rounded-lg p-3 border border-[#374151]">
-          <p className="text-xs text-[#4B5563]">
-            Se conservan los últimos 7 backups · Formato: <span className="font-mono">.sql.gz</span> (restaurar con <span className="font-mono">gunzip | psql</span>)
+        <div className="bg-[#FAF7F0] rounded-xl p-3 border border-[#E5E0D5]">
+          <p className="text-xs text-[#9A9AAA]">
+            Se conservan los últimos 7 backups · Formato: <span className="font-mono">sql.gz</span> (restaurar con <span className="font-mono">gunzip | psql</span>)
           </p>
         </div>
       </div>
 
-      {/* Info del sistema */}
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Server size={15}/> Sistema</h2>
+      {/* Sistema */}
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-[#1C1C1C] flex items-center gap-2"><Server size={15} className="text-[#5A5A6A]"/> Sistema</h2>
         <div className="grid grid-cols-2 gap-4 text-sm">
           {[
             ['Dominio', 'tuxtell.duckdns.org'],
@@ -281,16 +281,16 @@ export default function Configuracion() {
             ['Versión', '1.0.0'],
           ].map(([k, v]) => (
             <div key={k}>
-              <p className="text-xs text-[#9CA3AF]">{k}</p>
-              <p className="text-white font-medium mt-0.5">{v}</p>
+              <p className="text-xs text-[#9A9AAA]">{k}</p>
+              <p className="text-[#1C1C1C] font-medium mt-0.5">{v}</p>
             </div>
           ))}
         </div>
       </div>
 
       {/* Cambiar contraseña */}
-      <div className="bg-[#1F2937] rounded-xl border border-[#374151] p-5 space-y-4">
-        <h2 className="text-sm font-semibold text-white flex items-center gap-2"><Shield size={15}/> Cambiar Contraseña</h2>
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm p-5 space-y-4">
+        <h2 className="text-sm font-semibold text-[#1C1C1C] flex items-center gap-2"><Shield size={15} className="text-[#5A5A6A]"/> Cambiar Contraseña</h2>
         <form onSubmit={cambiarPassword} className="space-y-3">
           {[
             ['actual', 'Contraseña actual'],
@@ -298,13 +298,13 @@ export default function Configuracion() {
             ['confirmar', 'Confirmar nueva contraseña'],
           ].map(([k, label]) => (
             <div key={k}>
-              <label className="text-xs text-[#9CA3AF] mb-1 block">{label}</label>
+              <label className="text-xs text-[#5A5A6A] mb-1 block">{label}</label>
               <input type="password" className={inp} value={pwd[k]}
                 onChange={e => setPwd(p => ({...p, [k]: e.target.value}))}/>
             </div>
           ))}
           <button type="submit" disabled={savingPwd}
-            className="bg-[#FFD700] text-[#111827] font-bold px-5 py-2 rounded-lg hover:bg-yellow-400 text-sm disabled:opacity-50">
+            className="bg-[#FFD700] text-[#1C1C1C] font-bold px-5 py-2 rounded-xl hover:bg-yellow-400 text-sm disabled:opacity-50">
             {savingPwd ? 'Actualizando...' : 'Actualizar Contraseña'}
           </button>
         </form>

@@ -5,18 +5,18 @@ import api from '../api/client'
 import toast from 'react-hot-toast'
 
 const ESTADO_COLORS = {
-  activo:     'bg-green-500/20 text-green-400 border border-green-500/30',
-  suspendido: 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
-  anulado:    'bg-red-500/20 text-red-400 border border-red-500/30',
-  vencido:    'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+  activo:     'bg-green-50 text-green-600 border border-green-200',
+  suspendido: 'bg-yellow-50 text-yellow-600 border border-yellow-200',
+  anulado:    'bg-red-50 text-red-500 border border-red-200',
+  vencido:    'bg-orange-50 text-orange-600 border border-orange-200',
 }
 
 const MES_DOT = {
   pagado:         'bg-green-500 text-white',
   vencido:        'bg-red-500 text-white',
   pendiente:      'bg-orange-400 text-white',
-  corte_temporal: 'bg-yellow-400 text-[#111827]',
-  futuro:         'bg-[#374151] text-[#6B7280]',
+  corte_temporal: 'bg-yellow-400 text-[#1C1C1C]',
+  futuro:         'bg-[#EDE9E0] text-[#9A9AAA]',
   no_aplica:      'opacity-0 pointer-events-none',
 }
 
@@ -29,7 +29,7 @@ const MES_LETRA = 'EFMAMJJASOND'
 const MESES_NOMBRE = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 
 function MesesPago({ meses }) {
-  if (!meses?.length) return <span className="text-[#374151] text-xs">—</span>
+  if (!meses?.length) return <span className="text-[#D8D2C5] text-xs">—</span>
   return (
     <div className="flex gap-0.5 items-center">
       {meses.map(m => {
@@ -49,14 +49,14 @@ function MesesPago({ meses }) {
 }
 
 const AVATAR_COLORS = [
-  'bg-blue-500/25 text-blue-300',
-  'bg-purple-500/25 text-purple-300',
-  'bg-green-500/25 text-green-300',
-  'bg-orange-500/25 text-orange-300',
-  'bg-pink-500/25 text-pink-300',
-  'bg-cyan-500/25 text-cyan-300',
-  'bg-indigo-500/25 text-indigo-300',
-  'bg-teal-500/25 text-teal-300',
+  'bg-blue-100 text-blue-600',
+  'bg-purple-100 text-purple-600',
+  'bg-green-100 text-green-600',
+  'bg-orange-100 text-orange-600',
+  'bg-pink-100 text-pink-600',
+  'bg-cyan-100 text-cyan-600',
+  'bg-indigo-100 text-indigo-600',
+  'bg-teal-100 text-teal-600',
 ]
 
 function getInitials(nombre) {
@@ -136,22 +136,20 @@ export default function Clientes() {
   return (
     <div className="p-6 space-y-5">
 
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-[#4B5563] font-mono uppercase tracking-widest">
+      <div className="flex items-center gap-2 text-xs text-[#9A9AAA] font-mono uppercase tracking-widest">
         <span>Network</span>
-        <span className="text-[#1F2937]">›</span>
+        <span className="text-[#D8D2C5]">›</span>
         <span className="text-[#FFD700]">Client_Management</span>
       </div>
 
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-white">Clientes</h1>
-          <p className="text-[#6B7280] text-sm">{total} registros</p>
+          <h1 className="text-xl font-bold text-[#1C1C1C]">Clientes</h1>
+          <p className="text-[#5A5A6A] text-sm">{total} registros</p>
         </div>
         <Link
           to="/clientes/nuevo"
-          className="flex items-center gap-2 bg-[#FFD700] text-[#111827] font-bold px-4 py-2 rounded-lg hover:bg-yellow-400 transition-colors text-sm"
+          className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors text-sm"
         >
           <Plus size={16} />
           Nuevo Cliente
@@ -161,23 +159,17 @@ export default function Clientes() {
       {/* Stats row */}
       {dashStats && (
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-[#111827] rounded-xl px-4 py-3 border border-[#1F2937] flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold">Total Clientes</p>
-              <p className="text-2xl font-black text-white mt-0.5">{dashStats.total_clientes}</p>
-            </div>
+          <div className="bg-white rounded-2xl px-4 py-3 border border-[#E5E0D5] shadow-sm">
+            <p className="text-[10px] text-[#9A9AAA] uppercase tracking-widest font-semibold">Total Clientes</p>
+            <p className="text-2xl font-black text-[#1C1C1C] mt-0.5">{dashStats.total_clientes}</p>
           </div>
-          <div className="bg-[#111827] rounded-xl px-4 py-3 border border-green-500/20 flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold">Activos</p>
-              <p className="text-2xl font-black text-green-400 mt-0.5">{dashStats.clientes_activos}</p>
-            </div>
+          <div className="bg-white rounded-2xl px-4 py-3 border border-green-200 shadow-sm">
+            <p className="text-[10px] text-[#9A9AAA] uppercase tracking-widest font-semibold">Activos</p>
+            <p className="text-2xl font-black text-green-600 mt-0.5">{dashStats.clientes_activos}</p>
           </div>
-          <div className="bg-[#111827] rounded-xl px-4 py-3 border border-red-500/20 flex items-center gap-3">
-            <div className="flex-1">
-              <p className="text-[10px] text-[#4B5563] uppercase tracking-widest font-semibold">Suspendidos</p>
-              <p className="text-2xl font-black text-red-400 mt-0.5">{dashStats.clientes_suspendidos}</p>
-            </div>
+          <div className="bg-white rounded-2xl px-4 py-3 border border-red-200 shadow-sm">
+            <p className="text-[10px] text-[#9A9AAA] uppercase tracking-widest font-semibold">Suspendidos</p>
+            <p className="text-2xl font-black text-red-500 mt-0.5">{dashStats.clientes_suspendidos}</p>
           </div>
         </div>
       )}
@@ -185,47 +177,47 @@ export default function Clientes() {
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-48">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C8C2B5]" />
           <input
             type="text"
             placeholder="Buscar nombre, usuario, IP..."
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1) }}
-            className="w-full bg-[#111827] border border-[#1F2937] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700]/50 transition-colors"
+            className="w-full bg-white border border-[#E5E0D5] rounded-xl pl-9 pr-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700] transition-colors"
           />
         </div>
         <select
           value={zonaFiltro}
           onChange={e => { setZonaFiltro(e.target.value); setPage(1) }}
-          className="bg-[#111827] border border-[#1F2937] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFD700]/50"
+          className="bg-white border border-[#E5E0D5] rounded-xl px-3 py-2 text-sm text-[#1C1C1C] focus:outline-none focus:border-[#FFD700]"
         >
-          <option value="">Filtrar por Zona: Todas las Zonas</option>
+          <option value="">Filtrar por Zona: Todas</option>
           {zonas.map(z => <option key={z.id} value={z.id}>{z.nombre}</option>)}
         </select>
         <select
           value={estadoFiltro}
           onChange={e => { setEstadoFiltro(e.target.value); setPage(1) }}
-          className="bg-[#111827] border border-[#1F2937] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#FFD700]/50"
+          className="bg-white border border-[#E5E0D5] rounded-xl px-3 py-2 text-sm text-[#1C1C1C] focus:outline-none focus:border-[#FFD700]"
         >
           <option value="">Estado: Todos</option>
           <option value="activo">Activo</option>
           <option value="suspendido">Suspendido</option>
           <option value="anulado">Anulado</option>
         </select>
-        <button className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] text-[#6B7280] hover:text-white px-3 py-2 rounded-lg text-sm transition-colors">
+        <button className="flex items-center gap-2 bg-white border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] px-3 py-2 rounded-xl text-sm transition-colors">
           <Download size={14} />
           Exportar CSV
         </button>
       </div>
 
       {/* Table */}
-      <div className="bg-[#111827] rounded-xl border border-[#1F2937] overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#1F2937]">
+              <tr className="border-b border-[#EDE9E0]">
                 {['Nombre / ID', 'Usuario PPPoE', 'IP Asignada', 'Zona', 'Pagos (6m)', 'Estado', 'Acciones'].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[#4B5563] uppercase tracking-widest">
+                  <th key={h} className="text-left px-4 py-3 text-[10px] font-semibold text-[#9A9AAA] uppercase tracking-widest">
                     {h}
                   </th>
                 ))}
@@ -233,44 +225,44 @@ export default function Clientes() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={7} className="text-center py-10 text-[#6B7280]">Cargando...</td></tr>
+                <tr><td colSpan={7} className="text-center py-10 text-[#9A9AAA]">Cargando...</td></tr>
               ) : clientes.length === 0 ? (
-                <tr><td colSpan={7} className="text-center py-10 text-[#6B7280]">Sin resultados</td></tr>
+                <tr><td colSpan={7} className="text-center py-10 text-[#9A9AAA]">Sin resultados</td></tr>
               ) : clientes.map(c => {
                 const initials = getInitials(c.nombre)
                 const avatarCls = getAvatarColor(c.nombre)
                 return (
-                  <tr key={c.id} className="border-b border-[#1F2937]/60 hover:bg-[#1F2937]/40 transition-colors">
+                  <tr key={c.id} className="border-b border-[#F0EBE0] hover:bg-[#FAF7F0] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${avatarCls}`}>
                           {initials}
                         </div>
                         <div>
-                          <p className="font-semibold text-white">{c.nombre}</p>
-                          <p className="text-xs text-[#4B5563] font-mono">#{String(c.id).padStart(4, '0')}</p>
+                          <p className="font-semibold text-[#1C1C1C]">{c.nombre}</p>
+                          <p className="text-xs text-[#9A9AAA] font-mono">#{String(c.id).padStart(4, '0')}</p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <p className="text-white font-mono text-xs">{c.usuario_pppoe}</p>
-                      <p className="text-[#4B5563] text-xs">{c.telefono || '—'}</p>
+                      <p className="text-[#1C1C1C] font-mono text-xs">{c.usuario_pppoe}</p>
+                      <p className="text-[#9A9AAA] text-xs">{c.telefono || '—'}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className="text-[#9CA3AF] font-mono text-xs">{c.ip_estatica || '—'}</span>
+                      <span className="text-[#5A5A6A] font-mono text-xs">{c.ip_estatica || '—'}</span>
                     </td>
                     <td className="px-4 py-3">
                       {c.zona?.nombre ? (
-                        <span className="text-xs bg-[#1F2937] text-[#9CA3AF] px-2 py-1 rounded font-mono uppercase">
+                        <span className="text-xs bg-[#FAF7F0] text-[#5A5A6A] border border-[#E5E0D5] px-2 py-1 rounded-lg font-mono uppercase">
                           {c.zona.nombre}
                         </span>
-                      ) : <span className="text-[#374151]">—</span>}
+                      ) : <span className="text-[#D8D2C5]">—</span>}
                     </td>
                     <td className="px-4 py-3">
                       <MesesPago meses={c.meses_pago} />
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wide ${ESTADO_COLORS[c.estado] || ESTADO_COLORS.anulado}`}>
+                      <span className={`px-2 py-0.5 rounded-lg text-xs font-bold uppercase tracking-wide ${ESTADO_COLORS[c.estado] || ESTADO_COLORS.anulado}`}>
                         {c.estado}
                       </span>
                     </td>
@@ -279,24 +271,24 @@ export default function Clientes() {
                         <button
                           onClick={() => toggleEstado(c)}
                           title={c.estado === 'activo' ? 'Cortar' : 'Reactivar'}
-                          className={`p-1.5 rounded transition-colors ${
+                          className={`p-1.5 rounded-lg transition-colors ${
                             c.estado === 'activo'
-                              ? 'text-[#6B7280] hover:text-red-400 hover:bg-red-900/20'
-                              : 'text-[#6B7280] hover:text-green-400 hover:bg-green-900/20'
+                              ? 'text-[#9A9AAA] hover:text-red-500 hover:bg-red-50'
+                              : 'text-[#9A9AAA] hover:text-green-600 hover:bg-green-50'
                           }`}
                         >
                           {c.estado === 'activo' ? <WifiOff size={14} /> : <Wifi size={14} />}
                         </button>
                         <Link
                           to={`/clientes/${c.id}`}
-                          className="p-1.5 rounded text-[#6B7280] hover:text-[#FFD700] hover:bg-yellow-900/20 transition-colors"
+                          className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors"
                           title="Ver/Editar"
                         >
                           <Edit size={14} />
                         </Link>
                         <button
                           onClick={() => eliminar(c.id, c.nombre)}
-                          className="p-1.5 rounded text-[#6B7280] hover:text-red-400 hover:bg-red-900/20 transition-colors"
+                          className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-red-500 hover:bg-red-50 transition-colors"
                           title="Eliminar"
                         >
                           <Trash2 size={14} />
@@ -312,15 +304,15 @@ export default function Clientes() {
 
         {/* Pagination */}
         {pages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[#1F2937]">
-            <span className="text-xs text-[#4B5563]">
-              Mostrando {((page - 1) * 20) + 1}-{Math.min(page * 20, total)} de <span className="text-white font-semibold">{total}</span> clientes
+          <div className="flex items-center justify-between px-4 py-3 border-t border-[#EDE9E0]">
+            <span className="text-xs text-[#9A9AAA]">
+              Mostrando {((page - 1) * 20) + 1}-{Math.min(page * 20, total)} de <span className="text-[#1C1C1C] font-semibold">{total}</span> clientes
             </span>
             <div className="flex gap-1">
               <button
                 onClick={() => setPage(p => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-8 h-8 flex items-center justify-center rounded bg-[#1F2937] text-[#6B7280] hover:text-white disabled:opacity-30 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FAF7F0] border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] disabled:opacity-30 transition-colors"
               >
                 <ChevronLeft size={15} />
               </button>
@@ -331,10 +323,10 @@ export default function Clientes() {
                   <button
                     key={p}
                     onClick={() => setPage(p)}
-                    className={`w-8 h-8 flex items-center justify-center rounded text-sm font-semibold transition-colors ${
+                    className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
                       p === page
-                        ? 'bg-[#FFD700] text-[#111827]'
-                        : 'bg-[#1F2937] text-[#6B7280] hover:text-white'
+                        ? 'bg-[#FFD700] text-[#1C1C1C]'
+                        : 'bg-[#FAF7F0] border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C]'
                     }`}
                   >
                     {p}
@@ -344,7 +336,7 @@ export default function Clientes() {
               <button
                 onClick={() => setPage(p => Math.min(pages, p + 1))}
                 disabled={page === pages}
-                className="w-8 h-8 flex items-center justify-center rounded bg-[#1F2937] text-[#6B7280] hover:text-white disabled:opacity-30 transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg bg-[#FAF7F0] border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] disabled:opacity-30 transition-colors"
               >
                 <ChevronRight size={15} />
               </button>
