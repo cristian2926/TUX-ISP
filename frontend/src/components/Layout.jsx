@@ -1,16 +1,16 @@
 import { Outlet, Link } from 'react-router-dom'
 import { useState } from 'react'
 import Sidebar from './Sidebar'
-import { Menu, Bell, Settings, Search } from 'lucide-react'
+import { Menu, Bell, Plus, MessageCircle, User } from 'lucide-react'
 
 function getUsername() {
   const token = localStorage.getItem('token')
-  if (!token) return 'Admin'
+  if (!token) return 'Admin Root'
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.sub || 'Admin'
+    return payload.sub || 'Admin Root'
   } catch {
-    return 'Admin'
+    return 'Admin Root'
   }
 }
 
@@ -19,53 +19,56 @@ function Topbar({ onMenuOpen }) {
   const initials = username.slice(0, 2).toUpperCase()
 
   return (
-    <div className="h-14 bg-[#111827] border-b border-[#1F2937] flex items-center gap-3 px-4 shrink-0">
-      {/* Mobile hamburger */}
+    <div className="h-14 bg-white border-b border-[#E5E0D5] flex items-center gap-3 px-4 shrink-0 shadow-sm">
       <button
         onClick={onMenuOpen}
-        className="p-1.5 rounded-lg text-[#6B7280] hover:text-white hover:bg-[#1F2937] transition-colors lg:hidden shrink-0"
+        className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors lg:hidden shrink-0"
       >
         <Menu size={20} />
       </button>
 
       {/* Search */}
-      <div className="flex-1 max-w-sm relative hidden sm:block">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+      <div className="flex-1 max-w-md relative hidden sm:block">
+        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C8C2B5]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         <input
           type="text"
-          placeholder="Buscar clientes, IP o PPPoE..."
-          className="w-full bg-[#0D1117] border border-[#1F2937] rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#FFD700]/40 transition-colors"
+          placeholder="Search clients, IPs or zones..."
+          className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl pl-9 pr-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700]/60 transition-colors"
         />
       </div>
 
-      {/* Right side */}
-      <div className="flex items-center gap-1 ml-auto">
-        {/* Notifications */}
-        <button className="relative p-2 rounded-lg text-[#6B7280] hover:text-white hover:bg-[#1F2937] transition-colors">
+      <div className="flex items-center gap-2 ml-auto">
+        <Link
+          to="/clientes/nuevo"
+          className="hidden sm:flex items-center gap-1.5 bg-[#FFD700] text-[#1C1C1C] font-bold text-sm px-3.5 py-2 rounded-xl hover:bg-yellow-400 transition-colors"
+        >
+          <Plus size={15} />
+          Nuevo Cliente
+        </Link>
+
+        <Link
+          to="/whatsapp"
+          className="hidden md:flex items-center gap-1.5 bg-white border border-[#E5E0D5] text-[#5A5A6A] text-sm px-3.5 py-2 rounded-xl hover:border-[#C8C2B5] transition-colors"
+        >
+          <MessageCircle size={15} className="text-green-500" />
+          WhatsApp Web
+        </Link>
+
+        <button className="relative p-2 rounded-xl text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors">
           <Bell size={18} />
           <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-500 rounded-full" />
         </button>
 
-        {/* Settings */}
-        <Link
-          to="/configuracion"
-          className="p-2 rounded-lg text-[#6B7280] hover:text-white hover:bg-[#1F2937] transition-colors"
-        >
-          <Settings size={18} />
-        </Link>
+        <div className="w-px h-6 bg-[#E5E0D5] mx-1" />
 
-        {/* Divider */}
-        <div className="w-px h-6 bg-[#1F2937] mx-2" />
-
-        {/* User */}
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-[#FFD700] flex items-center justify-center shrink-0">
-            <span className="text-xs font-black text-[#111827]">{initials}</span>
+            <span className="text-xs font-black text-[#1C1C1C]">{initials}</span>
           </div>
           <div className="hidden md:block">
-            <p className="text-xs font-bold text-white leading-tight">{username}</p>
-            <p className="text-[9px] text-[#4B5563] uppercase tracking-widest leading-tight font-medium">
-              Administrador
+            <p className="text-xs font-bold text-[#1C1C1C] leading-tight">{username}</p>
+            <p className="text-[9px] text-[#9A9AAA] uppercase tracking-widest leading-tight font-medium">
+              Network Operations
             </p>
           </div>
         </div>
@@ -78,28 +81,18 @@ export default function Layout() {
   const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0D1117]">
-      {/* Mobile overlay */}
+    <div className="flex h-screen overflow-hidden bg-[#FAF7F0]">
       {open && (
-        <div
-          className="fixed inset-0 bg-black/60 z-20 lg:hidden"
-          onClick={() => setOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/30 z-20 lg:hidden" onClick={() => setOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <div className={`
-        fixed lg:static inset-y-0 left-0 z-30
-        transform transition-transform duration-200
-        ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-      `}>
+      <div className={`fixed lg:static inset-y-0 left-0 z-30 transform transition-transform duration-200 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <Sidebar onClose={() => setOpen(false)} />
       </div>
 
-      {/* Main */}
       <div className="flex-1 flex flex-col overflow-hidden">
         <Topbar onMenuOpen={() => setOpen(true)} />
-        <main className="flex-1 overflow-y-auto bg-[#0D1117]">
+        <main className="flex-1 overflow-y-auto bg-[#FAF7F0]">
           <Outlet />
         </main>
       </div>

@@ -1,56 +1,87 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts'
-import {
-  Users, TrendingUp, TrendingDown, AlertCircle, RefreshCw,
-  Zap, Plus, MessageCircle, ExternalLink, ChevronRight, Download,
-} from 'lucide-react'
+import { Users, CheckCircle, Ban, Wallet, Wifi } from 'lucide-react'
 import api from '../api/client'
 
-function StatCard({ icon: Icon, label, value, sub, color = '#FFD700', badge, badgeColor }) {
+function useClock() {
+  const [time, setTime] = useState(new Date())
+  useEffect(() => {
+    const t = setInterval(() => setTime(new Date()), 1000)
+    return () => clearInterval(t)
+  }, [])
+  return time.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+function StatCard({ icon: Icon, label, value, badge, badgeColor = '#22C55E', iconBg, iconColor }) {
   return (
-    <div className="bg-[#111827] rounded-xl p-5 border border-[#1F2937]">
-      <div className="flex items-start justify-between mb-3">
-        <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0" style={{ background: color + '18' }}>
-          <Icon size={20} style={{ color }} />
+    <div className="bg-white rounded-2xl p-5 border border-[#E5E0D5] shadow-sm">
+      <div className="flex items-start justify-between mb-4">
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: iconBg }}>
+          <Icon size={20} style={{ color: iconColor }} />
         </div>
         {badge && (
-          <span className="text-xs font-bold" style={{ color: badgeColor || color }}>
+          <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: badgeColor, background: badgeColor + '18' }}>
             {badge}
           </span>
         )}
       </div>
-      <p className="text-[#6B7280] text-[10px] uppercase tracking-widest font-semibold">{label}</p>
-      <p className="text-3xl font-black text-white mt-1 leading-none">{value}</p>
-      {sub && <p className="text-xs text-[#4B5563] mt-2">{sub}</p>}
+      <p className="text-[#9A9AAA] text-[10px] uppercase tracking-widest font-semibold mb-1">{label}</p>
+      <p className="text-3xl font-black text-[#1C1C1C] leading-none">{value}</p>
     </div>
   )
 }
 
-function ActividadItem({ item }) {
-  const colors = { activacion: '#22C55E', corte: '#EF4444', pago: '#FFD700', nota: '#6B7280' }
-  const color = colors[item.tipo] || '#6B7280'
+function ZonaCard({ zona }) {
+  const [wg, setWg] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get(`/zonas/${zona.id}/wireguard-status`)
+      .then(r => setWg(r.data))
+      .catch(() => setWg(null))
+      .finally(() => setLoading(false))
+  }, [zona.id])
+
+  const isUp = !loading && wg?.online
+
   return (
-    <div className="flex items-start gap-3 py-2.5 border-b border-[#1F2937] last:border-0">
-      <div className="w-1.5 h-1.5 rounded-full mt-2 shrink-0" style={{ background: color }} />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm text-white truncate">{item.cliente_nombre}</p>
-        <p className="text-xs text-[#6B7280] truncate">{item.descripcion}</p>
+    <div className="bg-white rounded-xl border border-[#E5E0D5] p-3.5 flex items-center gap-3">
+      <div className="w-8 h-8 bg-[#FAF7F0] border border-[#E5E0D5] rounded-lg flex items-center justify-center shrink-0">
+        <Wifi size={15} className="text-[#C8C2B5]" />
       </div>
-      <span className="text-xs text-[#374151] shrink-0">
-        {new Date(item.creado_en).toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-bold text-[#1C1C1C] leading-tight">{zona.nombre}</p>
+        <p className="text-xs text-[#9A9AAA]">WireGuard {isUp ? 'Active' : loading ? '...' : 'Inactive'}</p>
+      </div>
+      <span className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg border ${
+        loading ? 'bg-[#FAF7F0] text-[#9A9AAA] border-[#E5E0D5]'
+        : isUp ? 'bg-green-50 text-green-600 border-green-200'
+        : 'bg-red-50 text-red-500 border-red-200'
+      }`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${loading ? 'bg-[#C8C2B5]' : isUp ? 'bg-green-500' : 'bg-red-500'}`}/>
+        {loading ? '—' : isUp ? 'UP' : 'DOWN'}
       </span>
     </div>
   )
 }
 
+const TIPO_BADGE = {
+  activacion: { bg: 'bg-green-50 text-green-600 border-green-200', dot: 'bg-green-500', label: 'ACTIVE' },
+  corte:      { bg: 'bg-red-50 text-red-500 border-red-200',       dot: 'bg-red-500',   label: 'CORTE' },
+  pago:       { bg: 'bg-yellow-50 text-yellow-600 border-yellow-200', dot: 'bg-yellow-500', label: 'PAGO' },
+  nota:       { bg: 'bg-gray-50 text-gray-500 border-gray-200',    dot: 'bg-gray-400',  label: 'NOTA' },
+}
+
 export default function Dashboard() {
-  const [stats, setStats] = useState(null)
+  const clock = useClock()
+  const [stats, setStats]     = useState(null)
   const [grafica, setGrafica] = useState([])
   const [actividad, setActividad] = useState([])
+  const [zonas, setZonas]     = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -58,10 +89,12 @@ export default function Dashboard() {
       api.get('/dashboard/stats'),
       api.get('/dashboard/ingresos-mensual'),
       api.get('/dashboard/ultimas-activaciones'),
-    ]).then(([s, g, a]) => {
+      api.get('/zonas'),
+    ]).then(([s, g, a, z]) => {
       setStats(s.data)
-      setGrafica(g.data)
+      setGrafica(g.data.slice(-6))
       setActividad(a.data)
+      setZonas(z.data.filter(z => z.activo !== false))
     }).finally(() => setLoading(false))
   }, [])
 
@@ -75,290 +108,150 @@ export default function Dashboard() {
 
   const balance = (stats?.ingresos_mes_actual || 0) - (stats?.gastos_mes_actual || 0)
   const activosPct = stats?.total_clientes > 0
-    ? ((stats.clientes_activos / stats.total_clientes) * 100).toFixed(1)
-    : 0
-  const suspendidosPct = stats?.total_clientes > 0
-    ? ((stats.clientes_suspendidos / stats.total_clientes) * 100).toFixed(1)
+    ? Math.round((stats.clientes_activos / stats.total_clientes) * 100)
     : 0
   const balanceTrend = stats?.ingresos_mes_anterior > 0
     ? (((stats.ingresos_mes_actual - stats.ingresos_mes_anterior) / stats.ingresos_mes_anterior) * 100).toFixed(1)
     : null
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 max-w-7xl mx-auto">
+
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 className="text-xl font-bold text-white">Network Overview</h1>
-          <p className="text-[#6B7280] text-sm mt-0.5">Real-time status of your ISP infrastructure.</p>
+          <h1 className="text-2xl font-black text-[#1C1C1C]">Red en Tiempo Real</h1>
+          <p className="text-[#9A9AAA] text-sm mt-0.5">Resumen operacional de TUX-ISP para el día de hoy.</p>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] text-[#9CA3AF] text-sm px-3 py-2 rounded-lg hover:text-white hover:border-[#374151] transition-colors">
-            <span className="text-xs">Last 30 Days</span>
-          </button>
-          <button className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] text-[#9CA3AF] text-sm px-3 py-2 rounded-lg hover:text-white hover:border-[#374151] transition-colors">
-            <Download size={14} />
-            <span className="text-xs hidden sm:inline">Export Report</span>
-          </button>
+        <div className="flex items-center gap-2 bg-white border border-[#E5E0D5] rounded-xl px-4 py-2 shadow-sm">
+          <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <span className="text-sm font-bold text-[#1C1C1C]">Sistema Online: {clock}</span>
         </div>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          icon={Users}
-          label="Total Clientes"
-          value={stats?.total_clientes ?? 0}
-          sub={`${stats?.clientes_activos ?? 0} activos en red`}
-          color="#22C55E"
-          badge="+4% ↑"
-          badgeColor="#22C55E"
+          icon={Users} label="Total Clientes" value={stats?.total_clientes ?? 0}
+          badge={`↑${activosPct}%`} iconBg="#F0FDF4" iconColor="#22C55E"
         />
         <StatCard
-          icon={TrendingUp}
-          label="Activos"
-          value={stats?.clientes_activos ?? 0}
-          sub={`${stats?.ingresos_mes_actual ? `S/ ${stats.ingresos_mes_actual.toFixed(0)} ingresos` : 'Sin ingresos'}`}
-          color="#22C55E"
-          badge={`${activosPct}%`}
-          badgeColor="#22C55E"
+          icon={CheckCircle} label="Activos" value={stats?.clientes_activos ?? 0}
+          iconBg="#EFF6FF" iconColor="#3B82F6"
         />
         <StatCard
-          icon={AlertCircle}
-          label="Suspendidos"
-          value={stats?.clientes_suspendidos ?? 0}
-          sub={`${stats?.pagos_pendientes ?? 0} pagos pendientes`}
-          color="#EF4444"
-          badge={suspendidosPct > 0 ? `${suspendidosPct}%` : null}
-          badgeColor="#EF4444"
+          icon={Ban} label="Suspendidos" value={stats?.clientes_suspendidos ?? 0}
+          iconBg="#FEF2F2" iconColor="#EF4444"
         />
         <StatCard
-          icon={TrendingDown}
-          label="Balance Mes"
-          value={`S/ ${balance.toFixed(0)}`}
-          sub={`Gastos: S/ ${(stats?.gastos_mes_actual ?? 0).toFixed(0)}`}
-          color="#FFD700"
-          badge={balanceTrend ? `${balanceTrend > 0 ? '+' : ''}${balanceTrend}% ${balanceTrend >= 0 ? '↑' : '↓'}` : null}
-          badgeColor={balanceTrend >= 0 ? '#22C55E' : '#EF4444'}
+          icon={Wallet} label="Balance mes"
+          value={`S/ ${balance.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`}
+          badge={balanceTrend ? `↑${Math.abs(balanceTrend)}%` : null}
+          badgeColor="#22C55E" iconBg="#FFFBEA" iconColor="#D97706"
         />
       </div>
 
-      {/* Charts + Accesos Directos */}
+      {/* Chart + Zonas */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* Chart */}
-        <div className="lg:col-span-2 bg-[#111827] rounded-xl p-5 border border-[#1F2937]">
+        {/* Line Chart */}
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-[#E5E0D5] p-5 shadow-sm">
           <div className="flex items-center justify-between mb-1">
-            <h2 className="text-sm font-semibold text-white">Ingresos vs Gastos</h2>
-            <div className="flex items-center gap-3 text-xs text-[#6B7280]">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#FFD700]" />Ingresos</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500" />Gastos</span>
+            <h2 className="text-base font-bold text-[#1C1C1C]">Ingresos vs Gastos</h2>
+            <div className="flex items-center gap-4 text-xs text-[#9A9AAA]">
+              <span className="flex items-center gap-1.5">
+                <span className="w-5 h-0.5 bg-yellow-400 inline-block rounded" />
+                Ingresos
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-5 inline-block border-t-2 border-dashed border-red-400" />
+                Gastos
+              </span>
             </div>
           </div>
-          <p className="text-xs text-[#4B5563] mb-4">Comparativa semestral de flujo de caja.</p>
-          <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={grafica} margin={{ top: 5, right: 5, bottom: 0, left: 0 }}>
-              <defs>
-                <linearGradient id="gIngresos" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#FFD700" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#FFD700" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gGastos" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%"  stopColor="#EF4444" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1F2937" />
-              <XAxis dataKey="nombre_mes" tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fill: '#6B7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+          <p className="text-xs text-[#C8C2B5] mb-4">Comparativa semestral de flujo de caja</p>
+          <ResponsiveContainer width="100%" height={230}>
+            <LineChart data={grafica} margin={{ top: 5, right: 5, bottom: 0, left: -10 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F0EBE0" />
+              <XAxis dataKey="nombre_mes" tick={{ fill: '#9A9AAA', fontSize: 11 }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fill: '#9A9AAA', fontSize: 11 }} axisLine={false} tickLine={false} />
               <Tooltip
-                contentStyle={{ background: '#111827', border: '1px solid #1F2937', borderRadius: 8 }}
-                labelStyle={{ color: '#F9FAFB' }}
-                itemStyle={{ color: '#9CA3AF' }}
+                contentStyle={{ background: '#FFFFFF', border: '1px solid #E5E0D5', borderRadius: 10, boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}
+                labelStyle={{ color: '#1C1C1C', fontWeight: 700 }}
+                itemStyle={{ color: '#5A5A6A' }}
               />
-              <Area type="monotone" dataKey="ingresos" stroke="#FFD700" strokeWidth={2} fill="url(#gIngresos)" name="Ingresos" />
-              <Area type="monotone" dataKey="gastos"   stroke="#EF4444" strokeWidth={2} fill="url(#gGastos)"   name="Gastos" />
-            </AreaChart>
+              <Line type="monotone" dataKey="ingresos" stroke="#FFD700" strokeWidth={2.5} dot={false} name="Ingresos" />
+              <Line type="monotone" dataKey="gastos" stroke="#EF4444" strokeWidth={2} strokeDasharray="6 3" dot={false} name="Gastos" />
+            </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Accesos Directos */}
-        <div className="bg-[#111827] rounded-xl p-5 border border-[#1F2937] space-y-3">
-          <h2 className="text-sm font-semibold text-white flex items-center gap-2">
-            <Zap size={14} className="text-[#FFD700]" />
-            Accesos Directos
-          </h2>
-
-          <Link
-            to="/clientes/nuevo"
-            className="flex items-center justify-between w-full bg-[#FFD700] text-[#111827] font-bold px-4 py-3 rounded-lg hover:bg-yellow-400 transition-colors text-sm"
-          >
-            <span className="flex items-center gap-2"><Plus size={16} /> Nuevo Cliente</span>
-            <ChevronRight size={15} />
-          </Link>
-
-          <a
-            href="https://web.whatsapp.com"
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center justify-between w-full bg-[#0D1117] border border-[#1F2937] text-white px-4 py-3 rounded-lg hover:border-[#374151] transition-colors text-sm"
-          >
-            <span className="flex items-center gap-2">
-              <MessageCircle size={15} className="text-green-400" />
-              WhatsApp Web
-            </span>
-            <ExternalLink size={13} className="text-[#4B5563]" />
-          </a>
-
-          <div className="bg-[#0D1117] rounded-lg px-4 py-3 border border-[#1F2937]">
-            <p className="text-[9px] text-[#4B5563] uppercase tracking-widest font-semibold mb-1">Backup Status</p>
-            <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-white">Cloud Sync</p>
-              <span className="text-xs text-[#F59E0B] font-semibold">Pending</span>
-            </div>
+        {/* Estado de Zonas */}
+        <div className="bg-white rounded-2xl border border-[#E5E0D5] p-5 shadow-sm">
+          <h2 className="text-base font-bold text-[#1C1C1C] mb-4">Estado de Zonas</h2>
+          <div className="space-y-2.5">
+            {zonas.length === 0 && (
+              <p className="text-[#9A9AAA] text-sm text-center py-6">Sin zonas registradas</p>
+            )}
+            {zonas.map(z => <ZonaCard key={z.id} zona={z} />)}
           </div>
+        </div>
+      </div>
 
-          {/* Actividad */}
-          <div className="pt-2 border-t border-[#1F2937]">
-            <h3 className="text-xs font-semibold text-[#6B7280] uppercase tracking-wide mb-2">Últimas Actividades</h3>
-            <div className="overflow-y-auto max-h-36">
+      {/* Últimas Activaciones */}
+      <div className="bg-white rounded-2xl border border-[#E5E0D5] p-5 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-[#1C1C1C]">Últimas Activaciones</h2>
+          <span className="text-xs font-semibold text-[#FFD700]">Sistema Online: {clock}</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-[#EDE9E0]">
+                {['Cliente', 'Plan', 'IP Address', 'Zona', 'Estado'].map(h => (
+                  <th key={h} className="text-left py-2.5 px-3 text-[10px] font-semibold text-[#9A9AAA] uppercase tracking-widest">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
               {actividad.length === 0 ? (
-                <p className="text-[#4B5563] text-xs text-center py-3">Sin actividad</p>
+                <tr><td colSpan={5} className="text-center text-[#9A9AAA] py-10 text-sm">Sin actividad reciente</td></tr>
               ) : (
-                actividad.slice(0, 4).map(item => <ActividadItem key={item.id} item={item} />)
+                actividad.slice(0, 8).map(item => {
+                  const initials = (item.cliente_nombre || '??').slice(0, 2).toUpperCase()
+                  const badge = TIPO_BADGE[item.tipo] || TIPO_BADGE.nota
+                  return (
+                    <tr key={item.id} className="border-b border-[#F5F0E8] hover:bg-[#FAF7F0] transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-7 h-7 rounded-full bg-[#FFD700] flex items-center justify-center shrink-0">
+                            <span className="text-[10px] font-black text-[#1C1C1C]">{initials}</span>
+                          </div>
+                          <span className="font-medium text-[#1C1C1C] truncate max-w-[120px]">{item.cliente_nombre || '—'}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="text-xs bg-[#FAF7F0] text-[#5A5A6A] border border-[#E5E0D5] px-2 py-0.5 rounded-md font-semibold">
+                          {item.tipo?.toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-mono text-[#9A9AAA] text-xs">—</td>
+                      <td className="py-3 px-3 text-[#5A5A6A] text-sm">—</td>
+                      <td className="py-3 px-3">
+                        <span className={`inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg border ${badge.bg}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${badge.dot}`} />
+                          {badge.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
-            </div>
-          </div>
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* Zonas status */}
-      <ZonasStatus />
-    </div>
-  )
-}
-
-function StatusBadge({ ok, labelOn, labelOff, loading }) {
-  if (loading) return <span className="text-xs text-[#374151]">—</span>
-  return ok
-    ? <span className="flex items-center gap-1 text-xs text-green-400 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-green-400" />{labelOn}</span>
-    : <span className="flex items-center gap-1 text-xs text-red-400 font-medium"><span className="w-1.5 h-1.5 rounded-full bg-red-500" />{labelOff}</span>
-}
-
-function ZonaStatusCard({ zona }) {
-  const [wg, setWg] = useState(null)
-  const [loadingWg, setLoadingWg] = useState(true)
-
-  const fetchStatus = () => {
-    setLoadingWg(true)
-    api.get(`/zonas/${zona.id}/wireguard-status`)
-      .then(r => setWg(r.data))
-      .catch(() => setWg(null))
-      .finally(() => setLoadingWg(false))
-  }
-
-  useEffect(() => { fetchStatus() }, [zona.id])
-
-  const pct = zona.total_clientes > 0
-    ? Math.round((zona.clientes_activos / zona.total_clientes) * 100)
-    : 0
-  const barColor = pct < 50 ? '#22C55E' : pct < 80 ? '#FFD700' : '#EF4444'
-
-  return (
-    <div className="bg-[#0D1117] rounded-xl p-4 border border-[#1F2937]">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <span className="font-bold text-white text-sm">{zona.nombre}</span>
-          <span className="ml-2 text-[10px] text-[#4B5563] font-mono uppercase">
-            {zona.nombre.slice(0, 2).toUpperCase()}-{String(zona.id).padStart(3, '0')}
-          </span>
-        </div>
-        <button
-          onClick={fetchStatus}
-          className="text-[#374151] hover:text-[#6B7280] transition-colors"
-        >
-          <RefreshCw size={13} className={loadingWg ? 'animate-spin' : ''} />
-        </button>
-      </div>
-
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        {[
-          { label: 'Ping', ok: wg?.online },
-          { label: 'SSH',  ok: wg?.ssh_ok },
-          { label: 'WG',   ok: wg?.wg_peer_online },
-        ].map(({ label, ok }) => (
-          <div key={label} className="bg-[#111827] rounded p-2 text-center border border-[#1F2937]">
-            <p className="text-[9px] text-[#4B5563] uppercase tracking-wide mb-1">{label}</p>
-            <StatusBadge ok={ok} labelOn="UP" labelOff="DOWN" loading={loadingWg} />
-          </div>
-        ))}
-      </div>
-
-      <div className="mb-3">
-        <div className="flex justify-between text-xs mb-1">
-          <span className="text-[#4B5563] uppercase text-[9px] tracking-wide">Pool PPPoE</span>
-          <span className="font-bold" style={{ color: barColor }}>{pct}%</span>
-        </div>
-        <div className="h-1.5 bg-[#1F2937] rounded-full overflow-hidden">
-          <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: barColor }} />
-        </div>
-      </div>
-
-      <div className="space-y-1 text-xs text-[#6B7280]">
-        <div className="flex justify-between">
-          <span>IP WireGuard</span>
-          <span className="text-white font-mono">{zona.ip_wireguard}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Handshake</span>
-          <span className="text-white truncate max-w-32 text-right">
-            {loadingWg ? '—' : (wg?.last_handshake || 'Sin handshake')}
-          </span>
-        </div>
-        <div className="flex justify-between">
-          <span>Clientes activos</span>
-          <span className="text-white font-medium">{zona.clientes_activos}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>APs</span>
-          <span className="text-white font-medium">{zona.access_points?.length ?? 0}</span>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function ZonasStatus() {
-  const [zonas, setZonas] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    api.get('/zonas')
-      .then(r => setZonas(r.data))
-      .catch(() => {})
-      .finally(() => setLoading(false))
-  }, [])
-
-  return (
-    <div className="bg-[#111827] rounded-xl p-5 border border-[#1F2937]">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-white">Estado de Zonas</h2>
-        <button
-          onClick={() => {}}
-          className="p-1.5 rounded text-[#4B5563] hover:text-[#9CA3AF] transition-colors"
-        >
-          <RefreshCw size={14} />
-        </button>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading && (
-          <p className="text-[#6B7280] text-sm col-span-3 text-center py-4">Cargando zonas...</p>
-        )}
-        {!loading && zonas.length === 0 && (
-          <p className="text-[#6B7280] text-sm col-span-3 text-center py-4">Sin zonas registradas</p>
-        )}
-        {zonas.map(z => <ZonaStatusCard key={z.id} zona={z} />)}
-      </div>
     </div>
   )
 }
