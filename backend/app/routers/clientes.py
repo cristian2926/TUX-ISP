@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import or_
 from typing import Optional, List
 from datetime import date, timedelta
+import calendar
 import logging
 import re
 
@@ -199,7 +200,11 @@ def create_cliente(
 
     dump = data.model_dump()
     if not dump.get("fecha_vencimiento"):
-        dump["fecha_vencimiento"] = dump["fecha_instalacion"] + timedelta(days=30)
+        fi = dump["fecha_instalacion"]
+        next_mes  = fi.month % 12 + 1
+        next_anio = fi.year + (1 if fi.month == 12 else 0)
+        dia = min(fi.day, calendar.monthrange(next_anio, next_mes)[1])
+        dump["fecha_vencimiento"] = date(next_anio, next_mes, dia)
     dump["fecha_ultima_activacion"] = dump["fecha_instalacion"]
     cliente = models.Cliente(**dump)
     db.add(cliente)
