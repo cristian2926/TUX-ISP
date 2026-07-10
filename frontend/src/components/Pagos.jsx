@@ -231,7 +231,7 @@ export default function Pagos() {
   }, [pagePagos, mesFilter])
 
   useEffect(() => {
-    if (vista === 'vencidos') fetchSinPago()
+    if (vista === 'vencidos' || vista === 'pendientes') fetchSinPago()
     else fetchPagos()
   }, [vista, fetchSinPago, fetchPagos])
 
@@ -420,6 +420,14 @@ export default function Pagos() {
             VENCIDOS
           </button>
           <button
+            onClick={() => setVista('pendientes')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              vista === 'pendientes' ? 'bg-white text-orange-500 shadow-sm' : 'text-[#5A5A6A] hover:text-[#1C1C1C]'
+            }`}
+          >
+            PENDIENTES
+          </button>
+          <button
             onClick={() => setVista('puntuales')}
             className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               vista === 'puntuales' ? 'bg-white text-green-600 shadow-sm' : 'text-[#5A5A6A] hover:text-[#1C1C1C]'
@@ -567,6 +575,106 @@ export default function Pagos() {
               <p className="text-xs text-[#9A9AAA]">
                 {sinPago.filter(c => getDiasAtraso(c) > 0).length} clientes vencidos ·{' '}
                 <span className="text-blue-500">{sinPago.filter(c => getDiasAtraso(c) === 0).length} pendientes de vencer</span>
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* PENDIENTES VIEW */}
+      {vista === 'pendientes' && (
+        <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[#EDE9E0] flex items-center gap-3">
+            <h2 className="text-sm font-bold text-orange-500 uppercase tracking-wide">Por Cobrar este Mes</h2>
+            <span className="text-[10px] font-bold bg-orange-50 border border-orange-200 text-orange-500 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+              {sinPago.filter(c => getDiasAtraso(c) === 0).length} Clientes
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#EDE9E0] bg-[#FAFAF8]">
+                  {['Cliente', 'Plan', 'Vence el', 'Días Restantes', 'Monto', 'Acción'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#9A9AAA] uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={6} className="text-center py-12 text-[#9A9AAA]">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-[#FFD700] border-t-transparent rounded-full animate-spin"/>
+                      Cargando...
+                    </div>
+                  </td></tr>
+                ) : sinPago.filter(c => getDiasAtraso(c) === 0).length === 0 ? (
+                  <tr><td colSpan={6} className="text-center py-12 text-green-600 font-medium">
+                    ✓ Todos los clientes vigentes ya pagaron en {mesNombre}
+                  </td></tr>
+                ) : sinPago.filter(c => getDiasAtraso(c) === 0).map(c => {
+                  const initials = (c.nombre || '').slice(0, 2).toUpperCase()
+                  const monto    = c.plan?.precio || 0
+                  const venc     = c.fecha_vencimiento
+                    ? new Date(c.fecha_vencimiento + 'T00:00:00')
+                    : null
+                  const hoy      = new Date(); hoy.setHours(0, 0, 0, 0)
+                  const diasRest = venc ? Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24)) : null
+                  return (
+                    <tr key={c.id} className="border-b border-[#F5F0E8] hover:bg-[#FAF7F0] transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-orange-50 border border-orange-200 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-black text-orange-600">{initials}</span>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1C1C1C]">{c.nombre}</p>
+                            <p className="text-[10px] text-[#9A9AAA] font-mono">
+                              #{String(c.id).padStart(5, '0')} {c.ip_estatica ? `| ${c.ip_estatica}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {c.plan ? (
+                          <span className="text-xs font-bold bg-[#FAF7F0] border border-[#E5E0D5] text-[#5A5A6A] px-2.5 py-1 rounded-lg uppercase tracking-wide">
+                            {c.plan.codigo || c.plan.nombre}
+                          </span>
+                        ) : <span className="text-[#D8D2C5] text-xs">—</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-[#5A5A6A] text-xs">
+                          {venc ? venc.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        {diasRest !== null ? (
+                          <span className={`text-xs font-semibold flex items-center gap-1.5 ${diasRest <= 3 ? 'text-orange-500' : 'text-[#5A5A6A]'}`}>
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${diasRest <= 3 ? 'bg-orange-400' : 'bg-[#C8C2B5]'}`}/>
+                            {diasRest === 0 ? 'Vence hoy' : `${diasRest} días`}
+                          </span>
+                        ) : <span className="text-[#D8D2C5] text-xs">—</span>}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="font-bold text-sm text-[#1C1C1C]">S/ {monto.toFixed(2)}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => abrirPagoRapido(c)}
+                          className="text-xs bg-[#FFD700] text-[#1C1C1C] font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-colors whitespace-nowrap uppercase tracking-wide"
+                        >
+                          Registrar Pago
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          {sinPago.filter(c => getDiasAtraso(c) === 0).length > 0 && (
+            <div className="px-5 py-3 border-t border-[#EDE9E0] bg-[#FAFAF8]">
+              <p className="text-xs text-[#9A9AAA]">
+                Clientes vigentes que aún no han pagado {mesNombre} — puedes registrar pagos anticipados aquí
               </p>
             </div>
           )}
