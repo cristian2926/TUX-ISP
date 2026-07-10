@@ -189,7 +189,7 @@ export default function Pagos() {
   const [mesFilter, setMesFilter]   = useState(mesActual)
   const [zonaFiltro, setZonaFiltro] = useState('')
   const [zonas, setZonas]           = useState([])
-  const [vista, setVista]           = useState('deudores')
+  const [vista, setVista]           = useState('vencidos')
   const [loading, setLoading]       = useState(true)
   const [modal, setModal]           = useState(false)
   const [clienteRapido, setClienteRapido] = useState(null)
@@ -231,7 +231,7 @@ export default function Pagos() {
   }, [pagePagos, mesFilter])
 
   useEffect(() => {
-    if (vista === 'deudores') fetchSinPago()
+    if (vista === 'vencidos') fetchSinPago()
     else fetchPagos()
   }, [vista, fetchSinPago, fetchPagos])
 
@@ -255,9 +255,10 @@ export default function Pagos() {
   }
 
   async function enviarAvisoMasivo() {
-    const total = sinPago.length
-    if (!total) return
-    if (!confirm(`¿Enviar aviso de cobro a ${total} clientes?\n\nSe enviará 1 mensaje cada 8-15 segundos para proteger tu cuenta de WhatsApp.`)) return
+    const vencidos = sinPago.filter(c => getDiasAtraso(c) > 0)
+    const total = vencidos.length
+    if (!total) return toast('No hay clientes vencidos a quién avisar', { icon: 'ℹ️' })
+    if (!confirm(`¿Enviar aviso de cobro a ${total} clientes vencidos?\n\nSe enviará 1 mensaje cada 8-15 segundos para proteger tu cuenta de WhatsApp.`)) return
 
     setEnviandoMasivo(true)
     setProgresoMasivo({ actual: 0, total })
@@ -265,8 +266,8 @@ export default function Pagos() {
     let enviados = 0
     let errores  = 0
 
-    for (let i = 0; i < sinPago.length; i++) {
-      const c = sinPago[i]
+    for (let i = 0; i < vencidos.length; i++) {
+      const c = vencidos[i]
       setProgresoMasivo({ actual: i + 1, total })
       try {
         await api.post(`/whatsapp/aviso-cobro/${c.id}`)
@@ -274,7 +275,7 @@ export default function Pagos() {
       } catch {
         errores++
       }
-      if (i < sinPago.length - 1) {
+      if (i < vencidos.length - 1) {
         const delay = 8000 + Math.floor(Math.random() * 7000)
         await new Promise(r => setTimeout(r, delay))
       }
@@ -411,16 +412,24 @@ export default function Pagos() {
 
         <div className="ml-auto flex items-center bg-[#EDE9E0] rounded-xl p-0.5">
           <button
-            onClick={() => setVista('deudores')}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-              vista === 'deudores' ? 'bg-white text-[#1C1C1C] shadow-sm' : 'text-[#5A5A6A] hover:text-[#1C1C1C]'
+            onClick={() => setVista('vencidos')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              vista === 'vencidos' ? 'bg-white text-red-600 shadow-sm' : 'text-[#5A5A6A] hover:text-[#1C1C1C]'
             }`}
           >
-            TABLA
+            VENCIDOS
+          </button>
+          <button
+            onClick={() => setVista('puntuales')}
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+              vista === 'puntuales' ? 'bg-white text-green-600 shadow-sm' : 'text-[#5A5A6A] hover:text-[#1C1C1C]'
+            }`}
+          >
+            AL DÍA
           </button>
           <button
             onClick={() => setVista('historial')}
-            className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
               vista === 'historial' ? 'bg-white text-[#1C1C1C] shadow-sm' : 'text-[#5A5A6A] hover:text-[#1C1C1C]'
             }`}
           >
@@ -429,14 +438,14 @@ export default function Pagos() {
         </div>
       </div>
 
-      {/* DEUDORES VIEW */}
-      {vista === 'deudores' && (
+      {/* VENCIDOS VIEW */}
+      {vista === 'vencidos' && (
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-[#EDE9E0] flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-3">
-              <h2 className="text-sm font-bold text-[#1C1C1C] uppercase tracking-wide">Listado de Deudores</h2>
-              <span className="text-[10px] font-bold bg-[#FAF7F0] border border-[#E5E0D5] text-[#5A5A6A] px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-                {sinPago.length} Registros Encontrados
+              <h2 className="text-sm font-bold text-red-600 uppercase tracking-wide">Clientes Vencidos</h2>
+              <span className="text-[10px] font-bold bg-red-50 border border-red-200 text-red-500 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                {sinPago.filter(c => getDiasAtraso(c) > 0).length} Con Atraso
               </span>
             </div>
             {sinPago.length > 0 && (
@@ -478,11 +487,11 @@ export default function Pagos() {
                       Cargando...
                     </div>
                   </td></tr>
-                ) : sinPago.length === 0 ? (
+                ) : sinPago.filter(c => getDiasAtraso(c) > 0).length === 0 ? (
                   <tr><td colSpan={6} className="text-center py-12 text-green-600 font-medium">
-                    ✓ Todos los clientes están al día en {mesNombre}
+                    ✓ Sin clientes vencidos en {mesNombre}
                   </td></tr>
-                ) : sinPago.map(c => {
+                ) : sinPago.filter(c => getDiasAtraso(c) > 0).map(c => {
                   const initials = (c.nombre || '').slice(0, 2).toUpperCase()
                   const dias = getDiasAtraso(c)
                   const monto = c.plan?.precio || 0
@@ -553,11 +562,92 @@ export default function Pagos() {
             </table>
           </div>
 
-          {sinPago.length > 0 && (
+          {sinPago.filter(c => getDiasAtraso(c) > 0).length > 0 && (
             <div className="px-5 py-3 border-t border-[#EDE9E0] bg-[#FAFAF8]">
               <p className="text-xs text-[#9A9AAA]">
-                Mostrando 1–{sinPago.length} de {sinPago.length} deudores
+                {sinPago.filter(c => getDiasAtraso(c) > 0).length} clientes vencidos ·{' '}
+                <span className="text-blue-500">{sinPago.filter(c => getDiasAtraso(c) === 0).length} pendientes de vencer</span>
               </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* AL DÍA / PUNTUALES VIEW */}
+      {vista === 'puntuales' && (
+        <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
+          <div className="px-5 py-3.5 border-b border-[#EDE9E0] flex items-center gap-3">
+            <h2 className="text-sm font-bold text-green-600 uppercase tracking-wide">Clientes Puntuales</h2>
+            <span className="text-[10px] font-bold bg-green-50 border border-green-200 text-green-600 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+              {pagos.length} Pagaron este mes
+            </span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#EDE9E0] bg-[#FAFAF8]">
+                  {['Cliente', 'Plan', 'Fecha de Pago', 'Monto', 'Método'].map(h => (
+                    <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#9A9AAA] uppercase tracking-wider whitespace-nowrap">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={5} className="text-center py-12 text-[#9A9AAA]">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-[#FFD700] border-t-transparent rounded-full animate-spin"/>
+                      Cargando...
+                    </div>
+                  </td></tr>
+                ) : pagos.length === 0 ? (
+                  <tr><td colSpan={5} className="text-center py-12 text-[#9A9AAA]">
+                    Sin pagos registrados en {mesNombre}
+                  </td></tr>
+                ) : pagos.map(p => {
+                  const initials = ((p.cliente?.nombre || '')).slice(0, 2).toUpperCase()
+                  return (
+                    <tr key={p.id} className="border-b border-[#F5F0E8] hover:bg-[#FAF7F0] transition-colors">
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-green-100 border border-green-200 flex items-center justify-center shrink-0">
+                            <span className="text-xs font-black text-green-700">{initials}</span>
+                          </div>
+                          <div>
+                            <p className="font-semibold text-[#1C1C1C]">{p.cliente?.nombre || `#${p.cliente_id}`}</p>
+                            <p className="text-[10px] text-[#9A9AAA]">Mes: {p.mes_pagado}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="text-xs text-green-600 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"/>
+                          Al día
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[#5A5A6A] text-xs">{formatDate(p.fecha_pago)}</td>
+                      <td className="px-4 py-3">
+                        <span className="font-bold text-green-600 text-sm">S/ {Number(p.monto).toFixed(2)}</span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg capitalize ${METODO_COLORS[p.metodo_pago] || 'bg-[#FAF7F0] text-[#5A5A6A] border border-[#E5E0D5]'}`}>
+                          {p.metodo_pago}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          {pagesPagos > 1 && (
+            <div className="flex items-center justify-between px-5 py-3 border-t border-[#EDE9E0]">
+              <span className="text-xs text-[#9A9AAA]">Página {pagePagos} de {pagesPagos}</span>
+              <div className="flex gap-2">
+                <button onClick={() => setPagePagos(p => Math.max(1, p - 1))} disabled={pagePagos === 1}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] disabled:opacity-30 bg-white">Anterior</button>
+                <button onClick={() => setPagePagos(p => Math.min(pagesPagos, p + 1))} disabled={pagePagos === pagesPagos}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] disabled:opacity-30 bg-white">Siguiente</button>
+              </div>
             </div>
           )}
         </div>
