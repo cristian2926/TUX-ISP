@@ -16,17 +16,13 @@ const METODO_COLORS = {
 
 const inputCls = "w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700] transition-colors"
 
-function getDiasAtraso(cliente, mes) {
+function getDiasAtraso(cliente) {
+  if (!cliente.fecha_vencimiento) return 0
   const today = new Date()
-  if (cliente.fecha_vencimiento) {
-    const venc = new Date(cliente.fecha_vencimiento + 'T12:00:00')
-    if (venc < today) {
-      return Math.floor((today - venc) / (1000 * 60 * 60 * 24))
-    }
-  }
-  const [y, m] = mes.split('-').map(Number)
-  const firstDay = new Date(y, m - 1, 1)
-  return Math.max(0, Math.floor((today - firstDay) / (1000 * 60 * 60 * 24)))
+  today.setHours(0, 0, 0, 0)
+  const venc = new Date(cliente.fecha_vencimiento + 'T00:00:00')
+  if (venc >= today) return 0
+  return Math.floor((today - venc) / (1000 * 60 * 60 * 24))
 }
 
 function formatDate(dateStr) {
@@ -488,7 +484,7 @@ export default function Pagos() {
                   </td></tr>
                 ) : sinPago.map(c => {
                   const initials = (c.nombre || '').slice(0, 2).toUpperCase()
-                  const dias = getDiasAtraso(c, mesFilter)
+                  const dias = getDiasAtraso(c)
                   const monto = c.plan?.precio || 0
                   return (
                     <tr key={c.id} className="border-b border-[#F5F0E8] hover:bg-[#FAF7F0] transition-colors">
@@ -516,10 +512,17 @@ export default function Pagos() {
                         <span className="text-[#5A5A6A] text-xs">{c.fecha_vencimiento ? new Date(c.fecha_vencimiento + 'T12:00:00').toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—'}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`flex items-center gap-1.5 text-xs font-semibold ${dias > 10 ? 'text-red-500' : dias > 0 ? 'text-orange-500' : 'text-[#5A5A6A]'}`}>
-                          <span className={`w-2 h-2 rounded-full shrink-0 ${dias > 10 ? 'bg-red-500' : dias > 0 ? 'bg-orange-400' : 'bg-[#C8C2B5]'}`}/>
-                          {dias > 0 ? `${dias} días` : 'Hoy'}
-                        </span>
+                        {dias === 0 ? (
+                          <span className="flex items-center gap-1.5 text-xs font-semibold text-blue-500">
+                            <span className="w-2 h-2 rounded-full shrink-0 bg-blue-400"/>
+                            Pendiente
+                          </span>
+                        ) : (
+                          <span className={`flex items-center gap-1.5 text-xs font-semibold ${dias > 10 ? 'text-red-500' : 'text-orange-500'}`}>
+                            <span className={`w-2 h-2 rounded-full shrink-0 ${dias > 10 ? 'bg-red-500' : 'bg-orange-400'}`}/>
+                            {dias} días
+                          </span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`font-bold text-sm ${monto >= 100 ? 'text-red-500' : 'text-[#1C1C1C]'}`}>
