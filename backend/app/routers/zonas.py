@@ -99,7 +99,9 @@ def wg_add_peer(pubkey: str, allowed_ips: str, comment: str = "") -> dict:
         return {"ok": False, "error": f"No se encontró {conf_path}"}
 
     if pubkey in content:
-        return {"ok": False, "error": "Este peer ya existe en la configuración"}
+        # El peer ya fue agregado manualmente (por consola).
+        # Solo registrar la clave en BD sin tocar el archivo.
+        return {"ok": True, "already_existed": True}
 
     # Construir bloque [Peer]
     block = "\n[Peer]\n"
