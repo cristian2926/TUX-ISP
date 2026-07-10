@@ -584,17 +584,46 @@ export default function Pagos() {
       {/* PENDIENTES VIEW */}
       {vista === 'pendientes' && (
         <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-[#EDE9E0] flex items-center gap-3">
-            <h2 className="text-sm font-bold text-orange-500 uppercase tracking-wide">Por Cobrar este Mes</h2>
-            <span className="text-[10px] font-bold bg-orange-50 border border-orange-200 text-orange-500 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
-              {sinPago.filter(c => getDiasAtraso(c) === 0).length} Clientes
-            </span>
+          <div className="px-5 py-3.5 border-b border-[#EDE9E0] flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <h2 className="text-sm font-bold text-orange-500 uppercase tracking-wide">Por Cobrar este Mes</h2>
+              <span className="text-[10px] font-bold bg-orange-50 border border-orange-200 text-orange-500 px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                {sinPago.filter(c => getDiasAtraso(c) === 0).length} Clientes
+              </span>
+            </div>
+            {sinPago.filter(c => getDiasAtraso(c) === 0).length > 0 && (
+              <button
+                onClick={async () => {
+                  const pendientes = sinPago.filter(c => getDiasAtraso(c) === 0)
+                  if (!confirm(`¿Avisar a ${pendientes.length} clientes que su pago está por vencer?\n\nSe enviará 1 mensaje cada 8-15 segundos.`)) return
+                  setEnviandoMasivo(true)
+                  setProgresoMasivo({ actual: 0, total: pendientes.length })
+                  let ok = 0, fail = 0
+                  for (let i = 0; i < pendientes.length; i++) {
+                    setProgresoMasivo({ actual: i + 1, total: pendientes.length })
+                    try { await api.post(`/whatsapp/aviso-cobro/${pendientes[i].id}`); ok++ }
+                    catch { fail++ }
+                    if (i < pendientes.length - 1) await new Promise(r => setTimeout(r, 8000 + Math.floor(Math.random() * 7000)))
+                  }
+                  setEnviandoMasivo(false)
+                  setProgresoMasivo({ actual: 0, total: 0 })
+                  fail === 0 ? toast.success(`✓ ${ok} avisos enviados`) : toast(`${ok} enviados, ${fail} fallidos`, { icon: '⚠️' })
+                }}
+                disabled={enviandoMasivo}
+                className="flex items-center gap-1.5 text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl hover:bg-orange-100 border border-orange-200 transition-colors font-semibold disabled:opacity-60 disabled:cursor-wait"
+              >
+                {enviandoMasivo
+                  ? <><div className="w-3 h-3 border-2 border-orange-400 border-t-transparent rounded-full animate-spin"/> Enviando {progresoMasivo.actual}/{progresoMasivo.total}...</>
+                  : <><MessageCircle size={13}/> Avisar a todos por WhatsApp</>
+                }
+              </button>
+            )}
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-[#EDE9E0] bg-[#FAFAF8]">
-                  {['Cliente', 'Plan', 'Vence el', 'Días Restantes', 'Monto', 'Acción'].map(h => (
+                  {['Cliente', 'Plan', 'Vence el', 'Días Restantes', 'Monto', 'Acciones'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-xs font-semibold text-[#9A9AAA] uppercase tracking-wider whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -658,12 +687,21 @@ export default function Pagos() {
                         <span className="font-bold text-sm text-[#1C1C1C]">S/ {monto.toFixed(2)}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <button
-                          onClick={() => abrirPagoRapido(c)}
-                          className="text-xs bg-[#FFD700] text-[#1C1C1C] font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-colors whitespace-nowrap uppercase tracking-wide"
-                        >
-                          Registrar Pago
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => abrirPagoRapido(c)}
+                            className="text-xs bg-[#FFD700] text-[#1C1C1C] font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-colors whitespace-nowrap uppercase tracking-wide"
+                          >
+                            Registrar Pago
+                          </button>
+                          <button
+                            onClick={() => enviarAviso(c.id)}
+                            className="flex items-center gap-1 text-xs text-orange-600 bg-orange-50 border border-orange-200 px-2.5 py-1.5 rounded-lg hover:bg-orange-100 transition-colors font-semibold whitespace-nowrap"
+                            title="Enviar aviso por WhatsApp"
+                          >
+                            <MessageCircle size={12}/> WhatsApp
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   )
