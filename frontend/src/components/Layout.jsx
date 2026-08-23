@@ -39,7 +39,7 @@ function Topbar({ onMenuOpen }) {
 
       <div className="flex items-center gap-2 ml-auto">
         <Link
-          to="/nuevo-cliente"
+          to="/clientes/nuevo"
           className="hidden sm:flex items-center gap-1.5 bg-[#FFD700] text-[#1C1C1C] font-bold text-sm px-3.5 py-2 rounded-xl hover:bg-yellow-400 transition-colors"
         >
           <Plus size={15} />
@@ -123,7 +123,7 @@ export default function Layout() {
 
       {/* Floating action button */}
       <Link
-        to="/nuevo-cliente"
+        to="/clientes/nuevo"
         className="fixed bottom-12 right-4 w-12 h-12 bg-[#FFD700] rounded-full flex items-center justify-center shadow-lg hover:bg-yellow-400 transition-colors z-40"
         title="Nuevo Cliente"
       >

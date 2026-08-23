@@ -1,12 +1,13 @@
 import { NavLink, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Users, Globe, MessageCircle,
+  LayoutDashboard, Users, UserPlus, Globe, MessageCircle,
   Settings, LogOut, Wifi, DollarSign, TrendingDown, X,
 } from 'lucide-react'
 
 const NAV = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/clientes',      icon: Users,           label: 'Clientes' },
+  { to: '/clientes/nuevo', icon: UserPlus,       label: 'Registrar Cliente' },
   { to: '/zonas',         icon: Globe,           label: 'Zonas' },
   { to: '/pagos',         icon: DollarSign,      label: 'Pagos' },
   { to: '/gastos',        icon: TrendingDown,    label: 'Gastos' },
