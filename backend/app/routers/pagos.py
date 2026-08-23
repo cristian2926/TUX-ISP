@@ -129,8 +129,8 @@ def create_pago(
     pago = models.Pago(**data.model_dump(), registrado_por=current_user.id)
     db.add(pago)
 
-    # Auto-reactivate if suspended
-    if cliente.estado == models.EstadoCliente.suspendido:
+    # Solo reactivar si es un pago real (no corte_temporal)
+    if data.estado == models.EstadoPago.pagado and cliente.estado == models.EstadoCliente.suspendido:
         cliente.estado = models.EstadoCliente.activo
         historial = models.Historial(
             cliente_id=cliente.id,
@@ -148,16 +148,16 @@ def create_pago(
     )
     db.add(historial_pago)
 
-    # Calcular nueva fecha_vencimiento anclada al mes_pagado + día de ciclo de instalación.
-    # Ejemplo: pago de Julio con instalación día 3 → vence el 3 de Agosto.
-    anio_p, mes_p = map(int, data.mes_pagado.split("-"))
-    next_mes  = mes_p % 12 + 1
-    next_anio = anio_p + (1 if mes_p == 12 else 0)
-    dia_ciclo = cliente.fecha_instalacion.day if cliente.fecha_instalacion else 1
-    dia_ciclo = min(dia_ciclo, calendar.monthrange(next_anio, next_mes)[1])
-    nueva_vencimiento = date(next_anio, next_mes, dia_ciclo)
-    # Nunca retroceder si ya hay una fecha posterior (pagos de meses atrasados)
-    cliente.fecha_vencimiento = max(nueva_vencimiento, cliente.fecha_vencimiento or date.today())
+    # Solo actualizar fecha_vencimiento para pagos reales, no cortes temporales
+    if data.estado == models.EstadoPago.pagado:
+        anio_p, mes_p = map(int, data.mes_pagado.split("-"))
+        next_mes  = mes_p % 12 + 1
+        next_anio = anio_p + (1 if mes_p == 12 else 0)
+        dia_ciclo = cliente.fecha_instalacion.day if cliente.fecha_instalacion else 1
+        dia_ciclo = min(dia_ciclo, calendar.monthrange(next_anio, next_mes)[1])
+        nueva_vencimiento = date(next_anio, next_mes, dia_ciclo)
+        # Nunca retroceder si ya hay una fecha posterior (pagos de meses atrasados)
+        cliente.fecha_vencimiento = max(nueva_vencimiento, cliente.fecha_vencimiento or date.today())
 
     db.commit()
     db.refresh(pago)

@@ -43,10 +43,19 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
   const [monto, setMonto]           = useState(planPrecio || '')
   const [metodo, setMetodo]         = useState('efectivo')
   const [notas, setNotas]           = useState('')
+  const [referencia, setReferencia] = useState('')
+  const [fechaPago, setFechaPago]   = useState(new Date().toISOString().split('T')[0])
   const [loadingCal, setLoadingCal] = useState(false)
   const [saving, setSaving]         = useState(false)
 
-  useEffect(() => { if (modalMes) { setMonto(planPrecio || ''); setNotas('') } }, [modalMes, planPrecio])
+  useEffect(() => {
+    if (modalMes) {
+      setMonto(planPrecio || '')
+      setNotas('')
+      setReferencia('')
+      setFechaPago(new Date().toISOString().split('T')[0])
+    }
+  }, [modalMes, planPrecio])
 
   const fetchCal = useCallback(() => {
     setLoadingCal(true)
@@ -76,8 +85,9 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
         cliente_id: clienteId,
         monto: parseFloat(monto),
         mes_pagado: modalMes,
-        fecha_pago: new Date().toISOString().split('T')[0],
+        fecha_pago: fechaPago,
         metodo_pago: metodo,
+        referencia: referencia || null,
         estado: 'pagado',
         notas: notas || null,
       })
@@ -123,7 +133,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
     pendiente:      'bg-orange-50 border-orange-300 cursor-pointer hover:bg-orange-100',
     vencido:        'bg-red-50 border-red-300 cursor-pointer hover:bg-red-100',
     corte_temporal: 'bg-yellow-50 border-yellow-300',
-    futuro:         'bg-white border-[#E5E0D5]',
+    futuro:         'bg-white border-[#E5E0D5] cursor-pointer hover:bg-blue-50 hover:border-blue-200',
     no_aplica:      'bg-[#FAF7F0] border-[#EDE9E0]',
   }
 
@@ -161,7 +171,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
       {/* Month grid */}
       <div className="grid grid-cols-6 sm:grid-cols-12 gap-1.5">
         {calendario.map((item, i) => {
-          const clickable = item.estado === 'pendiente' || item.estado === 'vencido'
+          const clickable = item.estado === 'pendiente' || item.estado === 'vencido' || item.estado === 'futuro'
           const isCurrent = i === hoyMes && anio === hoyAnio
           return (
             <button
@@ -197,10 +207,17 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
               </h3>
               <button onClick={() => setModalMes(null)} className="text-[#9A9AAA] hover:text-[#1C1C1C]"><X size={16} /></button>
             </div>
-            <div>
-              <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">Monto (S/)</label>
-              <input type="number" step="0.01" value={monto} onChange={e => setMonto(e.target.value)}
-                className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2.5 text-[#1C1C1C] text-sm focus:outline-none focus:border-[#FFD700] transition-colors" placeholder="50.00" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">Monto (S/)</label>
+                <input type="number" step="0.01" value={monto} onChange={e => setMonto(e.target.value)}
+                  className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2.5 text-[#1C1C1C] text-sm focus:outline-none focus:border-[#FFD700] transition-colors" placeholder="50.00" />
+              </div>
+              <div>
+                <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">Fecha de pago</label>
+                <input type="date" value={fechaPago} onChange={e => setFechaPago(e.target.value)}
+                  className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2.5 text-[#1C1C1C] text-sm focus:outline-none focus:border-[#FFD700] transition-colors" />
+              </div>
             </div>
             <div>
               <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">Método</label>
@@ -211,6 +228,12 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
                 <option value="plin">Plin</option>
                 <option value="transferencia">Transferencia</option>
               </select>
+            </div>
+            <div>
+              <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">Referencia (opcional)</label>
+              <input value={referencia} onChange={e => setReferencia(e.target.value)}
+                className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2.5 text-[#1C1C1C] text-sm focus:outline-none focus:border-[#FFD700]"
+                placeholder="N° operación, código Yape..." />
             </div>
             <div>
               <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">Observación (opcional)</label>
