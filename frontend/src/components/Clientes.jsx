@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Wifi, WifiOff, Edit, Trash2, FileText, RefreshCw, ChevronDown } from 'lucide-react'
+import { Search, Wifi, WifiOff, Trash2, FileText, RefreshCw, ChevronDown } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -8,14 +8,12 @@ const ESTADO_COLORS = {
   activo:     'bg-green-50 text-green-600 border border-green-200',
   suspendido: 'bg-red-50 text-red-500 border border-red-200',
   anulado:    'bg-[#FAF7F0] text-[#5A5A6A] border border-[#E5E0D5]',
-  vencido:    'bg-yellow-50 text-yellow-600 border border-yellow-200',
 }
 
 const ESTADO_DOT = {
   activo:     'bg-green-500',
   suspendido: 'bg-red-500',
   anulado:    'bg-[#C8C2B5]',
-  vencido:    'bg-yellow-500',
 }
 
 const AVATAR_COLORS = [
@@ -82,7 +80,7 @@ export default function Clientes() {
   const fetchClientes = useCallback(async () => {
     setLoading(true)
     try {
-      const params = { page, per_page: 20 }
+      const params = { page, per_page: PER_PAGE }
       if (search)       params.search  = search
       if (zonaFiltro)   params.zona_id = zonaFiltro
       if (estadoFiltro) params.estado  = estadoFiltro
@@ -214,7 +212,6 @@ export default function Clientes() {
             <option value="activo">Activo</option>
             <option value="suspendido">Suspendido</option>
             <option value="anulado">Anulado</option>
-            <option value="vencido">Vencido</option>
           </select>
           <ChevronDown size={13} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#9A9AAA] pointer-events-none" />
         </div>
@@ -325,13 +322,6 @@ export default function Clientes() {
                         >
                           {c.estado === 'activo' ? <WifiOff size={14} /> : <Wifi size={14} />}
                         </button>
-                        <Link
-                          to={`/clientes/${c.id}`}
-                          className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-[#FFD700] hover:bg-[#FAF7F0] transition-colors"
-                          title="Editar cliente"
-                        >
-                          <Edit size={14} />
-                        </Link>
                         <Link
                           to={`/clientes/${c.id}`}
                           className="p-1.5 rounded-lg text-[#9A9AAA] hover:text-blue-500 hover:bg-blue-50 transition-colors"

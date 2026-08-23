@@ -646,17 +646,12 @@ export default function Zonas() {
           <h1 className="text-xl font-bold text-[#1C1C1C]">Zonas y Equipos</h1>
           <p className="text-[#5A5A6A] text-sm">Gestión de infraestructura de red regional TUX-ISP</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-2 bg-white border border-[#E5E0D5] text-[#5A5A6A] hover:text-[#1C1C1C] px-3 py-2 rounded-xl text-sm transition-colors shrink-0">
-            <Globe size={14} /> Configurar Pool
-          </button>
-          <button
-            onClick={() => setModalNueva(true)}
-            className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors text-sm shrink-0"
-          >
-            <Plus size={16} /> Nueva Zona
-          </button>
-        </div>
+        <button
+          onClick={() => setModalNueva(true)}
+          className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors text-sm shrink-0"
+        >
+          <Plus size={16} /> Nueva Zona
+        </button>
       </div>
 
       {/* VPS Info */}

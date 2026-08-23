@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { Plus, X, MessageCircle, Download, AlertTriangle, TrendingUp, ChevronDown } from 'lucide-react'
+import { Plus, X, MessageCircle, AlertTriangle, TrendingUp, ChevronDown } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -254,41 +254,34 @@ export default function Pagos() {
     setModal(true)
   }
 
-  async function enviarAvisoMasivo() {
-    const vencidos = sinPago.filter(c => getDiasAtraso(c) > 0)
-    const total = vencidos.length
-    if (!total) return toast('No hay clientes vencidos a quién avisar', { icon: 'ℹ️' })
-    if (!confirm(`¿Enviar aviso de cobro a ${total} clientes vencidos?\n\nSe enviará 1 mensaje cada 8-15 segundos para proteger tu cuenta de WhatsApp.`)) return
+  async function enviarAvisosMasivo(clientes, confirmMsg) {
+    if (!clientes.length) return toast('No hay clientes a quién avisar', { icon: 'ℹ️' })
+    if (!confirm(confirmMsg)) return
 
     setEnviandoMasivo(true)
-    setProgresoMasivo({ actual: 0, total })
+    setProgresoMasivo({ actual: 0, total: clientes.length })
 
     let enviados = 0
     let errores  = 0
 
-    for (let i = 0; i < vencidos.length; i++) {
-      const c = vencidos[i]
-      setProgresoMasivo({ actual: i + 1, total })
+    for (let i = 0; i < clientes.length; i++) {
+      setProgresoMasivo({ actual: i + 1, total: clientes.length })
       try {
-        await api.post(`/whatsapp/aviso-cobro/${c.id}`)
+        await api.post(`/whatsapp/aviso-cobro/${clientes[i].id}`)
         enviados++
       } catch {
         errores++
       }
-      if (i < vencidos.length - 1) {
-        const delay = 8000 + Math.floor(Math.random() * 7000)
-        await new Promise(r => setTimeout(r, delay))
+      if (i < clientes.length - 1) {
+        await new Promise(r => setTimeout(r, 8000 + Math.floor(Math.random() * 7000)))
       }
     }
 
     setEnviandoMasivo(false)
     setProgresoMasivo({ actual: 0, total: 0 })
 
-    if (errores === 0) {
-      toast.success(`✓ ${enviados} avisos enviados correctamente`)
-    } else {
-      toast(`${enviados} enviados, ${errores} fallidos`, { icon: '⚠️' })
-    }
+    if (errores === 0) toast.success(`✓ ${enviados} avisos enviados correctamente`)
+    else toast(`${enviados} enviados, ${errores} fallidos`, { icon: '⚠️' })
   }
 
   const totalPendiente = sinPago.reduce((s, c) => s + (c.plan?.precio || 0), 0)
@@ -308,20 +301,12 @@ export default function Pagos() {
           <h1 className="text-2xl font-black text-[#1C1C1C]">Gestión de Pagos</h1>
           <p className="text-[#5A5A6A] text-sm mt-0.5">Supervisión de ingresos y control de morosidad en tiempo real.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => toast('Exportar próximamente')}
-            className="flex items-center gap-2 bg-white border border-[#E5E0D5] text-[#5A5A6A] font-semibold px-4 py-2.5 rounded-xl hover:border-[#C8C2B5] transition-colors text-sm"
-          >
-            <Download size={15}/> Exportar reporte
-          </button>
-          <button
-            onClick={() => { setClienteRapido(null); setModal(true) }}
-            className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2.5 rounded-xl hover:bg-yellow-400 transition-colors text-sm"
-          >
-            <Plus size={16}/> Nuevo Pago Centralizado
-          </button>
-        </div>
+        <button
+          onClick={() => { setClienteRapido(null); setModal(true) }}
+          className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2.5 rounded-xl hover:bg-yellow-400 transition-colors text-sm"
+        >
+          <Plus size={16}/> Nuevo Pago
+        </button>
       </div>
 
       {/* Stat cards */}
@@ -458,7 +443,10 @@ export default function Pagos() {
             </div>
             {sinPago.length > 0 && (
               <button
-                onClick={enviarAvisoMasivo}
+                onClick={() => enviarAvisosMasivo(
+                sinPago.filter(c => getDiasAtraso(c) > 0),
+                `¿Enviar aviso de cobro a ${sinPago.filter(c => getDiasAtraso(c) > 0).length} clientes vencidos?\n\nSe enviará 1 mensaje cada 8-15 segundos para proteger tu cuenta de WhatsApp.`
+              )}
                 disabled={enviandoMasivo}
                 className="flex items-center gap-1.5 text-xs bg-green-50 text-green-600 px-3 py-1.5 rounded-xl hover:bg-green-100 border border-green-200 transition-colors font-semibold disabled:opacity-60 disabled:cursor-wait"
               >
@@ -593,22 +581,10 @@ export default function Pagos() {
             </div>
             {sinPago.filter(c => getDiasAtraso(c) === 0).length > 0 && (
               <button
-                onClick={async () => {
-                  const pendientes = sinPago.filter(c => getDiasAtraso(c) === 0)
-                  if (!confirm(`¿Avisar a ${pendientes.length} clientes que su pago está por vencer?\n\nSe enviará 1 mensaje cada 8-15 segundos.`)) return
-                  setEnviandoMasivo(true)
-                  setProgresoMasivo({ actual: 0, total: pendientes.length })
-                  let ok = 0, fail = 0
-                  for (let i = 0; i < pendientes.length; i++) {
-                    setProgresoMasivo({ actual: i + 1, total: pendientes.length })
-                    try { await api.post(`/whatsapp/aviso-cobro/${pendientes[i].id}`); ok++ }
-                    catch { fail++ }
-                    if (i < pendientes.length - 1) await new Promise(r => setTimeout(r, 8000 + Math.floor(Math.random() * 7000)))
-                  }
-                  setEnviandoMasivo(false)
-                  setProgresoMasivo({ actual: 0, total: 0 })
-                  fail === 0 ? toast.success(`✓ ${ok} avisos enviados`) : toast(`${ok} enviados, ${fail} fallidos`, { icon: '⚠️' })
-                }}
+                onClick={() => enviarAvisosMasivo(
+                sinPago.filter(c => getDiasAtraso(c) === 0),
+                `¿Avisar a ${sinPago.filter(c => getDiasAtraso(c) === 0).length} clientes que su pago está por vencer?\n\nSe enviará 1 mensaje cada 8-15 segundos.`
+              )}
                 disabled={enviandoMasivo}
                 className="flex items-center gap-1.5 text-xs bg-orange-50 text-orange-600 px-3 py-1.5 rounded-xl hover:bg-orange-100 border border-orange-200 transition-colors font-semibold disabled:opacity-60 disabled:cursor-wait"
               >

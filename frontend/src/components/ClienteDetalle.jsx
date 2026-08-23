@@ -119,8 +119,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
     } finally { setSaving(false) }
   }
 
-  function MesIcon({ estado, isCurrent }) {
-    const base = 'w-6 h-6'
+  function MesIcon({ estado }) {
     if (estado === 'pagado') return <CheckCircle size={22} className="text-green-500" />
     if (estado === 'vencido') return <XCircle size={22} className="text-red-500" />
     if (estado === 'pendiente') return <XCircle size={22} className="text-orange-400" />
@@ -182,7 +181,7 @@ function CalendarioPagos({ clienteId, planPrecio, modalMes, setModalMes, onPayme
               className={`border rounded-xl py-2.5 flex flex-col items-center gap-1 transition-all ${bgMes[item.estado] || bgMes.futuro} ${isCurrent ? 'ring-2 ring-[#FFD700] ring-offset-1' : ''}`}
             >
               <span className="text-[9px] font-black text-[#9A9AAA] tracking-wider">{MESES_CORTO[i]}</span>
-              <MesIcon estado={item.estado} isCurrent={isCurrent} />
+              <MesIcon estado={item.estado} />
             </button>
           )
         })}
