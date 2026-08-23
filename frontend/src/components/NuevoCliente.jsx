@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ArrowLeft, Save, Wifi, Tv, Package } from 'lucide-react'
+import { Save, Wifi, Tv, Package } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -105,14 +105,9 @@ export default function NuevoCliente() {
     <div className="p-6 max-w-5xl mx-auto">
 
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <Link to="/clientes" className="p-2 rounded-xl text-[#9A9AAA] hover:text-[#1C1C1C] hover:bg-[#EDE9E0] transition-colors">
-          <ArrowLeft size={18} />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold text-[#1C1C1C]">Registrar Nuevo Cliente</h1>
-          <p className="text-[#9A9AAA] text-xs mt-0.5">Completa los datos del nuevo abonado</p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-3xl font-black text-[#1C1C1C]">Nuevo Cliente</h1>
+        <p className="text-[#9A9AAA] text-sm mt-1">Completa los datos del nuevo abonado</p>
       </div>
 
       <form onSubmit={handleSubmit}>
