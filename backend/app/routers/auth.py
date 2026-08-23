@@ -53,6 +53,28 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
+def get_current_cliente(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Dependencia para endpoints exclusivos de clientes en la app móvil."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No autenticado",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        role: str = payload.get("role")
+        cliente_id: int = payload.get("cliente_id")
+        if role != "cliente" or cliente_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    cliente = db.query(models.Cliente).filter(models.Cliente.id == cliente_id).first()
+    if not cliente:
+        raise credentials_exception
+    return cliente
+
+
 @router.post("/login", response_model=schemas.Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(models.Usuario).filter(models.Usuario.email == form_data.username).first()
@@ -63,6 +85,44 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cuenta desactivada")
     token = create_access_token({"sub": user.email})
     return {"access_token": token, "token_type": "bearer"}
+
+
+@router.post("/cliente/login", response_model=schemas.ClienteTokenResponse)
+def cliente_login(data: schemas.ClienteLoginRequest, db: Session = Depends(get_db)):
+    """Login para clientes en la app móvil. Usa teléfono + PIN de 4 dígitos."""
+    telefono = data.telefono.strip()
+    cliente = db.query(models.Cliente).filter(
+        models.Cliente.telefono == telefono
+    ).first()
+
+    if not cliente or not cliente.pin_app:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Teléfono o PIN incorrecto",
+        )
+    if not pwd_context.verify(data.pin, cliente.pin_app):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Teléfono o PIN incorrecto",
+        )
+    if cliente.estado == models.EstadoCliente.anulado:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cuenta no disponible",
+        )
+
+    token = create_access_token({
+        "sub": f"cliente:{cliente.id}",
+        "role": "cliente",
+        "cliente_id": cliente.id,
+    })
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "role": "cliente",
+        "cliente_id": cliente.id,
+        "nombre": cliente.nombre,
+    }
 
 
 @router.get("/me", response_model=schemas.UsuarioOut)

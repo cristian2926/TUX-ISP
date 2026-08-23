@@ -95,6 +95,7 @@ class ClienteBase(BaseModel):
     usuario_pppoe: str
     password_pppoe: str
     ip_estatica: Optional[str] = None
+    pin_app: Optional[str] = None
 
     @field_validator('usuario_pppoe')
     @classmethod
@@ -135,6 +136,7 @@ class ClienteUpdate(BaseModel):
     direccion: Optional[str] = None
     password_pppoe: Optional[str] = None
     ip_estatica: Optional[str] = None
+    pin_app: Optional[str] = None
     zona_id: Optional[int] = None
     plan_id: Optional[int] = None
     fecha_instalacion: Optional[date] = None
@@ -256,3 +258,29 @@ class IngresoMensual(BaseModel):
     mes: str
     ingresos: float
     gastos: float
+
+
+# ── Auth cliente (app móvil) ──────────────────────────────────────────────────
+
+class ClienteLoginRequest(BaseModel):
+    telefono: str
+    pin: str
+
+class ClienteTokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    role: str
+    cliente_id: int
+    nombre: str
+
+class MiCuentaOut(BaseModel):
+    id: int
+    nombre: str
+    telefono: Optional[str] = None
+    direccion: Optional[str] = None
+    estado: EstadoCliente
+    plan: Optional[PlanOut] = None
+    fecha_vencimiento: Optional[date] = None
+    fecha_instalacion: Optional[date] = None
+    class Config:
+        from_attributes = True

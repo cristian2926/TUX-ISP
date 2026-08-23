@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from .database import engine, Base
 from . import models
-from .routers import clientes, zonas, pagos, gastos, auth, whatsapp, dashboard, planes, admin
+from .routers import clientes, zonas, pagos, gastos, auth, whatsapp, dashboard, planes, admin, cliente_app
 
 
 @asynccontextmanager
@@ -51,6 +51,7 @@ app.include_router(gastos.router, prefix="/api/gastos", tags=["Gastos"])
 app.include_router(whatsapp.router, prefix="/api/whatsapp", tags=["WhatsApp"])
 app.include_router(planes.router, prefix="/api/planes", tags=["Planes"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(cliente_app.router, prefix="/api/cliente", tags=["App Cliente"])
 
 
 @app.get("/api/health")

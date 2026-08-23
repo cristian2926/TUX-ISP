@@ -12,7 +12,7 @@ import httpx
 
 from ..database import get_db
 from .. import models, schemas
-from .auth import get_current_user
+from .auth import get_current_user, get_password_hash
 from ..config import settings
 
 router = APIRouter()
@@ -206,6 +206,8 @@ def create_cliente(
         dia = min(fi.day, calendar.monthrange(next_anio, next_mes)[1])
         dump["fecha_vencimiento"] = date(next_anio, next_mes, dia)
     dump["fecha_ultima_activacion"] = dump["fecha_instalacion"]
+    if dump.get("pin_app"):
+        dump["pin_app"] = get_password_hash(dump["pin_app"])
     cliente = models.Cliente(**dump)
     db.add(cliente)
     db.commit()
@@ -299,6 +301,9 @@ def update_cliente(
 
     if cmds and wg_ip:
         _mikrotik_exec(wg_ip, cmds)
+
+    if "pin_app" in update_data and update_data["pin_app"]:
+        update_data["pin_app"] = get_password_hash(update_data["pin_app"])
 
     for key, value in update_data.items():
         setattr(cliente, key, value)

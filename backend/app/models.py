@@ -118,6 +118,7 @@ class Cliente(Base):
     equipo_valor = Column(Float)
 
     notas = Column(Text)
+    pin_app = Column(String(255))  # PIN hasheado para login en app móvil
     fecha_ultima_activacion = Column(Date)
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
     actualizado_en = Column(DateTime(timezone=True), onupdate=func.now())
