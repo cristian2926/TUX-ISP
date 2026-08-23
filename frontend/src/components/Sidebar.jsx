@@ -6,8 +6,8 @@ import {
 
 const NAV = [
   { to: '/dashboard',     icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/clientes',      icon: Users,           label: 'Clientes' },
-  { to: '/clientes/nuevo', icon: UserPlus,       label: 'Registrar Cliente' },
+  { to: '/clientes',      icon: Users,           label: 'Clientes',   end: true },
+  { to: '/clientes/nuevo', icon: UserPlus,       label: 'Registrar' },
   { to: '/zonas',         icon: Globe,           label: 'Zonas' },
   { to: '/pagos',         icon: DollarSign,      label: 'Pagos' },
   { to: '/gastos',        icon: TrendingDown,    label: 'Gastos' },
@@ -45,10 +45,11 @@ export default function Sidebar({ onClose }) {
 
       {/* Nav */}
       <nav className="flex-1 px-2 py-4 space-y-0.5 overflow-y-auto">
-        {NAV.map(({ to, icon: Icon, label }) => (
+        {NAV.map(({ to, icon: Icon, label, end }) => (
           <NavLink
             key={to}
             to={to}
+            end={end}
             onClick={onClose}
             className={({ isActive }) =>
               `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${

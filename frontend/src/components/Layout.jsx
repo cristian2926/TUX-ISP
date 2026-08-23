@@ -1,7 +1,7 @@
 import { Outlet, Link } from 'react-router-dom'
 import { useState } from 'react'
 import Sidebar from './Sidebar'
-import { Menu, Bell, Plus, MessageCircle } from 'lucide-react'
+import { Menu, Bell, MessageCircle } from 'lucide-react'
 
 function getUsername() {
   const token = localStorage.getItem('token')
@@ -27,25 +27,7 @@ function Topbar({ onMenuOpen }) {
         <Menu size={20} />
       </button>
 
-      {/* Search */}
-      <div className="flex-1 max-w-md relative hidden sm:block">
-        <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#C8C2B5]" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-        <input
-          type="text"
-          placeholder="Buscar clientes por ID o PPPoE..."
-          className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl pl-9 pr-3 py-2 text-sm text-[#1C1C1C] placeholder-[#C8C2B5] focus:outline-none focus:border-[#FFD700]/60 transition-colors"
-        />
-      </div>
-
       <div className="flex items-center gap-2 ml-auto">
-        <Link
-          to="/clientes/nuevo"
-          className="hidden sm:flex items-center gap-1.5 bg-[#FFD700] text-[#1C1C1C] font-bold text-sm px-3.5 py-2 rounded-xl hover:bg-yellow-400 transition-colors"
-        >
-          <Plus size={15} />
-          Nuevo Cliente
-        </Link>
-
         <Link
           to="/whatsapp"
           className="hidden md:flex items-center gap-1.5 bg-white border border-[#E5E0D5] text-[#5A5A6A] text-sm px-3.5 py-2 rounded-xl hover:border-[#C8C2B5] transition-colors"
@@ -121,14 +103,6 @@ export default function Layout() {
         <StatusBar />
       </div>
 
-      {/* Floating action button */}
-      <Link
-        to="/clientes/nuevo"
-        className="fixed bottom-12 right-4 w-12 h-12 bg-[#FFD700] rounded-full flex items-center justify-center shadow-lg hover:bg-yellow-400 transition-colors z-40"
-        title="Nuevo Cliente"
-      >
-        <span className="text-2xl font-bold text-[#1C1C1C] leading-none">+</span>
-      </Link>
     </div>
   )
 }
