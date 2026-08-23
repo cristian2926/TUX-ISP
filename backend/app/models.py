@@ -70,7 +70,6 @@ class Zona(Base):
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
 
     clientes = relationship("Cliente", back_populates="zona")
-    access_points = relationship("AccessPoint", back_populates="zona")
 
 
 class Plan(Base):
@@ -162,34 +161,6 @@ class Gasto(Base):
     notas = Column(Text)
     creado_en = Column(DateTime(timezone=True), server_default=func.now())
     registrado_por = Column(Integer, ForeignKey("usuarios.id"))
-
-
-class AccessPoint(Base):
-    __tablename__ = "access_points"
-
-    id = Column(Integer, primary_key=True, index=True)
-    nombre = Column(String(100), nullable=False)
-    marca = Column(String(50))           # Ubiquiti, TP-Link, Mikrotik, etc.
-    modelo = Column(String(100))
-    # Red
-    ssid = Column(String(100))
-    frecuencia = Column(String(20))      # 2.4GHz, 5GHz, 5.8GHz
-    canal = Column(String(10))
-    seguridad = Column(String(20), default="WPA2")
-    potencia_dbm = Column(Integer)
-    # Acceso
-    ip = Column(String(20))              # IP del cliente en la red
-    ip_admin = Column(String(20))        # IP para administrar el AP
-    usuario_admin = Column(String(100))
-    password_admin = Column(String(255))
-    mac = Column(String(20))
-    zona_id = Column(Integer, ForeignKey("zonas.id"), nullable=False)
-    ubicacion = Column(String(255))
-    activo = Column(Boolean, default=True)
-    ultimo_ping = Column(DateTime(timezone=True))
-    creado_en = Column(DateTime(timezone=True), server_default=func.now())
-
-    zona = relationship("Zona", back_populates="access_points")
 
 
 

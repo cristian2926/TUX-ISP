@@ -169,7 +169,6 @@ def _zona_to_dict(zona, db: Session) -> dict:
         models.Cliente.zona_id == zona.id,
         models.Cliente.estado == models.EstadoCliente.activo,
     ).count()
-    aps = db.query(models.AccessPoint).filter(models.AccessPoint.zona_id == zona.id).all()
 
     return {
         "id": zona.id,
@@ -186,26 +185,6 @@ def _zona_to_dict(zona, db: Session) -> dict:
         "activo": zona.activo,
         "total_clientes": total,
         "clientes_activos": activos,
-        "access_points": [
-            {
-                "id": ap.id,
-                "nombre": ap.nombre,
-                "marca": ap.marca,
-                "modelo": ap.modelo,
-                "ssid": ap.ssid,
-                "frecuencia": ap.frecuencia,
-                "canal": ap.canal,
-                "seguridad": ap.seguridad,
-                "potencia_dbm": ap.potencia_dbm,
-                "ip": ap.ip,
-                "ip_admin": ap.ip_admin,
-                "usuario_admin": ap.usuario_admin,
-                "mac": ap.mac,
-                "ubicacion": ap.ubicacion,
-                "activo": ap.activo,
-            }
-            for ap in aps
-        ],
     }
 
 
@@ -395,42 +374,6 @@ def wg_peers_activos(
     """Lista todos los peers activos en wg0 con su estado."""
     return {"peers": wg_show_dump(), "vps_pubkey": settings.VPS_WG_PUBKEY}
 
-
-# ── Access Points ─────────────────────────────────────────────────────────────
-
-@router.post("/{zona_id}/access-points", response_model=schemas.AccessPointOut, status_code=201)
-def create_ap(
-    zona_id: int,
-    data: schemas.AccessPointCreate,
-    db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(get_current_user),
-):
-    zona = db.query(models.Zona).filter(models.Zona.id == zona_id).first()
-    if not zona:
-        raise HTTPException(status_code=404, detail="Zona no encontrada")
-    ap = models.AccessPoint(**data.model_dump())
-    db.add(ap)
-    db.commit()
-    db.refresh(ap)
-    return ap
-
-
-@router.delete("/{zona_id}/access-points/{ap_id}")
-def delete_ap(
-    zona_id: int,
-    ap_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.Usuario = Depends(get_current_user),
-):
-    ap = db.query(models.AccessPoint).filter(
-        models.AccessPoint.id == ap_id,
-        models.AccessPoint.zona_id == zona_id,
-    ).first()
-    if not ap:
-        raise HTTPException(status_code=404, detail="AP no encontrado")
-    db.delete(ap)
-    db.commit()
-    return {"ok": True}
 
 
 # ── Terminal SSH MikroTik ─────────────────────────────────────────────────────

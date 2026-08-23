@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
-  Globe, Wifi, WifiOff, Radio, Plus, Edit, Trash2, X, Save,
+  Globe, Edit, Trash2, X, Save, Plus,
   Router, Shield, Copy, Check, Activity, Terminal,
 } from 'lucide-react'
 import api from '../api/client'
@@ -11,11 +11,6 @@ const inputCls = "w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py
 const ZONA_EMPTY = {
   nombre: '', ip_lan: '', usuario_mikrotik: '', password_mikrotik: '',
   ip_wireguard: '', wg_public_key: '', router_mikrotik: '', ip_router: '', descripcion: '', tiendas_pago: '',
-}
-const AP_EMPTY = {
-  nombre: '', marca: 'Ubiquiti', modelo: '', ssid: '', frecuencia: '5.8GHz',
-  canal: '', seguridad: 'WPA2', potencia_dbm: '', ip: '', ip_admin: '',
-  usuario_admin: '', password_admin: '', mac: '', ubicacion: '', zona_id: 0,
 }
 
 function Modal({ title, onClose, children }) {
@@ -130,144 +125,6 @@ function ZonaForm({ initial, onSave, onClose }) {
   )
 }
 
-function APForm({ zonaId, onSave, onClose }) {
-  const [form, setForm] = useState({ ...AP_EMPTY, zona_id: zonaId })
-  const [saving, setSaving] = useState(false)
-  const [showApPwd, setShowApPwd] = useState(false)
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
-
-  async function submit(e) {
-    e.preventDefault()
-    if (!form.nombre) return toast.error('Nombre del AP es obligatorio')
-    setSaving(true)
-    try {
-      const payload = { ...form }
-      if (payload.potencia_dbm !== '') payload.potencia_dbm = parseInt(payload.potencia_dbm)
-      else payload.potencia_dbm = null
-      await api.post(`/zonas/${zonaId}/access-points`, payload)
-      toast.success('Access Point agregado')
-      onSave()
-      onClose()
-    } catch (err) {
-      toast.error(err.response?.data?.detail || 'Error al agregar AP')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <form onSubmit={submit} className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
-      <div>
-        <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Identificación</p>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="col-span-2">
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Nombre <span className="text-red-400">*</span></label>
-            <input className={inputCls} value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="AP-Cabanillas-01" />
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Marca</label>
-            <select className={inputCls} value={form.marca} onChange={e => set('marca', e.target.value)}>
-              <option>Ubiquiti</option>
-              <option>TP-Link</option>
-              <option>Mikrotik</option>
-              <option>Cambium</option>
-              <option>Mimosa</option>
-              <option>Otro</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Modelo</label>
-            <input className={inputCls} value={form.modelo} onChange={e => set('modelo', e.target.value)} placeholder="NanoStation M5" />
-          </div>
-          <div className="col-span-2">
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Ubicación</label>
-            <input className={inputCls} value={form.ubicacion} onChange={e => set('ubicacion', e.target.value)} placeholder="Torre principal — Cabanillas" />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-[#EDE9E0] pt-3">
-        <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Red Inalámbrica</p>
-        <div className="grid grid-cols-2 gap-2">
-          <div className="col-span-2">
-            <label className="text-xs text-[#5A5A6A] mb-1 block">SSID</label>
-            <input className={inputCls} value={form.ssid} onChange={e => set('ssid', e.target.value)} placeholder="TuxtellZona1" />
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Frecuencia</label>
-            <select className={inputCls} value={form.frecuencia} onChange={e => set('frecuencia', e.target.value)}>
-              <option value="5.8GHz">5.8 GHz</option>
-              <option value="5GHz">5 GHz</option>
-              <option value="2.4GHz">2.4 GHz</option>
-              <option value="60GHz">60 GHz</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Canal</label>
-            <input className={inputCls} value={form.canal} onChange={e => set('canal', e.target.value)} placeholder="149, 153..." />
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Seguridad</label>
-            <select className={inputCls} value={form.seguridad} onChange={e => set('seguridad', e.target.value)}>
-              <option>WPA2</option>
-              <option>WPA3</option>
-              <option>WPA2/WPA3</option>
-              <option>Abierta</option>
-            </select>
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Potencia (dBm)</label>
-            <input type="number" className={inputCls} value={form.potencia_dbm} onChange={e => set('potencia_dbm', e.target.value)} placeholder="23" min="0" max="40" />
-          </div>
-        </div>
-      </div>
-
-      <div className="border-t border-[#EDE9E0] pt-3">
-        <p className="text-xs font-semibold text-[#FFD700] mb-2 uppercase tracking-wide">Red / Acceso</p>
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">IP cliente</label>
-            <input className={inputCls} value={form.ip} onChange={e => set('ip', e.target.value)} placeholder="192.168.1.10" />
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">IP admin</label>
-            <input className={inputCls} value={form.ip_admin} onChange={e => set('ip_admin', e.target.value)} placeholder="192.168.1.1" />
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Usuario admin</label>
-            <input className={inputCls} value={form.usuario_admin} onChange={e => set('usuario_admin', e.target.value)} placeholder="ubnt" />
-          </div>
-          <div>
-            <label className="text-xs text-[#5A5A6A] mb-1 block">Contraseña admin</label>
-            <div className="relative">
-              <input
-                type={showApPwd ? 'text' : 'password'}
-                className={inputCls + ' pr-14'}
-                value={form.password_admin}
-                onChange={e => set('password_admin', e.target.value)}
-                placeholder="••••••••"
-              />
-              <button type="button" onClick={() => setShowApPwd(v => !v)} className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-[#9A9AAA] hover:text-[#1C1C1C] px-1">
-                {showApPwd ? 'Ocultar' : 'Ver'}
-              </button>
-            </div>
-          </div>
-          <div className="col-span-2">
-            <label className="text-xs text-[#5A5A6A] mb-1 block">MAC</label>
-            <input className={inputCls + ' font-mono'} value={form.mac} onChange={e => set('mac', e.target.value)} placeholder="AA:BB:CC:DD:EE:FF" />
-          </div>
-        </div>
-      </div>
-
-      <div className="flex gap-2 pt-1">
-        <button type="button" onClick={onClose} className="flex-1 py-2 text-sm border border-[#D8D2C5] rounded-xl text-[#5A5A6A] hover:text-[#1C1C1C]">Cancelar</button>
-        <button type="submit" disabled={saving} className="flex-1 py-2 text-sm bg-[#FFD700] text-[#1C1C1C] font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50">
-          {saving ? 'Guardando...' : 'Agregar AP'}
-        </button>
-      </div>
-    </form>
-  )
-}
 
 function WireGuardModal({ zona, onClose, onRefresh }) {
   const [status, setStatus] = useState(null)
@@ -572,7 +429,6 @@ function getZoneCode(nombre, id) {
 
 function ZonaCard({ zona, onRefresh }) {
   const [wgStatus, setWgStatus] = useState(null)
-  const [modalAP, setModalAP] = useState(false)
   const [modalEdit, setModalEdit] = useState(false)
   const [modalWG, setModalWG] = useState(false)
   const [modalTerminal, setModalTerminal] = useState(false)
@@ -599,17 +455,6 @@ function ZonaCard({ zona, onRefresh }) {
       onRefresh()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Error al eliminar')
-    }
-  }
-
-  async function deleteAP(apId) {
-    if (!confirm('¿Eliminar este Access Point?')) return
-    try {
-      await api.delete(`/zonas/${zona.id}/access-points/${apId}`)
-      toast.success('AP eliminado')
-      onRefresh()
-    } catch {
-      toast.error('Error al eliminar AP')
     }
   }
 
@@ -712,42 +557,6 @@ function ZonaCard({ zona, onRefresh }) {
             </div>
           )}
 
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-xs text-[#5A5A6A] flex items-center gap-1">
-                <Radio size={11} /> APs ({zona.access_points?.length || 0})
-              </p>
-              <button
-                onClick={() => setModalAP(true)}
-                className="flex items-center gap-1 text-xs text-[#FFD700] hover:text-yellow-500 transition-colors font-semibold"
-              >
-                <Plus size={12} /> Agregar AP
-              </button>
-            </div>
-            {zona.access_points?.length > 0 ? (
-              <div className="space-y-1.5">
-                {zona.access_points.map(ap => (
-                  <div key={ap.id} className="bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs text-[#1C1C1C] font-medium truncate">{ap.nombre}</p>
-                      <button onClick={() => deleteAP(ap.id)} className="p-1 text-[#9A9AAA] hover:text-red-500 transition-colors shrink-0 ml-2">
-                        <Trash2 size={12} />
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                      {ap.marca && <span className="text-xs text-[#9A9AAA]">{ap.marca}</span>}
-                      {ap.modelo && <span className="text-xs text-[#9A9AAA]">{ap.modelo}</span>}
-                      {ap.ssid && <span className="text-xs text-[#5A5A6A] font-mono">📶 {ap.ssid}</span>}
-                      {ap.frecuencia && <span className="text-xs text-[#FFD700]/80 font-semibold">{ap.frecuencia}</span>}
-                      {ap.ip_admin && <span className="text-xs text-[#9A9AAA] font-mono">{ap.ip_admin}</span>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-[#9A9AAA] text-center py-2">Sin APs registrados</p>
-            )}
-          </div>
         </div>
 
         {/* Footer */}
@@ -779,12 +588,6 @@ function ZonaCard({ zona, onRefresh }) {
             onSave={handleEdit}
             onClose={() => setModalEdit(false)}
           />
-        </Modal>
-      )}
-
-      {modalAP && (
-        <Modal title={`Agregar AP — ${zona.nombre}`} onClose={() => setModalAP(false)}>
-          <APForm zonaId={zona.id} onSave={onRefresh} onClose={() => setModalAP(false)} />
         </Modal>
       )}
 

@@ -84,35 +84,6 @@ class ZonaOut(ZonaBase):
         from_attributes = True
 
 
-# ── AccessPoint ───────────────────────────────────────────────────────────────
-
-class AccessPointBase(BaseModel):
-    nombre: str
-    marca: Optional[str] = None
-    modelo: Optional[str] = None
-    ssid: Optional[str] = None
-    frecuencia: Optional[str] = None
-    canal: Optional[str] = None
-    seguridad: Optional[str] = "WPA2"
-    potencia_dbm: Optional[int] = None
-    ip: Optional[str] = None
-    ip_admin: Optional[str] = None
-    usuario_admin: Optional[str] = None
-    password_admin: Optional[str] = None
-    mac: Optional[str] = None
-    zona_id: int
-    ubicacion: Optional[str] = None
-
-class AccessPointCreate(AccessPointBase):
-    pass
-
-class AccessPointOut(AccessPointBase):
-    id: int
-    activo: bool
-    ultimo_ping: Optional[datetime] = None
-    class Config:
-        from_attributes = True
-
 
 # ── Cliente ───────────────────────────────────────────────────────────────────
 
