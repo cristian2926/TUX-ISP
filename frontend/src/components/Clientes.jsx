@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Plus, Wifi, WifiOff, Edit, Trash2, FileText, RefreshCw, ChevronDown } from 'lucide-react'
+import { Search, Wifi, WifiOff, Edit, Trash2, FileText, RefreshCw, ChevronDown } from 'lucide-react'
 import api from '../api/client'
 import toast from 'react-hot-toast'
 
@@ -132,18 +132,9 @@ export default function Clientes() {
     <div className="p-6 space-y-5">
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-black text-[#1C1C1C]">Gestión de Clientes</h1>
-          <p className="text-[#5A5A6A] text-sm mt-0.5">Administración técnica y control de estados del parque de suscriptores.</p>
-        </div>
-        <Link
-          to="/clientes/nuevo"
-          className="flex items-center gap-2 bg-[#FFD700] text-[#1C1C1C] font-bold px-4 py-2.5 rounded-xl hover:bg-yellow-400 transition-colors text-sm"
-        >
-          <Plus size={16} />
-          Nuevo Cliente
-        </Link>
+      <div>
+        <h1 className="text-2xl font-black text-[#1C1C1C]">Gestión de Clientes</h1>
+        <p className="text-[#5A5A6A] text-sm mt-0.5">Administración técnica y control de estados del parque de suscriptores.</p>
       </div>
 
       {/* Stat cards */}

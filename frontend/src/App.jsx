@@ -33,6 +33,16 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route
+          path="/nuevo-cliente"
+          element={
+            <PrivateRoute>
+              <div className="min-h-screen bg-[#FAF7F0]">
+                <NuevoCliente />
+              </div>
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/"
           element={
             <PrivateRoute>
