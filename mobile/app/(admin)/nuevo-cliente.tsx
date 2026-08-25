@@ -91,7 +91,8 @@ export default function NuevoClienteScreen() {
         tipo_conexion: 'inalambrico',
         estado_equipo: 'sin_equipo',
       });
-      Alert.alert('✓ Cliente creado', `${nombre} fue registrado correctamente.\n\nSu PIN por defecto es ${new Date().toLocaleDateString('es-GT', { day: '2-digit', month: '2-digit' }).replace('/', '')}`, [
+      const ddmm = new Date().toLocaleDateString('es-GT', { day: '2-digit', month: '2-digit' }).replace('/', '');
+      Alert.alert('✓ Cliente creado', `${nombre} fue registrado.\n\nPIN de acceso a la app: ${ddmm} (hoy en DDMM)`, [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (e: any) {
@@ -136,23 +137,21 @@ export default function NuevoClienteScreen() {
   );
 }
 
-const BG = '#111827'; const CARD = '#1F2937'; const BORDER = '#374151'; const GOLD = '#FFD700';
-
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  sectionTitle: { fontSize: 10, fontWeight: '700', color: GOLD, letterSpacing: 2, marginTop: 20, marginBottom: 10 },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  sectionTitle: { fontSize: 10, fontWeight: '700', color: '#94A3B8', letterSpacing: 2, marginTop: 20, marginBottom: 10 },
   campo: { marginBottom: 12 },
-  label: { fontSize: 12, fontWeight: '600', color: '#9CA3AF', marginBottom: 6 },
-  input: { backgroundColor: CARD, borderWidth: 1, borderColor: BORDER, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#F9FAFB' },
-  chip: { borderWidth: 1, borderColor: BORDER, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, backgroundColor: CARD },
-  chipSelected: { borderColor: GOLD, backgroundColor: 'rgba(255,215,0,0.12)' },
-  chipText: { color: '#9CA3AF', fontWeight: '500', fontSize: 13, textAlign: 'center' },
-  chipTextSelected: { color: GOLD, fontWeight: '700' },
-  pinHint: { backgroundColor: 'rgba(255,215,0,0.06)', borderWidth: 1, borderColor: 'rgba(255,215,0,0.2)', borderRadius: 10, padding: 12, marginBottom: 8 },
-  pinHintText: { fontSize: 12, color: '#9CA3AF', lineHeight: 18 },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: CARD, borderRadius: 10, borderWidth: 1, borderColor: BORDER, padding: 14, marginBottom: 20, marginTop: 8 },
-  switchSub: { fontSize: 11, color: '#4B5563', marginTop: 2 },
-  btn: { backgroundColor: GOLD, borderRadius: 12, padding: 16, alignItems: 'center' },
+  label: { fontSize: 12, fontWeight: '600', color: '#64748B', marginBottom: 6 },
+  input: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#1E293B' },
+  chip: { borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 20, paddingHorizontal: 14, paddingVertical: 8, marginRight: 8, backgroundColor: '#FFFFFF' },
+  chipSelected: { borderColor: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.08)' },
+  chipText: { color: '#64748B', fontWeight: '500', fontSize: 13, textAlign: 'center' },
+  chipTextSelected: { color: '#D97706', fontWeight: '700' },
+  pinHint: { backgroundColor: 'rgba(245,158,11,0.06)', borderWidth: 1, borderColor: 'rgba(245,158,11,0.2)', borderRadius: 10, padding: 12, marginBottom: 8 },
+  pinHintText: { fontSize: 12, color: '#64748B', lineHeight: 18 },
+  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#FFFFFF', borderRadius: 10, borderWidth: 1, borderColor: '#E2E8F0', padding: 14, marginBottom: 20, marginTop: 8 },
+  switchSub: { fontSize: 11, color: '#94A3B8', marginTop: 2 },
+  btn: { backgroundColor: '#1E293B', borderRadius: 12, padding: 16, alignItems: 'center' },
   btnDisabled: { opacity: 0.7 },
-  btnText: { color: BG, fontWeight: '900', fontSize: 15, letterSpacing: 1 },
+  btnText: { color: '#FFFFFF', fontWeight: '900', fontSize: 15, letterSpacing: 1 },
 });

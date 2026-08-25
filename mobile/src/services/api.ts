@@ -116,6 +116,8 @@ export async function getDashboardStats(): Promise<DashboardStats> {
 
 // ── Admin: Clientes ───────────────────────────────────────────────────────────
 
+export type MesPago = { mes: string; estado: 'pagado' | 'vencido' | 'pendiente' | 'no_aplica' };
+
 export type ClienteListItem = {
   id: number;
   nombre: string;
@@ -123,19 +125,23 @@ export type ClienteListItem = {
   usuario_pppoe: string;
   estado: 'activo' | 'suspendido' | 'anulado';
   plan: { nombre: string; precio: number } | null;
+  zona: { id: number; nombre: string } | null;
   fecha_vencimiento: string | null;
+  meses_pago: MesPago[];
 };
 
 export async function getClientes(params?: {
   page?: number;
   search?: string;
   estado?: string;
+  zona_id?: number;
 }): Promise<{ items: ClienteListItem[]; total: number; pages: number }> {
   const q = new URLSearchParams({
     page: String(params?.page ?? 1),
-    per_page: '20',
+    per_page: '50',
     ...(params?.search ? { search: params.search } : {}),
     ...(params?.estado ? { estado: params.estado } : {}),
+    ...(params?.zona_id ? { zona_id: String(params.zona_id) } : {}),
   });
   return request(`/clientes?${q}`);
 }

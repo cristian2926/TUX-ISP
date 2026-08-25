@@ -27,7 +27,6 @@ export default function PerfilScreen() {
   return (
     <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
 
-      {/* Info */}
       <View style={s.card}>
         <Text style={s.cardTitle}>MI PERFIL</Text>
         <View style={s.fila}>
@@ -36,32 +35,27 @@ export default function PerfilScreen() {
         </View>
         <View style={[s.fila, { borderBottomWidth: 0 }]}>
           <Text style={s.filaLabel}>Rol</Text>
-          <View style={s.rolBadge}>
-            <Text style={s.rolText}>Cliente</Text>
-          </View>
+          <View style={s.rolBadge}><Text style={s.rolText}>Cliente</Text></View>
         </View>
       </View>
 
-      {/* Cambiar PIN */}
       <View style={s.card}>
         <Text style={s.cardTitle}>CAMBIAR PIN</Text>
-        <Text style={s.hint}>
-          Tu PIN por defecto es la fecha de instalación (DDMM). Aquí puedes cambiarlo por uno personalizado de 4 dígitos.
-        </Text>
+        <Text style={s.hint}>Tu PIN por defecto es la fecha de instalación en formato DDMM. Puedes cambiarlo por uno de 4 dígitos.</Text>
 
         {[
-          { label: 'PIN actual', value: pinActual, set: setPinActual, placeholder: '••••' },
-          { label: 'PIN nuevo (4 dígitos)', value: pinNuevo, set: setPinNuevo, placeholder: '••••' },
-          { label: 'Confirmar PIN nuevo', value: pinConfirm, set: setPinConfirm, placeholder: '••••' },
-        ].map(({ label, value, set, placeholder }) => (
+          { label: 'PIN actual', value: pinActual, set: setPinActual },
+          { label: 'PIN nuevo (4 dígitos)', value: pinNuevo, set: setPinNuevo },
+          { label: 'Confirmar PIN nuevo', value: pinConfirm, set: setPinConfirm },
+        ].map(({ label, value, set }) => (
           <View key={label}>
             <Text style={s.inputLabel}>{label.toUpperCase()}</Text>
             <TextInput
               style={s.input}
               value={value}
               onChangeText={set}
-              placeholder={placeholder}
-              placeholderTextColor="#4B5563"
+              placeholder="••••"
+              placeholderTextColor="#CBD5E1"
               secureTextEntry
               keyboardType="numeric"
               maxLength={4}
@@ -70,11 +64,10 @@ export default function PerfilScreen() {
         ))}
 
         <TouchableOpacity style={[s.btn, saving && s.btnDisabled]} onPress={handleCambiarPin} disabled={saving}>
-          {saving ? <ActivityIndicator color="#111827" /> : <Text style={s.btnText}>GUARDAR PIN</Text>}
+          {saving ? <ActivityIndicator color="#FFFFFF" /> : <Text style={s.btnText}>GUARDAR PIN</Text>}
         </TouchableOpacity>
       </View>
 
-      {/* Cerrar sesión */}
       <TouchableOpacity style={s.logoutBtn} onPress={signOut}>
         <Text style={s.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
@@ -82,23 +75,21 @@ export default function PerfilScreen() {
   );
 }
 
-const BG = '#111827'; const CARD = '#1F2937'; const BORDER = '#374151'; const GOLD = '#FFD700';
-
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: BG },
-  card: { backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 18, marginBottom: 14 },
-  cardTitle: { fontSize: 11, fontWeight: '700', color: GOLD, letterSpacing: 1.5, marginBottom: 14 },
-  hint: { fontSize: 13, color: '#4B5563', marginBottom: 16, lineHeight: 18 },
-  fila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: BORDER },
-  filaLabel: { fontSize: 13, color: '#9CA3AF' },
-  filaValue: { fontSize: 14, fontWeight: '600', color: '#F9FAFB' },
-  rolBadge: { backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3 },
-  rolText: { fontSize: 12, fontWeight: '700', color: GOLD },
-  inputLabel: { fontSize: 10, fontWeight: '700', color: '#4B5563', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: BG, borderWidth: 1, borderColor: BORDER, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#F9FAFB' },
-  btn: { backgroundColor: GOLD, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 20 },
+  container: { flex: 1, backgroundColor: '#F8FAFC' },
+  card: { backgroundColor: '#FFFFFF', borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', padding: 16, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 6, elevation: 1 },
+  cardTitle: { fontSize: 10, fontWeight: '700', color: '#94A3B8', letterSpacing: 2, marginBottom: 14 },
+  hint: { fontSize: 13, color: '#94A3B8', marginBottom: 14, lineHeight: 18 },
+  fila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#F1F5F9' },
+  filaLabel: { fontSize: 13, color: '#94A3B8' },
+  filaValue: { fontSize: 14, fontWeight: '600', color: '#1E293B' },
+  rolBadge: { backgroundColor: 'rgba(245,158,11,0.1)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3 },
+  rolText: { fontSize: 12, fontWeight: '700', color: '#F59E0B' },
+  inputLabel: { fontSize: 10, fontWeight: '700', color: '#94A3B8', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
+  input: { backgroundColor: '#F8FAFC', borderWidth: 1, borderColor: '#E2E8F0', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#1E293B' },
+  btn: { backgroundColor: '#1E293B', borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 20 },
   btnDisabled: { opacity: 0.7 },
-  btnText: { color: BG, fontWeight: '900', fontSize: 14, letterSpacing: 1 },
-  logoutBtn: { borderWidth: 1, borderColor: 'rgba(248,113,113,0.3)', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 20, backgroundColor: 'rgba(248,113,113,0.06)' },
-  logoutText: { color: '#f87171', fontWeight: '700', fontSize: 15 },
+  btnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14, letterSpacing: 1 },
+  logoutBtn: { borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 20, backgroundColor: '#FFFFFF' },
+  logoutText: { color: '#EF4444', fontWeight: '700', fontSize: 15 },
 });

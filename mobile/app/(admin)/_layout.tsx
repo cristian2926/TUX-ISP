@@ -8,11 +8,11 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#111827' },
-        headerTintColor: '#FFD700',
+        headerStyle: { backgroundColor: '#1E293B' },
+        headerTintColor: '#F59E0B',
         headerTitleStyle: { fontWeight: '800', color: '#F9FAFB' },
         headerShadowVisible: false,
-        contentStyle: { backgroundColor: '#111827' },
+        contentStyle: { backgroundColor: '#F8FAFC' },
         headerRight: () => (
           <TouchableOpacity onPress={signOut} style={s.btn}>
             <Text style={s.btnText}>Salir</Text>
@@ -28,6 +28,6 @@ export default function AdminLayout() {
 }
 
 const s = StyleSheet.create({
-  btn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#374151' },
-  btnText: { color: '#9CA3AF', fontWeight: '600', fontSize: 13 },
+  btn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
+  btnText: { color: '#F59E0B', fontWeight: '700', fontSize: 13 },
 });

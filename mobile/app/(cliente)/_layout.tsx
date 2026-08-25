@@ -4,27 +4,25 @@ import { useSession } from '@/hooks/useSession';
 
 export default function ClienteLayout() {
   const { session } = useSession();
-
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#111827' },
-        headerTintColor: '#FFD700',
+        headerStyle: { backgroundColor: '#1E293B' },
+        headerTintColor: '#F59E0B',
         headerTitleStyle: { fontWeight: '800', color: '#F9FAFB' },
         headerShadowVisible: false,
-        tabBarStyle: { backgroundColor: '#111827', borderTopColor: '#374151', borderTopWidth: 1 },
-        tabBarActiveTintColor: '#FFD700',
-        tabBarInactiveTintColor: '#4B5563',
+        tabBarStyle: { backgroundColor: '#FFFFFF', borderTopColor: '#E2E8F0', borderTopWidth: 1 },
+        tabBarActiveTintColor: '#F59E0B',
+        tabBarInactiveTintColor: '#94A3B8',
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: session?.nombre ?? 'Mi Cuenta',
+          title: 'Tuxtell ISP',
           tabBarLabel: 'Inicio',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🏠</Text>,
-          headerTitle: 'Tuxtell ISP',
         }}
       />
       <Tabs.Screen
