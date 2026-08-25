@@ -36,6 +36,8 @@ app.add_middleware(
         "https://tuxtell.duckdns.org",
         "http://localhost:5173",
         "http://localhost:4173",
+        "http://localhost:8081",
+        "http://localhost:19006",
     ],
     allow_credentials=True,
     allow_methods=["*"],
