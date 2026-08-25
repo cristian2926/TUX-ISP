@@ -1,9 +1,9 @@
 import { Tabs } from 'expo-router';
-import { Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Text } from 'react-native';
 import { useSession } from '@/hooks/useSession';
 
 export default function ClienteLayout() {
-  const { signOut, session } = useSession();
+  const { session } = useSession();
 
   return (
     <Tabs
@@ -13,11 +13,6 @@ export default function ClienteLayout() {
         headerTitleStyle: { fontWeight: '700' },
         tabBarActiveTintColor: '#1e40af',
         tabBarStyle: { borderTopColor: '#e5e7eb' },
-        headerRight: () => (
-          <TouchableOpacity onPress={signOut} style={styles.logoutBtn}>
-            <Text style={styles.logoutText}>Salir</Text>
-          </TouchableOpacity>
-        ),
       }}
     >
       <Tabs.Screen
@@ -25,7 +20,7 @@ export default function ClienteLayout() {
         options={{
           title: 'Mi Cuenta',
           tabBarLabel: 'Cuenta',
-          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>👤</Text>,
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🏠</Text>,
           headerTitle: session?.nombre ?? 'Mi Cuenta',
         }}
       />
@@ -37,11 +32,14 @@ export default function ClienteLayout() {
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>💳</Text>,
         }}
       />
+      <Tabs.Screen
+        name="perfil"
+        options={{
+          title: 'Perfil',
+          tabBarLabel: 'Perfil',
+          tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>⚙️</Text>,
+        }}
+      />
     </Tabs>
   );
 }
-
-const styles = StyleSheet.create({
-  logoutBtn: { marginRight: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  logoutText: { color: '#bfdbfe', fontWeight: '600' },
-});

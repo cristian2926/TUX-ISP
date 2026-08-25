@@ -105,12 +105,16 @@ def cliente_login(data: schemas.ClienteLoginRequest, db: Session = Depends(get_d
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Sin fecha de instalación registrada",
         )
-    pin_esperado = cliente.fecha_instalacion.strftime("%d%m")
-    if data.pin.strip() != pin_esperado:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario o PIN incorrecto",
-        )
+    if cliente.pin_app:
+        # Cliente configuró un PIN personalizado
+        if not pwd_context.verify(data.pin.strip(), cliente.pin_app):
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario o PIN incorrecto")
+    else:
+        # PIN por defecto: DDMM de fecha de instalación
+        pin_esperado = cliente.fecha_instalacion.strftime("%d%m")
+        if data.pin.strip() != pin_esperado:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Usuario o PIN incorrecto")
+
     if cliente.estado == models.EstadoCliente.anulado:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

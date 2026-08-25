@@ -266,6 +266,10 @@ class ClienteLoginRequest(BaseModel):
     usuario: str   # usuario_pppoe del cliente
     pin: str       # DDMM de fecha_instalacion (ej. "2508")
 
+class CambiarPinRequest(BaseModel):
+    pin_actual: str
+    pin_nuevo: str
+
 class ClienteTokenResponse(BaseModel):
     access_token: str
     token_type: str

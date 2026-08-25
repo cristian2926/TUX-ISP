@@ -81,6 +81,13 @@ export async function getMiCuenta(): Promise<MiCuenta> {
   return request('/cliente/me');
 }
 
+export async function cambiarPin(pinActual: string, pinNuevo: string): Promise<void> {
+  return request('/cliente/cambiar-pin', {
+    method: 'POST',
+    body: JSON.stringify({ pin_actual: pinActual, pin_nuevo: pinNuevo }),
+  });
+}
+
 export type Pago = {
   id: number;
   mes_pagado: string;
