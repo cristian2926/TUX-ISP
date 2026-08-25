@@ -24,7 +24,7 @@ function PagoCard({ item }: { item: Pago }) {
         </View>
       </View>
       <View style={{ alignItems: 'flex-end' }}>
-        <Text style={s.monto}>Q {item.monto.toFixed(2)}</Text>
+        <Text style={s.monto}>S/ {item.monto.toFixed(2)}</Text>
         <View style={s.pagadoBadge}>
           <Text style={s.pagadoText}>✓ Pagado</Text>
         </View>

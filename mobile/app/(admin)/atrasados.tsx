@@ -53,7 +53,7 @@ function AtrasadoCard({ item, onCortar, onPress }: {
           {mesesSinPagar > 0 && (
             <Text style={st.mesesText}>
               {mesesSinPagar} mes{mesesSinPagar > 1 ? 'es' : ''} sin pagar
-              {deuda > 0 ? ` · Q ${deuda.toFixed(0)} en deuda` : ''}
+              {deuda > 0 ? ` · S/ ${deuda.toFixed(0)} en deuda` : ''}
             </Text>
           )}
         </View>
