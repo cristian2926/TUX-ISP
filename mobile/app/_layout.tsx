@@ -3,18 +3,17 @@ import { AppState, AppStateStatus } from 'react-native';
 import { Slot, useRouter, useSegments } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useSession, resetInactivity, clearInactivityTimer } from '@/hooks/useSession';
+import { SessionProvider, useSession, resetInactivity, clearInactivityTimer } from '@/hooks/useSession';
 
-const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos sin actividad → logout
+const INACTIVITY_MS = 10 * 60 * 1000;
 
-export default function RootLayout() {
+function AppNavigator() {
   const { session, loading, signOut } = useSession();
   const router = useRouter();
   const segments = useSegments();
   const lastActivityRef = useRef(Date.now());
   const appStateRef = useRef(AppState.currentState);
 
-  // ── Redirección según estado de sesión ────────────────────────────────────
   useEffect(() => {
     if (loading) return;
     const inAuth = segments[0] === '(auth)';
@@ -24,25 +23,18 @@ export default function RootLayout() {
       return;
     }
 
-    // Siempre redirigir a la sección correcta según el rol
     const seccionCorrecta = session.role === 'admin' ? '(admin)' : '(cliente)';
     if (segments[0] !== seccionCorrecta) {
       router.replace(session.role === 'admin' ? '/(admin)' : '/(cliente)');
     }
   }, [session, loading, segments]);
 
-  // ── Auto-logout por inactividad ───────────────────────────────────────────
   useEffect(() => {
     if (!session) return;
 
-    const doLogout = () => {
-      clearInactivityTimer();
-      signOut();
-    };
-
+    const doLogout = () => { clearInactivityTimer(); signOut(); };
     resetInactivity(doLogout);
 
-    // Cuando la app vuelve al primer plano, verificar tiempo transcurrido
     const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
       if (state === 'active' && appStateRef.current !== 'active') {
         if (Date.now() - lastActivityRef.current > INACTIVITY_MS) {
@@ -51,24 +43,24 @@ export default function RootLayout() {
           resetInactivity(doLogout);
         }
       }
-      if (state !== 'active') {
-        lastActivityRef.current = Date.now();
-      }
+      if (state !== 'active') lastActivityRef.current = Date.now();
       appStateRef.current = state;
     });
 
-    return () => {
-      sub.remove();
-      clearInactivityTimer();
-    };
+    return () => { sub.remove(); clearInactivityTimer(); };
   }, [session]);
 
   if (loading) return null;
+  return <Slot />;
+}
 
+export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <Slot />
+        <SessionProvider>
+          <AppNavigator />
+        </SessionProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

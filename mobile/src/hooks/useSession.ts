@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 
@@ -11,8 +11,7 @@ export type Session = {
   clienteId?: number;
 };
 
-const INACTIVITY_MS = 10 * 60 * 1000; // 10 minutos
-
+const INACTIVITY_MS = 10 * 60 * 1000;
 let inactivityTimer: ReturnType<typeof setTimeout> | null = null;
 
 export function clearInactivityTimer() {
@@ -24,7 +23,6 @@ export function resetInactivity(onLogout: () => void) {
   inactivityTimer = setTimeout(onLogout, INACTIVITY_MS);
 }
 
-// En web usa localStorage, en nativo usa SecureStore
 const storage = {
   async get(key: string): Promise<string | null> {
     if (Platform.OS === 'web') {
@@ -48,7 +46,18 @@ const storage = {
   },
 };
 
-export function useSession() {
+// ── Context global de sesión ───────────────────────────────────────────────────
+
+type SessionCtx = {
+  session: Session | null;
+  loading: boolean;
+  signIn: (s: Session) => Promise<void>;
+  signOut: () => Promise<void>;
+};
+
+const SessionContext = createContext<SessionCtx | null>(null);
+
+export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -60,12 +69,7 @@ export function useSession() {
         const nombre = await storage.get('nombre');
         const clienteId = await storage.get('clienteId');
         if (token && role) {
-          setSession({
-            token,
-            role: role as SessionRole,
-            nombre: nombre ?? '',
-            clienteId: clienteId ? Number(clienteId) : undefined,
-          });
+          setSession({ token, role: role as SessionRole, nombre: nombre ?? '', clienteId: clienteId ? Number(clienteId) : undefined });
         }
       } finally {
         setLoading(false);
@@ -90,5 +94,15 @@ export function useSession() {
     setSession(null);
   }, []);
 
-  return { session, loading, signIn, signOut };
+  return (
+    <SessionContext.Provider value={{ session, loading, signIn, signOut }}>
+      {children}
+    </SessionContext.Provider>
+  );
+}
+
+export function useSession(): SessionCtx {
+  const ctx = useContext(SessionContext);
+  if (!ctx) throw new Error('useSession debe usarse dentro de SessionProvider');
+  return ctx;
 }
