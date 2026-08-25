@@ -18,9 +18,15 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return;
     const inAuth = segments[0] === '(auth)';
-    if (!session && !inAuth) {
-      router.replace('/(auth)/login');
-    } else if (session && inAuth) {
+
+    if (!session) {
+      if (!inAuth) router.replace('/(auth)/login');
+      return;
+    }
+
+    // Siempre redirigir a la sección correcta según el rol
+    const seccionCorrecta = session.role === 'admin' ? '(admin)' : '(cliente)';
+    if (segments[0] !== seccionCorrecta) {
       router.replace(session.role === 'admin' ? '/(admin)' : '/(cliente)');
     }
   }, [session, loading, segments]);
