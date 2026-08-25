@@ -44,13 +44,31 @@ export default function LoginScreen() {
   }
 
   async function testNetwork() {
+    const lines: string[] = [];
+
+    try {
+      const r = await fetch('https://api.github.com/zen');
+      lines.push('GitHub HTTPS: ✓ OK');
+    } catch (e: any) {
+      lines.push(`GitHub HTTPS: ✗ ${e.message}`);
+    }
+
     try {
       const r = await fetch('https://tuxtell.duckdns.org/api/health');
       const text = await r.text();
-      Alert.alert('VPS OK', text);
+      lines.push(`VPS HTTPS: ✓ ${text}`);
     } catch (e: any) {
-      Alert.alert('VPS FALLA', e.message);
+      lines.push(`VPS HTTPS: ✗ ${e.message}`);
     }
+
+    try {
+      const r = await fetch('http://tuxtell.duckdns.org/api/health');
+      lines.push('VPS HTTP: ✓ OK');
+    } catch (e: any) {
+      lines.push(`VPS HTTP: ✗ ${e.message}`);
+    }
+
+    Alert.alert('Diagnóstico de red', lines.join('\n'));
   }
 
   return (
