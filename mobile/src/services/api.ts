@@ -101,6 +101,19 @@ export async function getMisPagos(page = 1): Promise<{ items: Pago[]; total: num
   return request(`/cliente/mis-pagos?page=${page}&per_page=12`);
 }
 
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
+export type DashboardStats = {
+  total_clientes: number;
+  clientes_activos: number;
+  clientes_suspendidos: number;
+  ingresos_mes: number;
+};
+
+export async function getDashboardStats(): Promise<DashboardStats> {
+  return request('/dashboard/stats');
+}
+
 // ── Admin: Clientes ───────────────────────────────────────────────────────────
 
 export type ClienteListItem = {

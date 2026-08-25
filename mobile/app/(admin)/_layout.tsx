@@ -8,24 +8,26 @@ export default function AdminLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: '#1e40af' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
+        headerStyle: { backgroundColor: '#111827' },
+        headerTintColor: '#FFD700',
+        headerTitleStyle: { fontWeight: '800', color: '#F9FAFB' },
+        headerShadowVisible: false,
+        contentStyle: { backgroundColor: '#111827' },
         headerRight: () => (
-          <TouchableOpacity onPress={signOut} style={styles.logoutBtn}>
-            <Text style={styles.logoutText}>Salir</Text>
+          <TouchableOpacity onPress={signOut} style={s.btn}>
+            <Text style={s.btnText}>Salir</Text>
           </TouchableOpacity>
         ),
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Clientes' }} />
+      <Stack.Screen name="index" options={{ title: 'Gestión de Clientes' }} />
       <Stack.Screen name="nuevo-cliente" options={{ title: 'Nuevo Cliente' }} />
-      <Stack.Screen name="cliente/[id]" options={{ title: 'Detalle Cliente' }} />
+      <Stack.Screen name="cliente/[id]" options={{ title: 'Detalle' }} />
     </Stack>
   );
 }
 
-const styles = StyleSheet.create({
-  logoutBtn: { marginRight: 4, paddingHorizontal: 8, paddingVertical: 4 },
-  logoutText: { color: '#bfdbfe', fontWeight: '600' },
+const s = StyleSheet.create({
+  btn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#374151' },
+  btnText: { color: '#9CA3AF', fontWeight: '600', fontSize: 13 },
 });

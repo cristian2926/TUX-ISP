@@ -8,20 +8,23 @@ export default function ClienteLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#1e40af' },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '700' },
-        tabBarActiveTintColor: '#1e40af',
-        tabBarStyle: { borderTopColor: '#e5e7eb' },
+        headerStyle: { backgroundColor: '#111827' },
+        headerTintColor: '#FFD700',
+        headerTitleStyle: { fontWeight: '800', color: '#F9FAFB' },
+        headerShadowVisible: false,
+        tabBarStyle: { backgroundColor: '#111827', borderTopColor: '#374151', borderTopWidth: 1 },
+        tabBarActiveTintColor: '#FFD700',
+        tabBarInactiveTintColor: '#4B5563',
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Mi Cuenta',
-          tabBarLabel: 'Cuenta',
+          title: session?.nombre ?? 'Mi Cuenta',
+          tabBarLabel: 'Inicio',
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 20 }}>🏠</Text>,
-          headerTitle: session?.nombre ?? 'Mi Cuenta',
+          headerTitle: 'Tuxtell ISP',
         }}
       />
       <Tabs.Screen

@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, ActivityIndicator, Alert,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useSession } from '@/hooks/useSession';
 import { cambiarPin } from '@/services/api';
 
@@ -14,132 +11,94 @@ export default function PerfilScreen() {
   const [saving, setSaving] = useState(false);
 
   async function handleCambiarPin() {
-    if (!pinActual || !pinNuevo || !pinConfirm) {
-      Alert.alert('Campos requeridos', 'Completa todos los campos.');
-      return;
-    }
-    if (pinNuevo.length !== 4 || !/^\d{4}$/.test(pinNuevo)) {
-      Alert.alert('PIN inválido', 'El PIN debe tener exactamente 4 dígitos numéricos.');
-      return;
-    }
-    if (pinNuevo !== pinConfirm) {
-      Alert.alert('PIN no coincide', 'El PIN nuevo y la confirmación no son iguales.');
-      return;
-    }
+    if (!pinActual || !pinNuevo || !pinConfirm) { Alert.alert('Campos requeridos', 'Completa todos los campos.'); return; }
+    if (pinNuevo.length !== 4 || !/^\d{4}$/.test(pinNuevo)) { Alert.alert('PIN inválido', 'El PIN debe tener exactamente 4 dígitos.'); return; }
+    if (pinNuevo !== pinConfirm) { Alert.alert('PIN no coincide', 'El PIN nuevo y la confirmación no son iguales.'); return; }
     setSaving(true);
     try {
       await cambiarPin(pinActual, pinNuevo);
-      setPinActual('');
-      setPinNuevo('');
-      setPinConfirm('');
-      Alert.alert('PIN actualizado', 'Tu PIN fue cambiado correctamente. Úsalo la próxima vez que ingreses.');
+      setPinActual(''); setPinNuevo(''); setPinConfirm('');
+      Alert.alert('PIN actualizado', 'Tu PIN fue cambiado correctamente.');
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'No se pudo cambiar el PIN');
-    } finally {
-      setSaving(false);
-    }
+    } finally { setSaving(false); }
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
-      {/* Info del cliente */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Mi perfil</Text>
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>Nombre</Text>
-          <Text style={styles.rowValue}>{session?.nombre ?? '—'}</Text>
+    <ScrollView style={s.container} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+
+      {/* Info */}
+      <View style={s.card}>
+        <Text style={s.cardTitle}>MI PERFIL</Text>
+        <View style={s.fila}>
+          <Text style={s.filaLabel}>Nombre</Text>
+          <Text style={s.filaValue}>{session?.nombre ?? '—'}</Text>
+        </View>
+        <View style={[s.fila, { borderBottomWidth: 0 }]}>
+          <Text style={s.filaLabel}>Rol</Text>
+          <View style={s.rolBadge}>
+            <Text style={s.rolText}>Cliente</Text>
+          </View>
         </View>
       </View>
 
       {/* Cambiar PIN */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Cambiar PIN</Text>
-        <Text style={styles.hint}>
-          Por defecto tu PIN es la fecha de instalación en formato DDMM (ej. 2508).
-          Aquí puedes cambiarlo por uno personalizado de 4 dígitos.
+      <View style={s.card}>
+        <Text style={s.cardTitle}>CAMBIAR PIN</Text>
+        <Text style={s.hint}>
+          Tu PIN por defecto es la fecha de instalación (DDMM). Aquí puedes cambiarlo por uno personalizado de 4 dígitos.
         </Text>
 
-        <Text style={styles.label}>PIN actual</Text>
-        <TextInput
-          style={styles.input}
-          value={pinActual}
-          onChangeText={setPinActual}
-          placeholder="PIN actual"
-          secureTextEntry
-          keyboardType="numeric"
-          maxLength={4}
-        />
+        {[
+          { label: 'PIN actual', value: pinActual, set: setPinActual, placeholder: '••••' },
+          { label: 'PIN nuevo (4 dígitos)', value: pinNuevo, set: setPinNuevo, placeholder: '••••' },
+          { label: 'Confirmar PIN nuevo', value: pinConfirm, set: setPinConfirm, placeholder: '••••' },
+        ].map(({ label, value, set, placeholder }) => (
+          <View key={label}>
+            <Text style={s.inputLabel}>{label.toUpperCase()}</Text>
+            <TextInput
+              style={s.input}
+              value={value}
+              onChangeText={set}
+              placeholder={placeholder}
+              placeholderTextColor="#4B5563"
+              secureTextEntry
+              keyboardType="numeric"
+              maxLength={4}
+            />
+          </View>
+        ))}
 
-        <Text style={styles.label}>PIN nuevo (4 dígitos)</Text>
-        <TextInput
-          style={styles.input}
-          value={pinNuevo}
-          onChangeText={setPinNuevo}
-          placeholder="Nuevo PIN"
-          secureTextEntry
-          keyboardType="numeric"
-          maxLength={4}
-        />
-
-        <Text style={styles.label}>Confirmar PIN nuevo</Text>
-        <TextInput
-          style={styles.input}
-          value={pinConfirm}
-          onChangeText={setPinConfirm}
-          placeholder="Repite el PIN"
-          secureTextEntry
-          keyboardType="numeric"
-          maxLength={4}
-        />
-
-        <TouchableOpacity
-          style={[styles.btn, saving && styles.btnDisabled]}
-          onPress={handleCambiarPin}
-          disabled={saving}
-        >
-          {saving
-            ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.btnText}>Guardar PIN</Text>}
+        <TouchableOpacity style={[s.btn, saving && s.btnDisabled]} onPress={handleCambiarPin} disabled={saving}>
+          {saving ? <ActivityIndicator color="#111827" /> : <Text style={s.btnText}>GUARDAR PIN</Text>}
         </TouchableOpacity>
       </View>
 
       {/* Cerrar sesión */}
-      <TouchableOpacity style={styles.logoutBtn} onPress={signOut}>
-        <Text style={styles.logoutText}>Cerrar sesión</Text>
+      <TouchableOpacity style={s.logoutBtn} onPress={signOut}>
+        <Text style={s.logoutText}>Cerrar sesión</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 }
 
-const BLUE = '#1e40af';
+const BG = '#111827'; const CARD = '#1F2937'; const BORDER = '#374151'; const GOLD = '#FFD700';
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f3f4f6' },
-  card: {
-    backgroundColor: '#fff', borderRadius: 14, padding: 18,
-    marginBottom: 16, shadowColor: '#000', shadowOpacity: 0.05,
-    shadowRadius: 8, elevation: 2,
-  },
-  cardTitle: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 12 },
-  hint: { fontSize: 13, color: '#6b7280', marginBottom: 14, lineHeight: 18 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6 },
-  rowLabel: { fontSize: 14, color: '#6b7280' },
-  rowValue: { fontSize: 14, fontWeight: '600', color: '#111827' },
-  label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6, marginTop: 10 },
-  input: {
-    borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 11, fontSize: 15,
-    backgroundColor: '#f9fafb', color: '#111827',
-  },
-  btn: {
-    backgroundColor: BLUE, borderRadius: 10,
-    paddingVertical: 13, alignItems: 'center', marginTop: 18,
-  },
+const s = StyleSheet.create({
+  container: { flex: 1, backgroundColor: BG },
+  card: { backgroundColor: CARD, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 18, marginBottom: 14 },
+  cardTitle: { fontSize: 11, fontWeight: '700', color: GOLD, letterSpacing: 1.5, marginBottom: 14 },
+  hint: { fontSize: 13, color: '#4B5563', marginBottom: 16, lineHeight: 18 },
+  fila: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: BORDER },
+  filaLabel: { fontSize: 13, color: '#9CA3AF' },
+  filaValue: { fontSize: 14, fontWeight: '600', color: '#F9FAFB' },
+  rolBadge: { backgroundColor: 'rgba(255,215,0,0.12)', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 3 },
+  rolText: { fontSize: 12, fontWeight: '700', color: GOLD },
+  inputLabel: { fontSize: 10, fontWeight: '700', color: '#4B5563', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
+  input: { backgroundColor: BG, borderWidth: 1, borderColor: BORDER, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: '#F9FAFB' },
+  btn: { backgroundColor: GOLD, borderRadius: 10, paddingVertical: 13, alignItems: 'center', marginTop: 20 },
   btnDisabled: { opacity: 0.7 },
-  btnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  logoutBtn: {
-    borderWidth: 1, borderColor: '#fca5a5', borderRadius: 10,
-    paddingVertical: 13, alignItems: 'center', marginBottom: 40,
-  },
-  logoutText: { color: '#dc2626', fontWeight: '600', fontSize: 15 },
+  btnText: { color: BG, fontWeight: '900', fontSize: 14, letterSpacing: 1 },
+  logoutBtn: { borderWidth: 1, borderColor: 'rgba(248,113,113,0.3)', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginBottom: 20, backgroundColor: 'rgba(248,113,113,0.06)' },
+  logoutText: { color: '#f87171', fontWeight: '700', fontSize: 15 },
 });
