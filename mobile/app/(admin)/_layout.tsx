@@ -1,6 +1,15 @@
 import { Stack } from 'expo-router';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useSession } from '@/hooks/useSession';
+
+function TuxtellLogo() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+      <Text style={{ color: '#F59E0B', fontWeight: '900', fontSize: 20, letterSpacing: 0.5 }}>TUX</Text>
+      <Text style={{ color: '#FFFFFF', fontWeight: '900', fontSize: 20, letterSpacing: 0.5 }}>TELL</Text>
+    </View>
+  );
+}
 
 export default function AdminLayout() {
   const { signOut } = useSession();
@@ -9,25 +18,43 @@ export default function AdminLayout() {
     <Stack
       screenOptions={{
         headerStyle: { backgroundColor: '#1E293B' },
-        headerTintColor: '#F59E0B',
-        headerTitleStyle: { fontWeight: '800', color: '#F9FAFB' },
+        headerTintColor: '#F9FAFB',
+        headerTitleStyle: { fontWeight: '800' },
         headerShadowVisible: false,
         contentStyle: { backgroundColor: '#F8FAFC' },
-        headerRight: () => (
-          <TouchableOpacity onPress={signOut} style={s.btn}>
-            <Text style={s.btnText}>Salir</Text>
-          </TouchableOpacity>
-        ),
       }}
     >
-      <Stack.Screen name="index" options={{ title: 'Gestión de Clientes' }} />
-      <Stack.Screen name="nuevo-cliente" options={{ title: 'Nuevo Cliente' }} />
-      <Stack.Screen name="cliente/[id]" options={{ title: 'Detalle' }} />
+      <Stack.Screen
+        name="index"
+        options={{
+          headerTitle: () => <TuxtellLogo />,
+          headerLeft: () => null,
+          headerRight: () => (
+            <TouchableOpacity onPress={signOut} style={s.salirBtn}>
+              <Text style={s.salirText}>Salir</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen
+        name="atrasados"
+        options={{
+          headerTitle: () => <TuxtellLogo />,
+          headerLeft: () => null,
+          headerRight: () => (
+            <TouchableOpacity onPress={signOut} style={s.salirBtn}>
+              <Text style={s.salirText}>Salir</Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
+      <Stack.Screen name="nuevo-cliente" options={{ title: 'Nuevo Cliente', headerTintColor: '#F59E0B' }} />
+      <Stack.Screen name="cliente/[id]"  options={{ title: 'Detalle',        headerTintColor: '#F59E0B' }} />
     </Stack>
   );
 }
 
 const s = StyleSheet.create({
-  btn: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, borderWidth: 1, borderColor: '#334155' },
-  btnText: { color: '#F59E0B', fontWeight: '700', fontSize: 13 },
+  salirBtn:  { paddingHorizontal: 12, paddingVertical: 5, borderRadius: 8, borderWidth: 1, borderColor: '#F59E0B' },
+  salirText: { color: '#F59E0B', fontWeight: '700', fontSize: 13 },
 });
