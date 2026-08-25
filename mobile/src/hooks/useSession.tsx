@@ -46,8 +46,6 @@ const storage = {
   },
 };
 
-// ── Context global de sesión ───────────────────────────────────────────────────
-
 type SessionCtx = {
   session: Session | null;
   loading: boolean;
