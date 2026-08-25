@@ -55,12 +55,12 @@ export async function loginAdmin(
 }
 
 export async function loginCliente(
-  telefono: string,
+  usuario: string,
   pin: string,
 ): Promise<LoginClienteResponse> {
   return request('/auth/cliente/login', {
     method: 'POST',
-    body: JSON.stringify({ telefono, pin }),
+    body: JSON.stringify({ usuario, pin }),
   });
 }
 

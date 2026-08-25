@@ -66,7 +66,6 @@ export default function NuevoClienteScreen() {
   const [direccion, setDireccion] = useState('');
   const [usuarioPppoe, setUsuarioPppoe] = useState('');
   const [passwordPppoe, setPasswordPppoe] = useState('');
-  const [pin, setPin] = useState('');
   const [zonaId, setZonaId] = useState<number | null>(null);
   const [planId, setPlanId] = useState<number | null>(null);
   const [tieneTV, setTieneTV] = useState(false);
@@ -81,10 +80,6 @@ export default function NuevoClienteScreen() {
       Alert.alert('Campos requeridos', 'Completa nombre, PPPoE, zona y plan.');
       return;
     }
-    if (pin && pin.length !== 4) {
-      Alert.alert('PIN inválido', 'El PIN debe tener exactamente 4 dígitos.');
-      return;
-    }
     setSaving(true);
     try {
       const hoy = new Date().toISOString().split('T')[0];
@@ -94,7 +89,6 @@ export default function NuevoClienteScreen() {
         direccion: direccion.trim() || null,
         usuario_pppoe: usuarioPppoe.trim(),
         password_pppoe: passwordPppoe,
-        pin_app: pin || null,
         zona_id: zonaId,
         plan_id: planId,
         fecha_instalacion: hoy,
@@ -119,7 +113,6 @@ export default function NuevoClienteScreen() {
       <Campo label="Dirección" value={direccion} onChangeText={setDireccion} placeholder="Calle principal #10" />
       <Campo label="Usuario PPPoE *" value={usuarioPppoe} onChangeText={setUsuarioPppoe} placeholder="juan.perez" />
       <Campo label="Contraseña PPPoE *" value={passwordPppoe} onChangeText={setPasswordPppoe} placeholder="••••••••" secureTextEntry />
-      <Campo label="PIN app móvil (4 dígitos)" value={pin} onChangeText={setPin} placeholder="1234" keyboardType="numeric" maxLength={4} secureTextEntry />
 
       <Selector label="Zona *" opciones={zonas} selected={zonaId} onSelect={setZonaId} />
       <Selector label="Plan *" opciones={planes} selected={planId} onSelect={setPlanId} />

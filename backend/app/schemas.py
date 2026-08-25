@@ -263,8 +263,8 @@ class IngresoMensual(BaseModel):
 # ── Auth cliente (app móvil) ──────────────────────────────────────────────────
 
 class ClienteLoginRequest(BaseModel):
-    telefono: str
-    pin: str
+    usuario: str   # usuario_pppoe del cliente
+    pin: str       # DDMM de fecha_instalacion (ej. "2508")
 
 class ClienteTokenResponse(BaseModel):
     access_token: str

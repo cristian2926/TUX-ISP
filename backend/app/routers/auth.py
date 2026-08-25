@@ -89,21 +89,27 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
 @router.post("/cliente/login", response_model=schemas.ClienteTokenResponse)
 def cliente_login(data: schemas.ClienteLoginRequest, db: Session = Depends(get_db)):
-    """Login para clientes en la app móvil. Usa teléfono + PIN de 4 dígitos."""
-    telefono = data.telefono.strip()
+    """Login para clientes en la app móvil. Usa usuario_pppoe + DDMM de fecha_instalacion."""
+    usuario = data.usuario.strip().lower()
     cliente = db.query(models.Cliente).filter(
-        models.Cliente.telefono == telefono
+        models.Cliente.usuario_pppoe.ilike(usuario)
     ).first()
 
-    if not cliente or not cliente.pin_app:
+    if not cliente:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Teléfono o PIN incorrecto",
+            detail="Usuario o PIN incorrecto",
         )
-    if not pwd_context.verify(data.pin, cliente.pin_app):
+    if not cliente.fecha_instalacion:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Teléfono o PIN incorrecto",
+            detail="Sin fecha de instalación registrada",
+        )
+    pin_esperado = cliente.fecha_instalacion.strftime("%d%m")
+    if data.pin.strip() != pin_esperado:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario o PIN incorrecto",
         )
     if cliente.estado == models.EstadoCliente.anulado:
         raise HTTPException(

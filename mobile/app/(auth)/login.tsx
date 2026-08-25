@@ -102,26 +102,26 @@ export default function LoginScreen() {
       {/* Formulario */}
       <View style={styles.form}>
         <Text style={styles.label}>
-          {rol === 'admin' ? 'Correo electrónico' : 'Teléfono'}
+          {rol === 'admin' ? 'Correo electrónico' : 'Usuario PPPoE'}
         </Text>
         <TextInput
           style={styles.input}
           value={campo1}
           onChangeText={setCampo1}
-          placeholder={rol === 'admin' ? 'admin@tuxtell.com' : '555-1234'}
-          keyboardType={rol === 'cliente' ? 'phone-pad' : 'email-address'}
+          placeholder={rol === 'admin' ? 'admin@tuxtell.com' : 'cristian'}
+          keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
         />
 
         <Text style={styles.label}>
-          {rol === 'admin' ? 'Contraseña' : 'PIN (4 dígitos)'}
+          {rol === 'admin' ? 'Contraseña' : 'PIN (fecha instalación DDMM)'}
         </Text>
         <TextInput
           style={styles.input}
           value={campo2}
           onChangeText={setCampo2}
-          placeholder={rol === 'admin' ? '••••••••' : '••••'}
+          placeholder={rol === 'admin' ? '••••••••' : 'ej. 2508'}
           secureTextEntry
           keyboardType={rol === 'cliente' ? 'numeric' : 'default'}
           maxLength={rol === 'cliente' ? 4 : 100}
