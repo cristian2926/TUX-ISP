@@ -36,9 +36,20 @@ export default function LoginScreen() {
         });
       }
     } catch (e: any) {
+      console.error('LOGIN ERROR:', e?.message, e?.name, JSON.stringify(e));
       Alert.alert('Error', e.message ?? 'No se pudo iniciar sesión');
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function testNetwork() {
+    try {
+      const r = await fetch('https://tuxtell.duckdns.org/api/health');
+      const text = await r.text();
+      Alert.alert('VPS OK', text);
+    } catch (e: any) {
+      Alert.alert('VPS FALLA', e.message);
     }
   }
 
@@ -106,6 +117,10 @@ export default function LoginScreen() {
           {loading
             ? <ActivityIndicator color="#fff" />
             : <Text style={styles.loginBtnText}>Ingresar</Text>}
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={testNetwork} style={{ marginTop: 12, alignItems: 'center' }}>
+          <Text style={{ color: '#6b7280', fontSize: 12 }}>Probar red</Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>

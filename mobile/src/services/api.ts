@@ -41,15 +41,15 @@ export async function loginAdmin(
   email: string,
   password: string,
 ): Promise<LoginAdminResponse> {
-  const body = new URLSearchParams({ username: email, password });
+  const body = `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
   const res = await fetch(`${BASE_URL}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString(),
+    body,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: 'Credenciales incorrectas' }));
-    throw new Error(err.detail ?? 'Error de red');
+    throw new Error(err.detail ?? 'Credenciales incorrectas');
   }
   return res.json();
 }
