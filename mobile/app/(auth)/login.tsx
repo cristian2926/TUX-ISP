@@ -7,27 +7,26 @@ import { StatusBar } from 'expo-status-bar';
 import { useSession } from '@/hooks/useSession';
 import { loginAdmin, loginCliente } from '@/services/api';
 
-type Rol = 'admin' | 'cliente';
-
 export default function LoginScreen() {
   const { signIn } = useSession();
-  const [rol, setRol] = useState<Rol>('cliente');
-  const [campo1, setCampo1] = useState(''); // email (admin) | teléfono (cliente)
-  const [campo2, setCampo2] = useState(''); // password (admin) | pin (cliente)
+  const [usuario, setUsuario] = useState('');
+  const [clave, setClave] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const esAdmin = usuario.includes('@');
+
   async function handleLogin() {
-    if (!campo1.trim() || !campo2.trim()) {
-      Alert.alert('Campos requeridos', 'Completa todos los campos.');
+    if (!usuario.trim() || !clave.trim()) {
+      Alert.alert('Campos requeridos', 'Ingresa tu usuario y contraseña.');
       return;
     }
     setLoading(true);
     try {
-      if (rol === 'admin') {
-        const res = await loginAdmin(campo1.trim(), campo2);
+      if (esAdmin) {
+        const res = await loginAdmin(usuario.trim(), clave);
         await signIn({ token: res.access_token, role: 'admin', nombre: 'Admin' });
       } else {
-        const res = await loginCliente(campo1.trim(), campo2.trim());
+        const res = await loginCliente(usuario.trim(), clave.trim());
         await signIn({
           token: res.access_token,
           role: 'cliente',
@@ -36,39 +35,10 @@ export default function LoginScreen() {
         });
       }
     } catch (e: any) {
-      console.error('LOGIN ERROR:', e?.message, e?.name, JSON.stringify(e));
-      Alert.alert('Error', e.message ?? 'No se pudo iniciar sesión');
+      Alert.alert('Error al ingresar', e.message ?? 'Credenciales incorrectas');
     } finally {
       setLoading(false);
     }
-  }
-
-  async function testNetwork() {
-    const lines: string[] = [];
-
-    try {
-      const r = await fetch('https://api.github.com/zen');
-      lines.push('GitHub HTTPS: ✓ OK');
-    } catch (e: any) {
-      lines.push(`GitHub HTTPS: ✗ ${e.message}`);
-    }
-
-    try {
-      const r = await fetch('https://tuxtell.duckdns.org/api/health');
-      const text = await r.text();
-      lines.push(`VPS HTTPS: ✓ ${text}`);
-    } catch (e: any) {
-      lines.push(`VPS HTTPS: ✗ ${e.message}`);
-    }
-
-    try {
-      const r = await fetch('http://tuxtell.duckdns.org/api/health');
-      lines.push('VPS HTTP: ✓ OK');
-    } catch (e: any) {
-      lines.push(`VPS HTTP: ✗ ${e.message}`);
-    }
-
-    Alert.alert('Diagnóstico de red', lines.join('\n'));
   }
 
   return (
@@ -78,53 +48,34 @@ export default function LoginScreen() {
     >
       <StatusBar style="light" />
 
-      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.logo}>TUXTELL</Text>
         <Text style={styles.subtitle}>Sistema de Gestión ISP</Text>
       </View>
 
-      {/* Selector de rol */}
-      <View style={styles.rolContainer}>
-        {(['cliente', 'admin'] as Rol[]).map((r) => (
-          <TouchableOpacity
-            key={r}
-            style={[styles.rolBtn, rol === r && styles.rolBtnActive]}
-            onPress={() => { setRol(r); setCampo1(''); setCampo2(''); }}
-          >
-            <Text style={[styles.rolText, rol === r && styles.rolTextActive]}>
-              {r === 'cliente' ? 'Cliente' : 'Administrador'}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Formulario */}
       <View style={styles.form}>
-        <Text style={styles.label}>
-          {rol === 'admin' ? 'Correo electrónico' : 'Usuario PPPoE'}
-        </Text>
+        <Text style={styles.formTitle}>Iniciar sesión</Text>
+
         <TextInput
           style={styles.input}
-          value={campo1}
-          onChangeText={setCampo1}
-          placeholder={rol === 'admin' ? 'admin@tuxtell.com' : 'cristian'}
+          value={usuario}
+          onChangeText={setUsuario}
+          placeholder="DNI o correo electrónico"
+          placeholderTextColor="#9ca3af"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
         />
 
-        <Text style={styles.label}>
-          {rol === 'admin' ? 'Contraseña' : 'PIN (fecha instalación DDMM)'}
-        </Text>
         <TextInput
           style={styles.input}
-          value={campo2}
-          onChangeText={setCampo2}
-          placeholder={rol === 'admin' ? '••••••••' : 'ej. 2508'}
+          value={clave}
+          onChangeText={setClave}
+          placeholder={esAdmin ? 'Contraseña' : 'PIN (fecha instalación DDMM)'}
+          placeholderTextColor="#9ca3af"
           secureTextEntry
-          keyboardType={rol === 'cliente' ? 'numeric' : 'default'}
-          maxLength={rol === 'cliente' ? 4 : 100}
+          keyboardType={esAdmin ? 'default' : 'numeric'}
+          maxLength={esAdmin ? 100 : 4}
         />
 
         <TouchableOpacity
@@ -136,10 +87,6 @@ export default function LoginScreen() {
             ? <ActivityIndicator color="#fff" />
             : <Text style={styles.loginBtnText}>Ingresar</Text>}
         </TouchableOpacity>
-
-        <TouchableOpacity onPress={testNetwork} style={{ marginTop: 12, alignItems: 'center' }}>
-          <Text style={{ color: '#6b7280', fontSize: 12 }}>Probar red</Text>
-        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -149,32 +96,28 @@ const BLUE = '#1e40af';
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: BLUE },
-  header: { alignItems: 'center', paddingTop: 80, paddingBottom: 40 },
-  logo: { fontSize: 40, fontWeight: '900', color: '#fff', letterSpacing: 4 },
-  subtitle: { color: '#bfdbfe', marginTop: 6, fontSize: 14 },
-  rolContainer: {
-    flexDirection: 'row', marginHorizontal: 24, marginBottom: 24,
-    borderRadius: 12, backgroundColor: '#1d3a8a', overflow: 'hidden',
-  },
-  rolBtn: { flex: 1, paddingVertical: 12, alignItems: 'center' },
-  rolBtnActive: { backgroundColor: '#fff' },
-  rolText: { color: '#93c5fd', fontWeight: '600' },
-  rolTextActive: { color: BLUE },
+  header: { alignItems: 'center', paddingTop: 100, paddingBottom: 48 },
+  logo: { fontSize: 42, fontWeight: '900', color: '#fff', letterSpacing: 6 },
+  subtitle: { color: '#bfdbfe', marginTop: 8, fontSize: 14, letterSpacing: 1 },
   form: {
     backgroundColor: '#fff', marginHorizontal: 24,
-    borderRadius: 16, padding: 24,
-    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12, elevation: 8,
+    borderRadius: 20, padding: 28,
+    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 16, elevation: 10,
   },
-  label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6, marginTop: 12 },
+  formTitle: {
+    fontSize: 18, fontWeight: '700', color: '#111827',
+    marginBottom: 20, textAlign: 'center',
+  },
   input: {
-    borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10,
-    paddingHorizontal: 14, paddingVertical: 12,
+    borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12,
+    paddingHorizontal: 16, paddingVertical: 13,
     fontSize: 16, color: '#111827', backgroundColor: '#f9fafb',
+    marginBottom: 14,
   },
   loginBtn: {
-    backgroundColor: BLUE, borderRadius: 10,
-    paddingVertical: 14, alignItems: 'center', marginTop: 24,
+    backgroundColor: BLUE, borderRadius: 12,
+    paddingVertical: 15, alignItems: 'center', marginTop: 6,
   },
   loginBtnDisabled: { opacity: 0.7 },
-  loginBtnText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  loginBtnText: { color: '#fff', fontWeight: '700', fontSize: 16, letterSpacing: 0.5 },
 });
