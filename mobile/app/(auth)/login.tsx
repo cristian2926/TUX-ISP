@@ -38,6 +38,7 @@ export default function LoginScreen() {
   const [usuario, setUsuario] = useState('');
   const [clave, setClave] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mostrarClave, setMostrarClave] = useState(false);
 
   const esAdmin = usuario.includes('@');
 
@@ -116,16 +117,23 @@ export default function LoginScreen() {
             <Text style={[s.inputLabel, { marginTop: 14 }]}>
               {esAdmin ? 'CONTRASEÑA' : 'PIN'}
             </Text>
-            <TextInput
-              style={s.input}
-              value={clave}
-              onChangeText={setClave}
-              placeholder="••••••••"
-              placeholderTextColor="#4B5563"
-              secureTextEntry
-              keyboardType={esAdmin ? 'default' : 'numeric'}
-              maxLength={esAdmin ? 100 : 4}
-            />
+            <View style={s.inputWrap}>
+              <TextInput
+                style={[s.input, { flex: 1, borderWidth: 0, paddingRight: 44 }]}
+                value={clave}
+                onChangeText={setClave}
+                placeholder="••••••••"
+                placeholderTextColor="#4B5563"
+                secureTextEntry={!mostrarClave}
+                keyboardType="default"
+                autoComplete="off"
+                autoCorrect={false}
+                maxLength={esAdmin ? 100 : 4}
+              />
+              <TouchableOpacity style={s.eyeBtn} onPress={() => setMostrarClave(v => !v)}>
+                <Text style={s.eyeIcon}>{mostrarClave ? '🙈' : '👁'}</Text>
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity
               style={[s.btn, loading && s.btnDisabled]}
@@ -211,6 +219,13 @@ const s = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 13,
     fontSize: 15, color: '#fff',
   },
+  inputWrap: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
+    borderRadius: 12,
+  },
+  eyeBtn: { position: 'absolute', right: 14, padding: 6 },
+  eyeIcon: { fontSize: 18 },
   btn: {
     backgroundColor: GOLD, borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 20,
