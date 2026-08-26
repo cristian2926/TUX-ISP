@@ -19,6 +19,7 @@ const inputCls = "w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py
 
 const FORM_INIT = {
   nombre: '',
+  telefono: '',
   telefono_whatsapp: '',
   direccion: '',
   usuario_pppoe: '',
@@ -74,7 +75,6 @@ export default function NuevoCliente() {
     try {
       const payload = {
         ...form,
-        telefono: '',
         zona_id: +form.zona_id,
         plan_id: +form.plan_id,
         equipo_valor: form.equipo_valor ? parseFloat(form.equipo_valor) : null,
@@ -124,13 +124,16 @@ export default function NuevoCliente() {
                   <input className={inputCls} value={form.nombre} onChange={e => set('nombre', e.target.value)} placeholder="Juan Quispe Mamani" />
                 </Field>
                 <div className="grid grid-cols-2 gap-3">
+                  <Field label="Teléfono">
+                    <input className={inputCls} value={form.telefono} onChange={e => set('telefono', e.target.value)} placeholder="9XXXXXXXX" />
+                  </Field>
                   <Field label="WhatsApp">
                     <input className={inputCls} value={form.telefono_whatsapp} onChange={e => set('telefono_whatsapp', e.target.value)} placeholder="9XXXXXXXX" />
                   </Field>
-                  <Field label="Dirección">
-                    <input className={inputCls} value={form.direccion} onChange={e => set('direccion', e.target.value)} placeholder="Jr. Lima 123" />
-                  </Field>
                 </div>
+                <Field label="Dirección">
+                  <input className={inputCls} value={form.direccion} onChange={e => set('direccion', e.target.value)} placeholder="Jr. Lima 123" />
+                </Field>
               </div>
             </div>
 

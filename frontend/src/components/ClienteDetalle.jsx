@@ -390,6 +390,9 @@ export default function ClienteDetalle() {
   const [loadingPppoe, setLoadingPppoe] = useState(false)
   const [pagosTotal, setPagosTotal]   = useState(0)
   const [pagosRefKey, setPagosRefKey] = useState(0)
+  const [modalReset, setModalReset]   = useState(null) // 'pin' | 'password'
+  const [resetVal, setResetVal]       = useState('')
+  const [savingReset, setSavingReset] = useState(false)
 
   function fetchCliente() {
     api.get(`/clientes/${id}`).then(r => { setCliente(r.data); setForm(r.data) })
@@ -477,6 +480,25 @@ export default function ClienteDetalle() {
       fetchCliente()
     } catch { toast.error('Error al guardar prórroga') }
     finally { setSavingProroga(false) }
+  }
+
+  async function resetearCampo() {
+    if (!resetVal.trim()) return
+    if (modalReset === 'pin' && (resetVal.length !== 4 || !/^\d{4}$/.test(resetVal)))
+      return toast.error('El PIN debe ser 4 dígitos numéricos')
+    setSavingReset(true)
+    try {
+      const payload = modalReset === 'pin'
+        ? { pin_app: resetVal }
+        : { password_pppoe: resetVal }
+      await api.put(`/clientes/${id}`, payload)
+      toast.success(modalReset === 'pin' ? 'PIN de app actualizado' : 'Contraseña PPPoE actualizada')
+      setModalReset(null)
+      setResetVal('')
+      fetchCliente()
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Error al actualizar')
+    } finally { setSavingReset(false) }
   }
 
   if (!cliente) return (
@@ -739,12 +761,30 @@ export default function ClienteDetalle() {
                 <p className="text-sm text-[#1C1C1C] font-mono bg-[#FAF7F0] px-2 py-1.5 rounded-lg border border-[#E5E0D5]">{cliente.usuario_pppoe}</p>
               </div>
               <div>
-                <p className="text-[10px] text-[#9A9AAA] font-semibold mb-1 uppercase tracking-wide">Contraseña PPPoE</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] text-[#9A9AAA] font-semibold uppercase tracking-wide">Contraseña PPPoE</p>
+                  <button onClick={() => { setResetVal(''); setModalReset('password') }}
+                    className="text-[10px] font-bold text-blue-500 hover:text-blue-600 flex items-center gap-1">
+                    <RefreshCw size={10} /> Cambiar
+                  </button>
+                </div>
                 {editing ? (
                   <input className={inp} value={form.password_pppoe || ''} onChange={e => setForm(f => ({...f, password_pppoe: e.target.value}))} />
                 ) : (
                   <p className="text-sm text-[#1C1C1C] font-mono bg-[#FAF7F0] px-2 py-1.5 rounded-lg border border-[#E5E0D5]">{cliente.password_pppoe}</p>
                 )}
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-[10px] text-[#9A9AAA] font-semibold uppercase tracking-wide">PIN App Móvil</p>
+                  <button onClick={() => { setResetVal(''); setModalReset('pin') }}
+                    className="text-[10px] font-bold text-[#FFD700] hover:text-yellow-500 flex items-center gap-1">
+                    <RefreshCw size={10} /> Resetear PIN
+                  </button>
+                </div>
+                <p className="text-sm text-[#9A9AAA] bg-[#FAF7F0] px-2 py-1.5 rounded-lg border border-[#E5E0D5]">
+                  {cliente.pin_app ? '••••' : <span className="text-[#C8C2B5] italic">Sin PIN configurado</span>}
+                </p>
               </div>
               <div>
                 <p className="text-[10px] text-[#9A9AAA] font-semibold mb-1 uppercase tracking-wide">IP Estática</p>
@@ -948,6 +988,47 @@ export default function ClienteDetalle() {
         </div>
       </div>
     </div>
+
+    {/* Modal Reset Contraseña / PIN */}
+    {modalReset && (
+      <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-2xl border border-[#E5E0D5] shadow-xl w-full max-w-sm p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-[#1C1C1C] flex items-center gap-2">
+              <RefreshCw size={16} className="text-blue-400" />
+              {modalReset === 'pin' ? 'Resetear PIN App' : 'Cambiar Contraseña PPPoE'}
+            </h3>
+            <button onClick={() => setModalReset(null)} className="text-[#9A9AAA] hover:text-[#1C1C1C]"><X size={16} /></button>
+          </div>
+          <p className="text-xs text-[#9A9AAA]">
+            {modalReset === 'pin'
+              ? 'El cliente usará este PIN de 4 dígitos para ingresar a la app móvil.'
+              : 'La nueva contraseña se actualizará en la base de datos y en el router MikroTik.'}
+          </p>
+          <div>
+            <label className="text-xs text-[#9A9AAA] font-semibold mb-1 block">
+              {modalReset === 'pin' ? 'Nuevo PIN (4 dígitos)' : 'Nueva contraseña'}
+            </label>
+            <input
+              type={modalReset === 'pin' ? 'number' : 'text'}
+              maxLength={modalReset === 'pin' ? 4 : 100}
+              value={resetVal}
+              onChange={e => setResetVal(modalReset === 'pin' ? e.target.value.slice(0, 4) : e.target.value)}
+              placeholder={modalReset === 'pin' ? '1234' : 'nueva_contraseña'}
+              className="w-full bg-[#FAF7F0] border border-[#E5E0D5] rounded-xl px-3 py-2.5 text-[#1C1C1C] text-sm font-mono focus:outline-none focus:border-[#FFD700] transition-colors"
+              autoFocus
+            />
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => setModalReset(null)} className="flex-1 py-2.5 text-sm border border-[#E5E0D5] rounded-xl text-[#9A9AAA] hover:text-[#1C1C1C]">Cancelar</button>
+            <button onClick={resetearCampo} disabled={savingReset || !resetVal.trim()}
+              className="flex-1 py-2.5 text-sm bg-[#FFD700] text-[#1C1C1C] font-bold rounded-xl hover:bg-yellow-400 disabled:opacity-50 flex items-center justify-center gap-1">
+              <Save size={14} /> {savingReset ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
 
     {/* Modal Prórroga */}
     {modalProroga && (
