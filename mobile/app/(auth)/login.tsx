@@ -5,11 +5,26 @@ import {
   ScrollView, Dimensions,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import Svg, { Ellipse, Circle } from 'react-native-svg';
+import Svg, { Ellipse, Circle, Path, Line } from 'react-native-svg';
 import { useSession } from '@/hooks/useSession';
 import { loginAdmin, loginCliente } from '@/services/api';
 
 const { width: W } = Dimensions.get('window');
+
+function EyeIcon({ visible, color = '#9CA3AF' }: { visible: boolean; color?: string }) {
+  return (
+    <Svg width={22} height={22} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+        stroke={color} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"
+      />
+      <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth={1.8} />
+      {!visible && (
+        <Line x1="3" y1="3" x2="21" y2="21" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+      )}
+    </Svg>
+  );
+}
 
 function Pinguino({ size = 80 }: { size?: number }) {
   return (
@@ -131,7 +146,7 @@ export default function LoginScreen() {
                 maxLength={esAdmin ? 100 : 4}
               />
               <TouchableOpacity style={s.eyeBtn} onPress={() => setMostrarClave(v => !v)}>
-                <Text style={s.eyeText}>{mostrarClave ? 'Ocultar' : 'Ver'}</Text>
+                <EyeIcon visible={mostrarClave} />
               </TouchableOpacity>
             </View>
 
@@ -224,8 +239,7 @@ const s = StyleSheet.create({
     backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
     borderRadius: 12,
   },
-  eyeBtn: { paddingHorizontal: 14, paddingVertical: 13 },
-  eyeText: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
+  eyeBtn: { paddingHorizontal: 14, paddingVertical: 13, justifyContent: 'center', alignItems: 'center' },
   btn: {
     backgroundColor: GOLD, borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 20,
