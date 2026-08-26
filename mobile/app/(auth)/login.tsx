@@ -64,7 +64,7 @@ export default function LoginScreen() {
   }
 
   return (
-    <KeyboardAvoidingView style={s.bg} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView style={s.bg} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 0}>
       <StatusBar style="light" />
 
       {/* Círculos decorativos */}
@@ -73,7 +73,7 @@ export default function LoginScreen() {
       <View style={[s.circleSm, { top: '20%', right: W * 0.1 }]} />
       <View style={[s.circleSm, { bottom: '25%', left: W * 0.15 }]} />
 
-      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={s.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         {/* Pingüino + título */}
         <View style={s.brand}>
@@ -131,7 +131,7 @@ export default function LoginScreen() {
                 maxLength={esAdmin ? 100 : 4}
               />
               <TouchableOpacity style={s.eyeBtn} onPress={() => setMostrarClave(v => !v)}>
-                <Text style={s.eyeIcon}>{mostrarClave ? '🙈' : '👁'}</Text>
+                <Text style={s.eyeText}>{mostrarClave ? 'Ocultar' : 'Ver'}</Text>
               </TouchableOpacity>
             </View>
 
@@ -172,7 +172,7 @@ const BORDER = '#374151';
 
 const s = StyleSheet.create({
   bg: { flex: 1, backgroundColor: BG },
-  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 40 },
+  scroll: { flexGrow: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 24 },
 
   // Decoración
   circle: {
@@ -185,7 +185,7 @@ const s = StyleSheet.create({
   },
 
   // Brand
-  brand: { alignItems: 'center', marginBottom: 28 },
+  brand: { alignItems: 'center', marginBottom: 20 },
   pingoWrap: { position: 'relative', marginBottom: 16, alignItems: 'center', justifyContent: 'center' },
   pingoGlow: {
     position: 'absolute', width: 100, height: 100, borderRadius: 50,
@@ -224,8 +224,8 @@ const s = StyleSheet.create({
     backgroundColor: BG, borderWidth: 1, borderColor: BORDER,
     borderRadius: 12,
   },
-  eyeBtn: { position: 'absolute', right: 14, padding: 6 },
-  eyeIcon: { fontSize: 18 },
+  eyeBtn: { paddingHorizontal: 14, paddingVertical: 13 },
+  eyeText: { fontSize: 12, color: '#9CA3AF', fontWeight: '600' },
   btn: {
     backgroundColor: GOLD, borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 20,
