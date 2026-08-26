@@ -6,7 +6,8 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "android": {
-      "package": "com.tuxtell.isp"
+      "package": "com.tuxtell.isp",
+      "softwareKeyboardLayoutMode": "pan"
     },
     "ios": {
       "supportsTablet": false,
