@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  RefreshControl, Animated, Easing,
+  RefreshControl, Animated, Easing, TouchableOpacity, Linking,
 } from 'react-native';
 import { useSession } from '@/hooks/useSession';
 import { getMiCuenta, MiCuenta } from '@/services/api';
@@ -12,12 +12,6 @@ function fmt(d: string | null | undefined): string {
   return `${day}/${m}/${y}`;
 }
 
-function saludo() {
-  const h = new Date().getHours();
-  if (h < 12) return 'Buenos días';
-  if (h < 19) return 'Buenas tardes';
-  return 'Buenas noches';
-}
 
 function PulseDot({ activo }: { activo: boolean }) {
   const scale = useRef(new Animated.Value(1)).current;
@@ -115,7 +109,7 @@ export default function MiCuentaScreen() {
         <View style={[s.deco, { width: 80,  height: 80,  top: 20, left: 30, opacity: 0.1 }]} />
 
         {/* Greeting */}
-        <Text style={s.heroGreeting}>{saludo()},</Text>
+        <Text style={s.heroGreeting}>Hola,</Text>
 
         {/* Avatar */}
         <View style={s.heroBubble}>
@@ -241,18 +235,22 @@ export default function MiCuentaScreen() {
         )}
 
         {/* ── AYUDA ───────────────────────────────────────────── */}
-        <View style={[s.card, { backgroundColor: '#1E293B', borderColor: '#334155' }]}>
+        <TouchableOpacity
+          style={[s.card, { backgroundColor: '#1E293B', borderColor: '#334155' }]}
+          onPress={() => Linking.openURL('https://wa.me/51936511008')}
+          activeOpacity={0.8}
+        >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <Text style={{ fontSize: 28 }}>🛟</Text>
             <View style={{ flex: 1 }}>
               <Text style={{ color: '#F1F5F9', fontWeight: '800', fontSize: 14 }}>¿Problemas con tu servicio?</Text>
-              <Text style={{ color: '#94A3B8', fontSize: 12, marginTop: 2 }}>Contáctanos y te ayudamos de inmediato</Text>
+              <Text style={{ color: '#94A3B8', fontSize: 12, marginTop: 2 }}>Toca aquí para escribirnos por WhatsApp</Text>
             </View>
             <View style={s.helpBadge}>
               <Text style={{ color: '#F59E0B', fontWeight: '900', fontSize: 11 }}>SOPORTE</Text>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
       </View>
     </Animated.ScrollView>
