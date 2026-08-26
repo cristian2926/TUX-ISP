@@ -170,6 +170,17 @@ export async function activarCliente(id: number): Promise<void> {
   return request(`/clientes/${id}/activar`, { method: 'POST' });
 }
 
+export async function registrarPago(data: {
+  cliente_id: number;
+  monto: number;
+  mes_pagado: string;
+  fecha_pago: string;
+  metodo_pago: string;
+  referencia?: string;
+}): Promise<void> {
+  return request('/pagos', { method: 'POST', body: JSON.stringify(data) });
+}
+
 export async function getZonas(): Promise<{ id: number; nombre: string }[]> {
   const data: { items: { id: number; nombre: string }[] } = await request('/zonas?per_page=100');
   return data.items ?? data;

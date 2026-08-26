@@ -3,6 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, 
 import { useRouter } from 'expo-router';
 import { getClientes, suspenderCliente, activarCliente, ClienteListItem } from '@/services/api';
 import { AdminNav } from '@/components/AdminNav';
+import { ModalPago } from '@/components/ModalPago';
 
 const AVATAR_COLORS = ['#7C3AED','#0891B2','#059669','#D97706','#DC2626','#BE185D','#6D28D9'];
 function avatarColor(n: string) { return AVATAR_COLORS[n.charCodeAt(0) % AVATAR_COLORS.length]; }
@@ -18,9 +19,9 @@ function urgencyColor(dias: number) {
   return { bg: 'rgba(245,158,11,0.07)', border: 'rgba(245,158,11,0.2)', text: '#D97706' };
 }
 
-function AtrasadoCard({ item, onCortar, onPress }: {
+function AtrasadoCard({ item, onCortar, onPago, onPress }: {
   item: ClienteListItem & { dias: number };
-  onCortar: () => void; onPress: () => void;
+  onCortar: () => void; onPago: () => void; onPress: () => void;
 }) {
   const urg = urgencyColor(item.dias);
   const mesesSinPagar = item.meses_pago?.filter(m => m.estado === 'vencido').length ?? 0;
@@ -57,26 +58,32 @@ function AtrasadoCard({ item, onCortar, onPress }: {
             </Text>
           )}
         </View>
-        {!esCortado && (
-          <TouchableOpacity style={st.cortarBtn} onPress={(e) => { e.stopPropagation(); onCortar(); }}>
-            <Text style={st.cortarText}>Cortar</Text>
+        <View style={{ flexDirection: 'row', gap: 6 }}>
+          <TouchableOpacity style={st.pagoBtn} onPress={(e) => { e.stopPropagation(); onPago(); }}>
+            <Text style={st.pagoBtnText}>💰 Pago</Text>
           </TouchableOpacity>
-        )}
-        {esCortado && (
-          <TouchableOpacity style={st.activarBtn} onPress={(e) => { e.stopPropagation(); onCortar(); }}>
-            <Text style={st.activarText}>Activar</Text>
-          </TouchableOpacity>
-        )}
+          {!esCortado
+            ? <TouchableOpacity style={st.cortarBtn} onPress={(e) => { e.stopPropagation(); onCortar(); }}>
+                <Text style={st.cortarText}>Cortar</Text>
+              </TouchableOpacity>
+            : <TouchableOpacity style={st.activarBtn} onPress={(e) => { e.stopPropagation(); onCortar(); }}>
+                <Text style={st.activarText}>Activar</Text>
+              </TouchableOpacity>
+          }
+        </View>
       </View>
     </TouchableOpacity>
   );
 }
+
+type PagoModal = { clienteId: number; nombre: string; monto: number } | null;
 
 export default function AtrasadosScreen() {
   const router = useRouter();
   const [todos, setTodos] = useState<(ClienteListItem & { dias: number })[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [pagoModal, setPagoModal] = useState<PagoModal>(null);
 
   const load = useCallback(async () => {
     try {
@@ -128,6 +135,7 @@ export default function AtrasadosScreen() {
           <AtrasadoCard
             item={item}
             onCortar={() => toggle(item)}
+            onPago={() => setPagoModal({ clienteId: item.id, nombre: item.nombre, monto: item.plan?.precio ?? 0 })}
             onPress={() => router.push(`/(admin)/cliente/${item.id}`)}
           />
         )}
@@ -168,6 +176,16 @@ export default function AtrasadosScreen() {
         }
       />
       <AdminNav />
+      {pagoModal && (
+        <ModalPago
+          visible={!!pagoModal}
+          onClose={() => setPagoModal(null)}
+          onSuccess={() => { setPagoModal(null); load(); }}
+          clienteId={pagoModal.clienteId}
+          clienteNombre={pagoModal.nombre}
+          montoSugerido={pagoModal.monto}
+        />
+      )}
     </View>
   );
 }
@@ -192,6 +210,8 @@ const st = StyleSheet.create({
   urgBar: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, padding: 10, borderWidth: 1, gap: 10 },
   urgText: { fontSize: 13, fontWeight: '700' },
   mesesText: { fontSize: 12, color: '#64748B', marginTop: 3 },
+  pagoBtn: { backgroundColor: '#059669', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8 },
+  pagoBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
   cortarBtn: { backgroundColor: '#EF4444', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
   cortarText: { color: '#FFFFFF', fontWeight: '800', fontSize: 13 },
   activarBtn: { backgroundColor: '#10B981', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
