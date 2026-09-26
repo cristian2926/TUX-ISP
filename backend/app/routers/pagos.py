@@ -153,7 +153,13 @@ def create_pago(
         anio_p, mes_p = map(int, data.mes_pagado.split("-"))
         next_mes  = mes_p % 12 + 1
         next_anio = anio_p + (1 if mes_p == 12 else 0)
-        dia_ciclo = cliente.fecha_instalacion.day if cliente.fecha_instalacion else 1
+        # Usar el día del ciclo de facturación real (vencimiento actual), no la instalación
+        if cliente.fecha_vencimiento:
+            dia_ciclo = cliente.fecha_vencimiento.day
+        elif cliente.fecha_instalacion:
+            dia_ciclo = cliente.fecha_instalacion.day
+        else:
+            dia_ciclo = 1
         dia_ciclo = min(dia_ciclo, calendar.monthrange(next_anio, next_mes)[1])
         nueva_vencimiento = date(next_anio, next_mes, dia_ciclo)
         # Nunca retroceder si ya hay una fecha posterior (pagos de meses atrasados)

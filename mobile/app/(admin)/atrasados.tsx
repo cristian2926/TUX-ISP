@@ -90,7 +90,7 @@ export default function AtrasadosScreen() {
       const data = await getClientes({ per_page: 100 } as any);
       const atrasados = data.items
         .map(c => ({ ...c, dias: diasRestantes(c.fecha_vencimiento) ?? 0 }))
-        .filter(c => c.dias < 0)
+        .filter(c => c.dias < 0 || c.estado === 'suspendido')
         .sort((a, b) => a.dias - b.dias); // más atrasado primero
       setTodos(atrasados);
     } catch {}
